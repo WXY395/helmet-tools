@@ -298,6 +298,7 @@ input:focus, select:focus, textarea:focus {
     <div style="display: flex; gap: 0.5em; flex-wrap: wrap;">
       <button onclick="exportOrders()" class="warning">📊 匯出訂單</button>
       <button onclick="showStats()" class="info">📈 統計</button>
+      <button onclick="window.location.href='index.html'">🏠 返回首頁</button>
     </div>
   </div>
 
@@ -336,9 +337,8 @@ input:focus, select:focus, textarea:focus {
   </div>
 </div>
 
-<div class="quick-add" onclick="showAddOrder()" title="新增訂單">➕</div>
+<div class="quick-add" id="quickAddBtn" title="新增訂單">➕</div>
 
-<!-- 新增/編輯訂單 Modal -->
 <div id="orderModal" class="modal">
   <div class="modal-content">
     <h3 id="modalTitle">新增訂單</h3>
@@ -405,7 +405,6 @@ input:focus, select:focus, textarea:focus {
   </div>
 </div>
 
-<!-- 訂單詳情 Modal -->
 <div id="detailModal" class="modal">
   <div class="modal-content">
     <h3>📋 訂單詳情</h3>
@@ -418,18 +417,35 @@ input:focus, select:focus, textarea:focus {
 let orders = [];
 let currentFilter = 'all';
 
-window.onload = function() {
+// 頁面載入完成後執行
+window.addEventListener('DOMContentLoaded', function() {
+  console.log('訂單系統載入中...');
+  
   loadOrders();
   updateCounts();
   renderOrders();
+  
+  // 設定今天的日期
   document.getElementById('orderDate').valueAsDate = new Date();
+  
+  // 設定搜尋功能
   document.getElementById('searchInput').addEventListener('input', renderOrders);
   
   // 監聽商品欄位變化計算總額
   document.getElementById('itemsContainer').addEventListener('input', calculateModalTotal);
   document.getElementById('shippingFee').addEventListener('input', calculateModalTotal);
   document.getElementById('discount').addEventListener('input', calculateModalTotal);
-};
+  
+  // 為快速新增按鈕綁定點擊事件
+  const quickAddBtn = document.getElementById('quickAddBtn');
+  if (quickAddBtn) {
+    quickAddBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      showAddOrder();
+    });
+    console.log('快速新增按鈕已綁定');
+  }
+});
 
 function loadOrders() {
   try {
@@ -450,6 +466,7 @@ function saveOrders() {
 }
 
 function showAddOrder() {
+  console.log('開啟新增訂單視窗');
   document.getElementById('modalTitle').textContent = '新增訂單';
   document.getElementById('orderId').value = '';
   document.getElementById('orderDate').valueAsDate = new Date();
@@ -509,7 +526,7 @@ function calculateModalTotal() {
   let discount = parseFloat(document.getElementById('discount').value) || 0;
   
   total = total + shipping - discount;
-  document.getElementById('modalTotal').textContent = ' + total.toFixed(0);
+  document.getElementById('modalTotal').textContent = '$' + total.toFixed(0);
 }
 
 function saveOrder() {
@@ -635,7 +652,7 @@ function deleteOrder(id) {
   let order = orders.find(o => o.id === id);
   if (!order) return;
   
-  if (confirm(`確定要刪除訂單 ${order.id} 嗎？\n客戶：${order.customer.name}\n總額：${order.total}\n\n此操作無法復原！`)) {
+  if (confirm(`確定要刪除訂單 ${order.id} 嗎？\n客戶：${order.customer.name}\n總額：$${order.total}\n\n此操作無法復原！`)) {
     orders = orders.filter(o => o.id !== id);
     saveOrders();
     updateCounts();
@@ -667,7 +684,7 @@ function showOrderDetail(id) {
   let itemsHtml = order.items.map(item => `
     <div style="padding: 0.5em 0; border-bottom: 1px solid #dee2e6;">
       <strong>${item.name}</strong><br>
-      <span style="color: #7f8c8d;">${item.price} × ${item.qty} = ${item.subtotal}</span>
+      <span style="color: #7f8c8d;">$${item.price} × ${item.qty} = $${item.subtotal}</span>
     </div>
   `).join('');
   
@@ -694,11 +711,11 @@ function showOrderDetail(id) {
     <div style="background: #e8f4f8; padding: 1em; border-radius: 8px;">
       <div style="display: flex; justify-content: space-between; margin: 0.5em 0;">
         <span>商品小計：</span>
-        <strong>${order.items.reduce((sum, item) => sum + item.subtotal, 0)}</strong>
+        <strong>$${order.items.reduce((sum, item) => sum + item.subtotal, 0)}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; margin: 0.5em 0;">
         <span>運費：</span>
-        <strong>${order.shipping}</strong>
+        <strong>$${order.shipping}</strong>
       </div>
       ${order.discount > 0 ? `
       <div style="display: flex; justify-content: space-between; margin: 0.5em 0; color: #e74c3c;">
