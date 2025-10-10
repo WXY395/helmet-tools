@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>促銷活動規劃器</title>
+<style>
+* { box-sizing: border-box; }
+body { 
+  font-family: "微軟正黑體", Arial, sans-serif;
+  background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+  margin: 0;
+  padding: 20px;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  padding: 2em;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 3px solid #f5576c;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+h2 { color: #2c3e50; margin: 0; }
+.calculator-section {
+  background: linear-gradient(135deg, #fff9e6, #ffe6cc);
+  padding: 2em;
+  border-radius: 15px;
+  margin-bottom: 2em;
+  border-left: 5px solid #f39c12;
+}
+.promo-tabs {
+  display: flex;
+  gap: 1em;
+  margin-bottom: 2em;
+  border-bottom: 2px solid #f5576c;
+  flex-wrap: wrap;
+}
+.promo-tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+  font-weight: bold;
+  color: #7f8c8d;
+}
+.promo-tab.active {
+  color: #f5576c;
+  border-bottom-color: #f5576c;
+}
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1em;
+  margin-bottom: 1.5em;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+.input-group label {
+  color: #2c3e50;
+  font-weight: 500;
+  margin-bottom: 0.5em;
+}
+.input-group input, .input-group select {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+}
+.result-box {
+  background: white;
+  padding: 1.5em;
+  border-radius: 12px;
+  margin-top: 1em;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8em;
+  margin: 0.5em 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #f5576c;
+}
+.result-label {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+.result-value {
+  color: #2c3e50;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+.result-value.positive {
+  color: #27ae60;
+}
+.result-value.negative {
+  color: #e74c3c;
+}
+.campaign-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5em;
+}
+.campaign-card {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5em;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-top: 5px solid #f5576c;
+  transition: all 0.3s;
+}
+.campaign-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+}
+.campaign-card.active {
+  border-top-color: #27ae60;
+  background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
+}
+.campaign-card.ended {
+  opacity: 0.6;
+  border-top-color: #95a5a6;
+}
+.campaign-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.85em;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+.status-active {
+  background: #d4edda;
+  color: #155724;
+}
+.status-scheduled {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+.status-ended {
+  background: #f8d7da;
+  color: #721c24;
+}
+.campaign-title {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 0.5em;
+}
+.campaign-date {
+  color: #7f8c8d;
+  font-size: 0.9em;
+  margin-bottom: 1em;
+}
+.campaign-info {
+  background: #f8f9fa;
+  padding: 1em;
+  border-radius: 8px;
+  margin: 1em 0;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5em 0;
+  font-size: 0.95em;
+}
+button {
+  background: #f5576c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+button.success { background: #27ae60; }
+button.danger { background: #e74c3c; }
+button.warning { background: #f39c12; }
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+.modal-content {
+  background: white;
+  padding: 2em;
+  border-radius: 15px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 2em;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 0.5em 0;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #f5576c;
+}
+.quick-add {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f5576c, #f093fb);
+  color: white;
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 100;
+}
+.quick-add:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+}
+@media (max-width: 768px) {
+  .container { padding: 1em; }
+  .input-grid { grid-template-columns: 1fr; }
+  .campaign-list { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2>🎁 促銷活動規劃器</h2>
+    <div style="display: flex; gap: 0.5em; flex-wrap: wrap;">
+      <button onclick="exportCampaigns()" class="warning">📊 匯出活動</button>
+      <button onclick="window.location.href='index.html'">🏠 返回首頁</button>
+    </div>
+  </div>
+
+  <div class="promo-tabs">
+    <div class="promo-tab active" onclick="changeTab('calculator')">💰 折扣計算器</div>
+    <div class="promo-tab" onclick="changeTab('campaigns')">📅 活動管理</div>
+  </div>
+
+  <!-- 折扣計算器 -->
+  <div id="calculatorTab" class="calculator-section">
+    <h3 style="margin-top: 0; color: #2c3e50;">💰 促銷折扣影響試算</h3>
+    
+    <div class="input-grid">
+      <div class="input-group">
+        <label>原價（元）</label>
+        <input type="number" id="originalPrice" value="1500" min="0" oninput="calculateDiscount()">
+      </div>
+      <div class="input-group">
+        <label>成本（元）</label>
+        <input type="number" id="costPrice" value="900" min="0" oninput="calculateDiscount()">
+      </div>
+      <div class="input-group">
+        <label>折扣方式</label>
+        <select id="discountType" onchange="calculateDiscount()">
+          <option value="percent">百分比折扣</option>
+          <option value="amount">直接折扣金額</option>
+          <option value="fixed">特價</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label id="discountLabel">折扣（%）</label>
+        <input type="number" id="discountValue" value="20" min="0" oninput="calculateDiscount()">
+      </div>
+      <div class="input-group">
+        <label>預估銷量（件）</label>
+        <input type="number" id="estimatedQty" value="10" min="1" oninput="calculateDiscount()">
+      </div>
+      <div class="input-group">
+        <label>活動成本（元）</label>
+        <input type="number" id="campaignCost" value="0" min="0" oninput="calculateDiscount()" placeholder="廣告、包裝等">
+      </div>
+    </div>
+
+    <div class="result-box">
+      <h4 style="margin-top: 0; color: #2c3e50;">📊 試算結果</h4>
+      <div class="result-item">
+        <span class="result-label">促銷價格</span>
+        <span class="result-value" id="salePrice">$0</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">單件毛利</span>
+        <span class="result-value" id="unitProfit">$0</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">總營業額</span>
+        <span class="result-value" id="totalRevenue">$0</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">總毛利（扣除活動成本）</span>
+        <span class="result-value" id="totalProfit">$0</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">利潤率</span>
+        <span class="result-value" id="profitRate">0%</span>
+      </div>
+      <div id="breakeven" style="margin-top: 1em; padding: 1em; background: #e8f4f8; border-radius: 8px; border-left: 4px solid #3498db;">
+        <strong>💡 損益平衡點：</strong><span id="breakevenText"></span>
+      </div>
+      <div id="recommendation" style="margin-top: 1em; padding: 1em; border-radius: 8px; font-weight: bold;">
+      </div>
+    </div>
+
+    <button onclick="saveAsCampaign()" class="success" style="width: 100%; margin-top: 1em; padding: 15px; font-size: 1.1em;">
+      💾 儲存為活動方案
+    </button>
+  </div>
+
+  <!-- 活動管理 -->
+  <div id="campaignsTab" style="display: none;">
+    <div id="campaignsList">
+      <div style="text-align: center; color: #7f8c8d; padding: 3em;">
+        <div style="font-size: 3em; margin-bottom: 0.5em;">🎁</div>
+        目前沒有活動記錄<br>使用折扣計算器試算後儲存為活動
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="quick-add" onclick="changeTab('calculator')" title="新增活動">➕</div>
+
+<!-- 儲存活動 Modal -->
+<div id="campaignModal" class="modal">
+  <div class="modal-content">
+    <h3>💾 儲存為活動方案</h3>
+    
+    <label>活動名稱：</label>
+    <input type="text" id="campaignName" placeholder="例如：雙11全館8折優惠">
+    
+    <label>活動開始日期：</label>
+    <input type="date" id="startDate">
+    
+    <label>活動結束日期：</label>
+    <input type="date" id="endDate">
+    
+    <label>活動說明：</label>
+    <textarea id="campaignDesc" rows="3" placeholder="例如：安全帽全系列8折，滿2000免運"></textarea>
+    
+    <div style="margin-top: 1em; padding: 1em; background: #f8f9fa; border-radius: 8px;">
+      <strong>促銷設定摘要：</strong>
+      <div id="campaignSummary" style="margin-top: 0.5em; color: #7f8c8d;"></div>
+    </div>
+    
+    <div style="margin-top: 1.5em; display: flex; gap: 1em;">
+      <button onclick="saveCampaign()" class="success">💾 保存活動</button>
+      <button onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let campaigns = [];
+let currentCalculation = null;
+
+window.onload = function() {
+  loadCampaigns();
+  calculateDiscount();
+  updateDiscountLabel();
+  
+  let today = new Date();
+  document.getElementById('startDate').valueAsDate = today;
+  let endDate = new Date(today);
+  endDate.setDate(endDate.getDate() + 7);
+  document.getElementById('endDate').valueAsDate = endDate;
+  
+  document.getElementById('discountType').addEventListener('change', updateDiscountLabel);
+};
+
+function loadCampaigns() {
+  try {
+    if (window.campaignsData) {
+      campaigns = window.campaignsData;
+    }
+  } catch(e) {
+    console.log('載入活動資料失敗');
+  }
+}
+
+function saveCampaigns() {
+  try {
+    window.campaignsData = campaigns;
+  } catch(e) {
+    console.log('保存活動資料失敗');
+  }
+}
+
+function changeTab(tab) {
+  document.querySelectorAll('.promo-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  if (tab === 'calculator') {
+    document.getElementById('calculatorTab').style.display = 'block';
+    document.getElementById('campaignsTab').style.display = 'none';
+  } else {
+    document.getElementById('calculatorTab').style.display = 'none';
+    document.getElementById('campaignsTab').style.display = 'block';
+    renderCampaigns();
+  }
+}
+
+function updateDiscountLabel() {
+  let type = document.getElementById('discountType').value;
+  let label = document.getElementById('discountLabel');
+  let input = document.getElementById('discountValue');
+  
+  if (type === 'percent') {
+    label.textContent = '折扣（%）';
+    input.placeholder = '例如：20 表示打8折';
+  } else if (type === 'amount') {
+    label.textContent = '折扣金額（元）';
+    input.placeholder = '例如：300';
+  } else {
+    label.textContent = '特價（元）';
+    input.placeholder = '例如：1200';
+  }
+}
+
+function calculateDiscount() {
+  let originalPrice = parseFloat(document.getElementById('originalPrice').value) || 0;
+  let costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+  let discountType = document.getElementById('discountType').value;
+  let discountValue = parseFloat(document.getElementById('discountValue').value) || 0;
+  let estimatedQty = parseInt(document.getElementById('estimatedQty').value) || 0;
+  let campaignCost = parseFloat(document.getElementById('campaignCost').value) || 0;
+  
+  let salePrice = 0;
+  
+  if (discountType === 'percent') {
+    salePrice = originalPrice * (1 - discountValue / 100);
+  } else if (discountType === 'amount') {
+    salePrice = originalPrice - discountValue;
+  } else {
+    salePrice = discountValue;
+  }
+  
+  if (salePrice < 0) salePrice = 0;
+  
+  let unitProfit = salePrice - costPrice;
+  let totalRevenue = salePrice * estimatedQty;
+  let totalProfit = (unitProfit * estimatedQty) - campaignCost;
+  let profitRate = salePrice > 0 ? (unitProfit / salePrice * 100) : 0;
+  
+  document.getElementById('salePrice').textContent = ' + salePrice.toFixed(0);
+  document.getElementById('unitProfit').textContent = ' + unitProfit.toFixed(0);
+  document.getElementById('unitProfit').className = 'result-value ' + (unitProfit >= 0 ? 'positive' : 'negative');
+  document.getElementById('totalRevenue').textContent = ' + totalRevenue.toFixed(0);
+  document.getElementById('totalProfit').textContent = ' + totalProfit.toFixed(0);
+  document.getElementById('totalProfit').className = 'result-value ' + (totalProfit >= 0 ? 'positive' : 'negative');
+  document.getElementById('profitRate').textContent = profitRate.toFixed(1) + '%';
+  document.getElementById('profitRate').className = 'result-value ' + (profitRate >= 10 ? 'positive' : 'negative');
+  
+  // 損益平衡點
+  if (unitProfit > 0) {
+    let breakevenQty = Math.ceil(campaignCost / unitProfit);
+    document.getElementById('breakevenText').textContent = ` 需銷售 ${breakevenQty} 件才能回本（已達成 ${estimatedQty >= breakevenQty ? '✅' : '❌'}）`;
+  } else {
+    document.getElementById('breakevenText').textContent = ' 單件虧損，無法回本！';
+  }
+  
+  // 建議
+  let recommendation = document.getElementById('recommendation');
+  if (totalProfit < 0) {
+    recommendation.style.background = '#f8d7da';
+    recommendation.style.borderLeft = '4px solid #e74c3c';
+    recommendation.style.color = '#721c24';
+    recommendation.innerHTML = '⚠️ 警告：此方案會造成虧損，建議調整折扣或提高預估銷量！';
+  } else if (profitRate < 10) {
+    recommendation.style.background = '#fff3cd';
+    recommendation.style.borderLeft = '4px solid #f39c12';
+    recommendation.style.color = '#856404';
+    recommendation.innerHTML = '💡 提示：利潤率偏低（<10%），建議評估是否值得執行。';
+  } else if (profitRate < 15) {
+    recommendation.style.background = '#d1ecf1';
+    recommendation.style.borderLeft = '4px solid #3498db';
+    recommendation.style.color = '#0c5460';
+    recommendation.innerHTML = '✅ 可行：利潤率尚可，適合衝銷量的促銷活動。';
+  } else {
+    recommendation.style.background = '#d4edda';
+    recommendation.style.borderLeft = '4px solid #27ae60';
+    recommendation.style.color = '#155724';
+    recommendation.innerHTML = '🎉 優秀：利潤率健康，可以執行此促銷方案！';
+  }
+  
+  currentCalculation = {
+    originalPrice, costPrice, discountType, discountValue,
+    salePrice, unitProfit, estimatedQty, campaignCost,
+    totalRevenue, totalProfit, profitRate
+  };
+}
+
+function saveAsCampaign() {
+  if (!currentCalculation) {
+    alert('請先進行試算！');
+    return;
+  }
+  
+  let summary = `原價 ${currentCalculation.originalPrice} → 促銷價 ${currentCalculation.salePrice.toFixed(0)}<br>`;
+  summary += `單件毛利 ${currentCalculation.unitProfit.toFixed(0)} | 預估銷量 ${currentCalculation.estimatedQty} 件<br>`;
+  summary += `預估總毛利 ${currentCalculation.totalProfit.toFixed(0)} | 利潤率 ${currentCalculation.profitRate.toFixed(1)}%`;
+  
+  document.getElementById('campaignSummary').innerHTML = summary;
+  document.getElementById('campaignModal').style.display = 'flex';
+}
+
+function saveCampaign() {
+  let name = document.getElementById('campaignName').value.trim();
+  if (!name) {
+    alert('請輸入活動名稱！');
+    return;
+  }
+  
+  let campaign = {
+    id: Date.now().toString(),
+    name: name,
+    startDate: document.getElementById('startDate').value,
+    endDate: document.getElementById('endDate').value,
+    description: document.getElementById('campaignDesc').value.trim(),
+    calculation: currentCalculation,
+    actualSales: 0,
+    actualRevenue: 0,
+    createdAt: new Date().toISOString()
+  };
+  
+  campaigns.unshift(campaign);
+  saveCampaigns();
+  closeModal();
+  alert('✅ 活動方案已保存！');
+  changeTab('campaigns');
+}
+
+function renderCampaigns() {
+  if (campaigns.length === 0) {
+    document.getElementById('campaignsList').innerHTML = `
+      <div style="text-align: center; color: #7f8c8d; padding: 3em;">
+        <div style="font-size: 3em; margin-bottom: 0.5em;">🎁</div>
+        目前沒有活動記錄<br>使用折扣計算器試算後儲存為活動
+      </div>
+    `;
+    return;
+  }
+  
+  let today = new Date().toISOString().split('T')[0];
+  
+  let html = '<div class="campaign-list">';
+  
+  campaigns.forEach(campaign => {
+    let status = 'scheduled';
+    let statusClass = 'status-scheduled';
+    let statusText = '預定';
+    let cardClass = '';
+    
+    if (today >= campaign.startDate && today <= campaign.endDate) {
+      status = 'active';
+      statusClass = 'status-active';
+      statusText = '進行中';
+      cardClass = 'active';
+    } else if (today > campaign.endDate) {
+      status = 'ended';
+      statusClass = 'status-ended';
+      statusText = '已結束';
+      cardClass = 'ended';
+    }
+    
+    let calc = campaign.calculation;
+    
+    html += `
+      <div class="campaign-card ${cardClass}">
+        <span class="campaign-status ${statusClass}">${statusText}</span>
+        <div class="campaign-title">${campaign.name}</div>
+        <div class="campaign-date">📅 ${campaign.startDate} ~ ${campaign.endDate}</div>
+        
+        ${campaign.description ? `<div style="color: #7f8c8d; margin-bottom: 1em;">${campaign.description}</div>` : ''}
+        
+        <div class="campaign-info">
+          <div class="info-row">
+            <span>原價</span>
+            <strong>${calc.originalPrice}</strong>
+          </div>
+          <div class="info-row">
+            <span>促銷價</span>
+            <strong style="color: #f5576c;">${calc.salePrice.toFixed(0)}</strong>
+          </div>
+          <div class="info-row">
+            <span>預估銷量</span>
+            <strong>${calc.estimatedQty} 件</strong>
+          </div>
+          <div class="info-row">
+            <span>預估毛利</span>
+            <strong style="color: ${calc.totalProfit >= 0 ? '#27ae60' : '#e74c3c'};">${calc.totalProfit.toFixed(0)}</strong>
+          </div>
+          <div class="info-row">
+            <span>利潤率</span>
+            <strong>${calc.profitRate.toFixed(1)}%</strong>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 0.5em; margin-top: 1em; flex-wrap: wrap;">
+          ${status === 'active' ? `<button onclick="updateActual('${campaign.id}')" class="success">📊 更新實際業績</button>` : ''}
+          <button onclick="deleteCampaign('${campaign.id}')" class="danger">🗑️ 刪除</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  document.getElementById('campaignsList').innerHTML = html;
+}
+
+function updateActual(id) {
+  let campaign = campaigns.find(c => c.id === id);
+  if (!campaign) return;
+  
+  let actualSales = prompt(`請輸入「${campaign.name}」的實際銷售件數：`, campaign.actualSales || 0);
+  if (actualSales === null) return;
+  
+  actualSales = parseInt(actualSales) || 0;
+  campaign.actualSales = actualSales;
+  campaign.actualRevenue = actualSales * campaign.calculation.salePrice;
+  
+  saveCampaigns();
+  renderCampaigns();
+  
+  let expectedSales = campaign.calculation.estimatedQty;
+  let achievement = expectedSales > 0 ? (actualSales / expectedSales * 100).toFixed(1) : 0;
+  
+  alert(`✅ 已更新！\n\n預估銷量：${expectedSales} 件\n實際銷量：${actualSales} 件\n達成率：${achievement}%`);
+}
+
+function deleteCampaign(id) {
+  let campaign = campaigns.find(c => c.id === id);
+  if (!campaign) return;
+  
+  if (confirm(`確定要刪除活動「${campaign.name}」嗎？\n\n此操作無法復原！`)) {
+    campaigns = campaigns.filter(c => c.id !== id);
+    saveCampaigns();
+    renderCampaigns();
+    alert('✅ 活動已刪除');
+  }
+}
+
+function exportCampaigns() {
+  if (campaigns.length === 0) {
+    alert('目前沒有活動可以匯出！');
+    return;
+  }
+  
+  let csv = '活動名稱,開始日期,結束日期,原價,促銷價,預估銷量,預估毛利,利潤率,實際銷量,說明\n';
+  
+  campaigns.forEach(campaign => {
+    let calc = campaign.calculation;
+    csv += `"${campaign.name}","${campaign.startDate}","${campaign.endDate}",${calc.originalPrice},${calc.salePrice.toFixed(0)},${calc.estimatedQty},${calc.totalProfit.toFixed(0)},${calc.profitRate.toFixed(1)}%,${campaign.actualSales || 0},"${campaign.description}"\n`;
+  });
+  
+  let blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '促銷活動記錄_' + new Date().toLocaleDateString('zh-TW') + '.csv';
+  link.click();
+  
+  alert('✅ 活動記錄已匯出！');
+}
+
+function closeModal() {
+  document.getElementById('campaignModal').style.display = 'none';
+}
+
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+});
+</script>
+</body>
+</html>

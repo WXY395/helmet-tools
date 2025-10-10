@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>安全帽庫存管理系統</title>
+<style>
+* { box-sizing: border-box; }
+body { 
+  font-family: "微軟正黑體", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 0;
+  padding: 20px;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  padding: 2em;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 3px solid #667eea;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+h2 { color: #2c3e50; margin: 0; }
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1em;
+  margin-bottom: 2em;
+}
+.stat-card {
+  padding: 1.5em;
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.stat-card.blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+.stat-card.green { background: linear-gradient(135deg, #56ab2f, #a8e063); }
+.stat-card.orange { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.stat-card.red { background: linear-gradient(135deg, #fa709a, #fee140); }
+.stat-value { font-size: 2.5em; font-weight: bold; margin: 0.2em 0; }
+.stat-label { opacity: 0.9; font-size: 0.9em; }
+button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+button:hover { background: #5568d3; transform: translateY(-2px); }
+button.success { background: #27ae60; }
+button.success:hover { background: #229954; }
+button.danger { background: #e74c3c; }
+button.danger:hover { background: #c0392b; }
+button.warning { background: #f39c12; }
+button.warning:hover { background: #e67e22; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1em;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+th {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 12px;
+  border-bottom: 1px solid #ecf0f1;
+}
+tr:hover { background: #f8f9fa; }
+.stock-level {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.stock-good { background: #d4edda; color: #155724; }
+.stock-low { background: #fff3cd; color: #856404; }
+.stock-critical { background: #f8d7da; color: #721c24; }
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.modal-content {
+  background: white;
+  padding: 2em;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 0.5em 0;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1em;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+.search-box {
+  margin-bottom: 1em;
+  position: relative;
+}
+.search-box input {
+  padding-left: 40px;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2em;
+}
+.filter-tabs {
+  display: flex;
+  gap: 0.5em;
+  margin-bottom: 1em;
+  flex-wrap: wrap;
+}
+.filter-tab {
+  padding: 8px 16px;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.filter-tab.active {
+  background: #667eea;
+  color: white;
+}
+@media (max-width: 768px) {
+  .container { padding: 1em; }
+  table { font-size: 0.85em; }
+  th, td { padding: 8px; }
+  .stat-value { font-size: 2em; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2>📦 安全帽庫存管理系統</h2>
+    <div style="display: flex; gap: 0.5em; flex-wrap: wrap;">
+      <button onclick="showAddModal()" class="success">➕ 新增商品</button>
+      <button onclick="exportData()" class="warning">📊 匯出報表</button>
+      <button onclick="showStockAlert()">🔔 補貨提醒</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">總商品數</div>
+      <div class="stat-value" id="totalItems">0</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">總庫存量</div>
+      <div class="stat-value" id="totalStock">0</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">庫存總值</div>
+      <div class="stat-value" id="totalValue">$0</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">低庫存項目</div>
+      <div class="stat-value" id="lowStockCount">0</div>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜尋商品名稱、型號、品牌...">
+  </div>
+
+  <div class="filter-tabs">
+    <div class="filter-tab active" onclick="filterBy('all')">全部商品</div>
+    <div class="filter-tab" onclick="filterBy('helmet')">安全帽</div>
+    <div class="filter-tab" onclick="filterBy('accessory')">配件</div>
+    <div class="filter-tab" onclick="filterBy('low')">低庫存</div>
+    <div class="filter-tab" onclick="filterBy('critical')">缺貨警示</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>型號</th>
+        <th>品牌</th>
+        <th>類型</th>
+        <th>庫存量</th>
+        <th>安全庫存</th>
+        <th>進貨成本</th>
+        <th>庫存值</th>
+        <th>狀態</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="inventoryTable">
+      <tr>
+        <td colspan="9" style="text-align: center; color: #7f8c8d; padding: 3em;">
+          目前沒有庫存資料，請點擊「新增商品」開始建立庫存
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 新增/編輯商品 Modal -->
+<div id="itemModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">新增商品</h3>
+    <input type="hidden" id="itemId">
+    <label>型號/名稱：</label>
+    <input type="text" id="itemName" placeholder="例如：EVO 1200 全罩">
+    <label>品牌：</label>
+    <select id="itemBrand">
+      <option value="EVO">EVO</option>
+      <option value="華泰">華泰</option>
+      <option value="其他">其他</option>
+    </select>
+    <label>類型：</label>
+    <select id="itemType">
+      <option value="全罩式">全罩式安全帽</option>
+      <option value="半罩式">半罩式安全帽</option>
+      <option value="四分之三">四分之三安全帽</option>
+      <option value="兒童帽">兒童安全帽</option>
+      <option value="鏡片">鏡片配件</option>
+      <option value="內襯">內襯配件</option>
+      <option value="其他配件">其他配件</option>
+    </select>
+    <label>目前庫存量：</label>
+    <input type="number" id="itemStock" value="0" min="0">
+    <label>安全庫存量（低於此數量會警示）：</label>
+    <input type="number" id="itemSafeStock" value="5" min="0">
+    <label>進貨成本（元）：</label>
+    <input type="number" id="itemCost" value="0" min="0" step="0.1">
+    <label>供應商：</label>
+    <input type="text" id="itemSupplier" placeholder="選填">
+    <div style="margin-top: 1em; display: flex; gap: 1em;">
+      <button onclick="saveItem()" class="success">💾 保存</button>
+      <button onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 進出貨 Modal -->
+<div id="stockModal" class="modal">
+  <div class="modal-content">
+    <h3 id="stockModalTitle">庫存異動</h3>
+    <input type="hidden" id="stockItemId">
+    <div style="background: #f8f9fa; padding: 1em; border-radius: 8px; margin-bottom: 1em;">
+      <strong id="stockItemName"></strong><br>
+      <span style="color: #7f8c8d;">目前庫存：<span id="currentStock" style="font-size: 1.5em; font-weight: bold; color: #2c3e50;"></span> 件</span>
+    </div>
+    <label>異動類型：</label>
+    <select id="stockAction">
+      <option value="in">進貨（增加庫存）</option>
+      <option value="out">出貨（減少庫存）</option>
+      <option value="adjust">盤點調整</option>
+    </select>
+    <label>數量：</label>
+    <input type="number" id="stockQty" value="1" min="1">
+    <label>備註：</label>
+    <input type="text" id="stockNote" placeholder="例如：補貨、銷售、盤損">
+    <div style="margin-top: 1em; display: flex; gap: 1em;">
+      <button onclick="updateStock()" class="success">✅ 確認異動</button>
+      <button onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let inventory = [];
+let currentFilter = 'all';
+
+window.onload = function() {
+  loadInventory();
+  updateStats();
+  renderTable();
+  
+  document.getElementById('searchInput').addEventListener('input', renderTable);
+};
+
+function loadInventory() {
+  try {
+    if (window.inventoryData) {
+      inventory = window.inventoryData;
+    }
+  } catch(e) {
+    console.log('載入庫存資料失敗');
+  }
+}
+
+function saveInventory() {
+  try {
+    window.inventoryData = inventory;
+  } catch(e) {
+    console.log('保存庫存資料失敗');
+  }
+}
+
+function showAddModal() {
+  document.getElementById('modalTitle').textContent = '新增商品';
+  document.getElementById('itemId').value = '';
+  document.getElementById('itemName').value = '';
+  document.getElementById('itemBrand').value = 'EVO';
+  document.getElementById('itemType').value = '全罩式';
+  document.getElementById('itemStock').value = '0';
+  document.getElementById('itemSafeStock').value = '5';
+  document.getElementById('itemCost').value = '0';
+  document.getElementById('itemSupplier').value = '';
+  document.getElementById('itemModal').style.display = 'flex';
+}
+
+function showEditModal(id) {
+  let item = inventory.find(i => i.id === id);
+  if (!item) return;
+  
+  document.getElementById('modalTitle').textContent = '編輯商品';
+  document.getElementById('itemId').value = item.id;
+  document.getElementById('itemName').value = item.name;
+  document.getElementById('itemBrand').value = item.brand;
+  document.getElementById('itemType').value = item.type;
+  document.getElementById('itemStock').value = item.stock;
+  document.getElementById('itemSafeStock').value = item.safeStock;
+  document.getElementById('itemCost').value = item.cost;
+  document.getElementById('itemSupplier').value = item.supplier || '';
+  document.getElementById('itemModal').style.display = 'flex';
+}
+
+function saveItem() {
+  let id = document.getElementById('itemId').value;
+  let item = {
+    id: id || Date.now().toString(),
+    name: document.getElementById('itemName').value.trim(),
+    brand: document.getElementById('itemBrand').value,
+    type: document.getElementById('itemType').value,
+    stock: parseInt(document.getElementById('itemStock').value) || 0,
+    safeStock: parseInt(document.getElementById('itemSafeStock').value) || 5,
+    cost: parseFloat(document.getElementById('itemCost').value) || 0,
+    supplier: document.getElementById('itemSupplier').value.trim(),
+    createdAt: id ? inventory.find(i => i.id === id).createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  if (!item.name) {
+    alert('請輸入商品名稱！');
+    return;
+  }
+  
+  if (id) {
+    let index = inventory.findIndex(i => i.id === id);
+    inventory[index] = item;
+  } else {
+    inventory.push(item);
+  }
+  
+  saveInventory();
+  updateStats();
+  renderTable();
+  closeModal();
+  alert('✅ 保存成功！');
+}
+
+function showStockModal(id) {
+  let item = inventory.find(i => i.id === id);
+  if (!item) return;
+  
+  document.getElementById('stockItemId').value = id;
+  document.getElementById('stockItemName').textContent = `${item.brand} ${item.name}`;
+  document.getElementById('currentStock').textContent = item.stock;
+  document.getElementById('stockAction').value = 'in';
+  document.getElementById('stockQty').value = '1';
+  document.getElementById('stockNote').value = '';
+  document.getElementById('stockModal').style.display = 'flex';
+}
+
+function updateStock() {
+  let id = document.getElementById('stockItemId').value;
+  let action = document.getElementById('stockAction').value;
+  let qty = parseInt(document.getElementById('stockQty').value) || 0;
+  let note = document.getElementById('stockNote').value.trim();
+  
+  if (qty <= 0) {
+    alert('請輸入有效的數量！');
+    return;
+  }
+  
+  let item = inventory.find(i => i.id === id);
+  if (!item) return;
+  
+  let oldStock = item.stock;
+  
+  if (action === 'in') {
+    item.stock += qty;
+  } else if (action === 'out') {
+    if (item.stock < qty) {
+      if (!confirm(`庫存不足！目前只有 ${item.stock} 件，確定要出貨 ${qty} 件嗎？`)) {
+        return;
+      }
+    }
+    item.stock -= qty;
+    if (item.stock < 0) item.stock = 0;
+  } else if (action === 'adjust') {
+    item.stock = qty;
+  }
+  
+  item.updatedAt = new Date().toISOString();
+  
+  saveInventory();
+  updateStats();
+  renderTable();
+  closeModal();
+  
+  let actionText = action === 'in' ? '進貨' : (action === 'out' ? '出貨' : '調整');
+  alert(`✅ 庫存異動成功！\n\n${actionText}：${qty} 件\n原庫存：${oldStock} 件\n新庫存：${item.stock} 件\n${note ? '備註：' + note : ''}`);
+}
+
+function deleteItem(id) {
+  let item = inventory.find(i => i.id === id);
+  if (!item) return;
+  
+  if (!confirm(`確定要刪除「${item.brand} ${item.name}」嗎？\n\n此操作無法復原！`)) {
+    return;
+  }
+  
+  inventory = inventory.filter(i => i.id !== id);
+  saveInventory();
+  updateStats();
+  renderTable();
+  alert('✅ 已刪除');
+}
+
+function updateStats() {
+  let totalItems = inventory.length;
+  let totalStock = inventory.reduce((sum, item) => sum + item.stock, 0);
+  let totalValue = inventory.reduce((sum, item) => sum + (item.stock * item.cost), 0);
+  let lowStockCount = inventory.filter(item => item.stock <= item.safeStock).length;
+  
+  document.getElementById('totalItems').textContent = totalItems;
+  document.getElementById('totalStock').textContent = totalStock;
+  document.getElementById('totalValue').textContent = '$' + totalValue.toFixed(0);
+  document.getElementById('lowStockCount').textContent = lowStockCount;
+}
+
+function filterBy(type) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  let searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = inventory.filter(item => {
+    let matchSearch = item.name.toLowerCase().includes(searchTerm) ||
+                     item.brand.toLowerCase().includes(searchTerm) ||
+                     item.type.toLowerCase().includes(searchTerm);
+    
+    if (!matchSearch) return false;
+    
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'helmet') return item.type.includes('安全帽');
+    if (currentFilter === 'accessory') return item.type.includes('配件') || item.type.includes('鏡片') || item.type.includes('內襯');
+    if (currentFilter === 'low') return item.stock <= item.safeStock && item.stock > 0;
+    if (currentFilter === 'critical') return item.stock === 0;
+    
+    return true;
+  });
+  
+  let html = '';
+  if (filtered.length === 0) {
+    html = '<tr><td colspan="9" style="text-align: center; color: #7f8c8d; padding: 2em;">找不到符合條件的商品</td></tr>';
+  } else {
+    filtered.forEach(item => {
+      let stockStatus = '';
+      let stockClass = '';
+      if (item.stock === 0) {
+        stockStatus = '缺貨';
+        stockClass = 'stock-critical';
+      } else if (item.stock <= item.safeStock) {
+        stockStatus = '低庫存';
+        stockClass = 'stock-low';
+      } else {
+        stockStatus = '充足';
+        stockClass = 'stock-good';
+      }
+      
+      let stockValue = (item.stock * item.cost).toFixed(0);
+      
+      html += `
+        <tr>
+          <td><strong>${item.name}</strong></td>
+          <td>${item.brand}</td>
+          <td>${item.type}</td>
+          <td><strong style="font-size: 1.2em;">${item.stock}</strong></td>
+          <td>${item.safeStock}</td>
+          <td>$${item.cost}</td>
+          <td>$${stockValue}</td>
+          <td><span class="stock-level ${stockClass}">${stockStatus}</span></td>
+          <td>
+            <button onclick="showStockModal('${item.id}')" class="success" style="padding: 6px 10px; font-size: 0.85em; margin: 2px;">📦 進出貨</button>
+            <button onclick="showEditModal('${item.id}')" style="padding: 6px 10px; font-size: 0.85em; margin: 2px;">✏️</button>
+            <button onclick="deleteItem('${item.id}')" class="danger" style="padding: 6px 10px; font-size: 0.85em; margin: 2px;">🗑️</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+  
+  document.getElementById('inventoryTable').innerHTML = html;
+}
+
+function showStockAlert() {
+  let lowStock = inventory.filter(item => item.stock <= item.safeStock);
+  
+  if (lowStock.length === 0) {
+    alert('✅ 太棒了！目前所有商品庫存都很充足！');
+    return;
+  }
+  
+  let message = `🔔 補貨提醒（${lowStock.length} 項商品需要補貨）\n\n`;
+  lowStock.forEach(item => {
+    let diff = item.safeStock - item.stock;
+    message += `${item.stock === 0 ? '🚨' : '⚠️'} ${item.brand} ${item.name}\n`;
+    message += `   目前庫存：${item.stock} 件\n`;
+    message += `   安全庫存：${item.safeStock} 件\n`;
+    message += `   建議補貨：${diff > 0 ? diff : item.safeStock} 件\n\n`;
+  });
+  
+  alert(message);
+}
+
+function exportData() {
+  if (inventory.length === 0) {
+    alert('目前沒有資料可以匯出！');
+    return;
+  }
+  
+  let csv = '型號,品牌,類型,庫存量,安全庫存,進貨成本,庫存值,供應商\n';
+  inventory.forEach(item => {
+    let stockValue = (item.stock * item.cost).toFixed(2);
+    csv += `"${item.name}","${item.brand}","${item.type}",${item.stock},${item.safeStock},${item.cost},${stockValue},"${item.supplier || ''}"\n`;
+  });
+  
+  let blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '庫存報表_' + new Date().toLocaleDateString('zh-TW') + '.csv';
+  link.click();
+  
+  alert('✅ 庫存報表已匯出！');
+}
+
+function closeModal() {
+  document.getElementById('itemModal').style.display = 'none';
+  document.getElementById('stockModal').style.display = 'none';
+}
+
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+});
+</script>
+</body>
+</html>

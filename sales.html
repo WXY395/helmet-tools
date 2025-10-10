@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>銷售分析儀表板</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { 
+  font-family: "微軟正黑體", Arial, sans-serif;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  margin: 0;
+  padding: 20px;
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  padding: 2em;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 3px solid #11998e;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+h2 { color: #2c3e50; margin: 0; }
+.period-selector {
+  display: flex;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+.period-btn {
+  padding: 8px 16px;
+  border: 2px solid #11998e;
+  background: white;
+  color: #11998e;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: bold;
+}
+.period-btn.active {
+  background: #11998e;
+  color: white;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5em;
+  margin-bottom: 2em;
+}
+.stat-card {
+  padding: 1.5em;
+  border-radius: 15px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  transform: translate(30%, -30%);
+}
+.stat-card.revenue { background: linear-gradient(135deg, #667eea, #764ba2); }
+.stat-card.orders { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.stat-card.profit { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.stat-card.avg { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.stat-icon {
+  font-size: 2.5em;
+  opacity: 0.9;
+  margin-bottom: 0.3em;
+}
+.stat-value {
+  font-size: 2.2em;
+  font-weight: bold;
+  margin: 0.3em 0;
+}
+.stat-label {
+  opacity: 0.9;
+  font-size: 0.95em;
+  margin-bottom: 0.5em;
+}
+.stat-change {
+  font-size: 0.85em;
+  opacity: 0.95;
+}
+.stat-change.up::before { content: '↗ '; }
+.stat-change.down::before { content: '↘ '; }
+.chart-section {
+  margin-bottom: 2em;
+  background: white;
+  padding: 1.5em;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.chart-section h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 2px solid #11998e;
+  padding-bottom: 0.5em;
+}
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5em;
+}
+.chart-container {
+  position: relative;
+  height: 300px;
+}
+.top-products {
+  background: white;
+  padding: 1.5em;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 2em;
+}
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+  margin: 0.5em 0;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #11998e;
+  transition: all 0.3s;
+}
+.product-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.product-rank {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+.product-info {
+  flex: 1;
+  margin: 0 1em;
+}
+.product-name {
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 0.3em;
+}
+.product-stats {
+  font-size: 0.9em;
+  color: #7f8c8d;
+}
+.product-value {
+  text-align: right;
+}
+.product-sales {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #11998e;
+}
+.product-profit {
+  font-size: 0.9em;
+  color: #7f8c8d;
+}
+button {
+  background: #11998e;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+button:hover {
+  background: #0d7a6f;
+  transform: translateY(-2px);
+}
+button.success { background: #27ae60; }
+button.danger { background: #e74c3c; }
+button.warning { background: #f39c12; }
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+.modal-content {
+  background: white;
+  padding: 2em;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 90%;
+  margin: 2em;
+}
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 0.5em 0;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1em;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: #11998e;
+}
+.quick-add {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 100;
+}
+.quick-add:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+}
+@media (max-width: 768px) {
+  .container { padding: 1em; }
+  .chart-grid { grid-template-columns: 1fr; }
+  .stat-value { font-size: 1.8em; }
+  .chart-container { height: 250px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2>📊 銷售分析儀表板</h2>
+    <div class="period-selector">
+      <button class="period-btn" onclick="changePeriod('today')">今日</button>
+      <button class="period-btn active" onclick="changePeriod('week')">本週</button>
+      <button class="period-btn" onclick="changePeriod('month')">本月</button>
+      <button class="period-btn" onclick="changePeriod('year')">本年</button>
+      <button class="period-btn" onclick="changePeriod('all')">全部</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card revenue">
+      <div class="stat-icon">💰</div>
+      <div class="stat-label">營業額</div>
+      <div class="stat-value" id="totalRevenue">$0</div>
+      <div class="stat-change up" id="revenueChange">較上期 +0%</div>
+    </div>
+    
+    <div class="stat-card orders">
+      <div class="stat-icon">📦</div>
+      <div class="stat-label">訂單數</div>
+      <div class="stat-value" id="totalOrders">0</div>
+      <div class="stat-change up" id="ordersChange">較上期 +0 筆</div>
+    </div>
+    
+    <div class="stat-card profit">
+      <div class="stat-icon">💎</div>
+      <div class="stat-label">毛利潤</div>
+      <div class="stat-value" id="totalProfit">$0</div>
+      <div class="stat-change up" id="profitChange">利潤率 0%</div>
+    </div>
+    
+    <div class="stat-card avg">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-label">客單價</div>
+      <div class="stat-value" id="avgOrder">$0</div>
+      <div class="stat-change" id="avgChange">平均每筆</div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-section">
+      <h3>📈 營業額趨勢</h3>
+      <div class="chart-container">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-section">
+      <h3>📊 商品類型分布</h3>
+      <div class="chart-container">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="top-products">
+    <h3 style="color: #2c3e50; border-bottom: 2px solid #11998e; padding-bottom: 0.5em;">🏆 熱銷商品 TOP 10</h3>
+    <div id="topProductsList">
+      <div style="text-align: center; color: #7f8c8d; padding: 2em;">
+        目前沒有銷售記錄，請點擊右下角「➕」新增銷售資料
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 1em; flex-wrap: wrap;">
+    <button onclick="exportReport()" class="warning">📄 匯出報表</button>
+    <button onclick="showAllSales()" class="success">📋 查看所有銷售記錄</button>
+    <button onclick="clearData()" class="danger">🗑️ 清空資料</button>
+  </div>
+</div>
+
+<div class="quick-add" onclick="showAddSale()" title="新增銷售記錄">➕</div>
+
+<!-- 新增銷售記錄 Modal -->
+<div id="saleModal" class="modal">
+  <div class="modal-content">
+    <h3>➕ 新增銷售記錄</h3>
+    <label>日期：</label>
+    <input type="date" id="saleDate">
+    
+    <label>商品名稱：</label>
+    <input type="text" id="saleName" placeholder="例如：EVO 全罩安全帽">
+    
+    <label>商品類型：</label>
+    <select id="saleCategory">
+      <option value="全罩式">全罩式安全帽</option>
+      <option value="半罩式">半罩式安全帽</option>
+      <option value="四分之三">四分之三安全帽</option>
+      <option value="兒童帽">兒童安全帽</option>
+      <option value="鏡片">鏡片配件</option>
+      <option value="內襯">內襯配件</option>
+      <option value="其他">其他配件</option>
+    </select>
+    
+    <label>售價（元）：</label>
+    <input type="number" id="salePrice" value="0" min="0">
+    
+    <label>成本（元）：</label>
+    <input type="number" id="saleCost" value="0" min="0">
+    
+    <label>數量：</label>
+    <input type="number" id="saleQty" value="1" min="1">
+    
+    <label>備註：</label>
+    <input type="text" id="saleNote" placeholder="選填">
+    
+    <div style="margin-top: 1em; display: flex; gap: 1em;">
+      <button onclick="saveSale()" class="success">💾 保存</button>
+      <button onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let salesData = [];
+let currentPeriod = 'week';
+let revenueChart, categoryChart;
+
+window.onload = function() {
+  loadSalesData();
+  document.getElementById('saleDate').valueAsDate = new Date();
+  initCharts();
+  updateDashboard();
+};
+
+function loadSalesData() {
+  try {
+    if (window.salesData) {
+      salesData = window.salesData;
+    }
+  } catch(e) {
+    console.log('載入銷售資料失敗');
+  }
+}
+
+function saveSalesData() {
+  try {
+    window.salesData = salesData;
+  } catch(e) {
+    console.log('保存銷售資料失敗');
+  }
+}
+
+function showAddSale() {
+  document.getElementById('saleDate').valueAsDate = new Date();
+  document.getElementById('saleName').value = '';
+  document.getElementById('saleCategory').value = '全罩式';
+  document.getElementById('salePrice').value = '0';
+  document.getElementById('saleCost').value = '0';
+  document.getElementById('saleQty').value = '1';
+  document.getElementById('saleNote').value = '';
+  document.getElementById('saleModal').style.display = 'flex';
+}
+
+function saveSale() {
+  let sale = {
+    id: Date.now().toString(),
+    date: document.getElementById('saleDate').value,
+    name: document.getElementById('saleName').value.trim(),
+    category: document.getElementById('saleCategory').value,
+    price: parseFloat(document.getElementById('salePrice').value) || 0,
+    cost: parseFloat(document.getElementById('saleCost').value) || 0,
+    qty: parseInt(document.getElementById('saleQty').value) || 1,
+    note: document.getElementById('saleNote').value.trim()
+  };
+  
+  if (!sale.name || !sale.date) {
+    alert('請填寫完整資料！');
+    return;
+  }
+  
+  if (sale.price <= 0) {
+    alert('售價必須大於 0！');
+    return;
+  }
+  
+  sale.revenue = sale.price * sale.qty;
+  sale.totalCost = sale.cost * sale.qty;
+  sale.profit = sale.revenue - sale.totalCost;
+  
+  salesData.push(sale);
+  saveSalesData();
+  updateDashboard();
+  closeModal();
+  alert('✅ 銷售記錄已新增！');
+}
+
+function changePeriod(period) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  updateDashboard();
+}
+
+function getFilteredData() {
+  let now = new Date();
+  let startDate;
+  
+  switch(currentPeriod) {
+    case 'today':
+      startDate = new Date(now.setHours(0,0,0,0));
+      break;
+    case 'week':
+      startDate = new Date(now.setDate(now.getDate() - 7));
+      break;
+    case 'month':
+      startDate = new Date(now.setMonth(now.getMonth() - 1));
+      break;
+    case 'year':
+      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+      break;
+    default:
+      return salesData;
+  }
+  
+  return salesData.filter(sale => new Date(sale.date) >= startDate);
+}
+
+function updateDashboard() {
+  let filtered = getFilteredData();
+  
+  let totalRevenue = filtered.reduce((sum, sale) => sum + sale.revenue, 0);
+  let totalOrders = filtered.length;
+  let totalProfit = filtered.reduce((sum, sale) => sum + sale.profit, 0);
+  let avgOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  let profitRate = totalRevenue > 0 ? (totalProfit / totalRevenue * 100) : 0;
+  
+  document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(0);
+  document.getElementById('totalOrders').textContent = totalOrders;
+  document.getElementById('totalProfit').textContent = '$' + totalProfit.toFixed(0);
+  document.getElementById('avgOrder').textContent = '$' + avgOrder.toFixed(0);
+  document.getElementById('profitChange').textContent = '利潤率 ' + profitRate.toFixed(1) + '%';
+  
+  updateTopProducts(filtered);
+  updateCharts(filtered);
+}
+
+function updateTopProducts(filtered) {
+  let products = {};
+  
+  filtered.forEach(sale => {
+    if (!products[sale.name]) {
+      products[sale.name] = {
+        name: sale.name,
+        category: sale.category,
+        revenue: 0,
+        profit: 0,
+        qty: 0
+      };
+    }
+    products[sale.name].revenue += sale.revenue;
+    products[sale.name].profit += sale.profit;
+    products[sale.name].qty += sale.qty;
+  });
+  
+  let sorted = Object.values(products).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+  
+  let html = '';
+  if (sorted.length === 0) {
+    html = '<div style="text-align: center; color: #7f8c8d; padding: 2em;">目前沒有銷售記錄</div>';
+  } else {
+    sorted.forEach((product, index) => {
+      html += `
+        <div class="product-item">
+          <div class="product-rank">${index + 1}</div>
+          <div class="product-info">
+            <div class="product-name">${product.name}</div>
+            <div class="product-stats">${product.category} · 銷售 ${product.qty} 件</div>
+          </div>
+          <div class="product-value">
+            <div class="product-sales">$${product.revenue.toFixed(0)}</div>
+            <div class="product-profit">毛利 $${product.profit.toFixed(0)}</div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  document.getElementById('topProductsList').innerHTML = html;
+}
+
+function initCharts() {
+  let ctx1 = document.getElementById('revenueChart').getContext('2d');
+  revenueChart = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: '營業額',
+        data: [],
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+  
+  let ctx2 = document.getElementById('categoryChart').getContext('2d');
+  categoryChart = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: [],
+      datasets: [{
+        data: [],
+        backgroundColor: [
+          '#667eea', '#764ba2', '#f093fb', '#f5576c',
+          '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  });
+}
+
+function updateCharts(filtered) {
+  // 營業額趨勢
+  let dateMap = {};
+  filtered.forEach(sale => {
+    let date = sale.date;
+    if (!dateMap[date]) dateMap[date] = 0;
+    dateMap[date] += sale.revenue;
+  });
+  
+  let dates = Object.keys(dateMap).sort();
+  let revenues = dates.map(date => dateMap[date]);
+  
+  revenueChart.data.labels = dates;
+  revenueChart.data.datasets[0].data = revenues;
+  revenueChart.update();
+  
+  // 商品類型分布
+  let categoryMap = {};
+  filtered.forEach(sale => {
+    if (!categoryMap[sale.category]) categoryMap[sale.category] = 0;
+    categoryMap[sale.category] += sale.revenue;
+  });
+  
+  categoryChart.data.labels = Object.keys(categoryMap);
+  categoryChart.data.datasets[0].data = Object.values(categoryMap);
+  categoryChart.update();
+}
+
+function exportReport() {
+  if (salesData.length === 0) {
+    alert('目前沒有資料可以匯出！');
+    return;
+  }
+  
+  let filtered = getFilteredData();
+  let csv = '日期,商品名稱,類型,售價,成本,數量,營業額,毛利,備註\n';
+  
+  filtered.forEach(sale => {
+    csv += `${sale.date},"${sale.name}",${sale.category},${sale.price},${sale.cost},${sale.qty},${sale.revenue},${sale.profit},"${sale.note}"\n`;
+  });
+  
+  let blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '銷售報表_' + currentPeriod + '_' + new Date().toLocaleDateString('zh-TW') + '.csv';
+  link.click();
+  
+  alert('✅ 報表已匯出！');
+}
+
+function showAllSales() {
+  if (salesData.length === 0) {
+    alert('目前沒有銷售記錄！');
+    return;
+  }
+  
+  let message = `📋 所有銷售記錄（共 ${salesData.length} 筆）\n\n`;
+  let sorted = [...salesData].sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  sorted.slice(0, 20).forEach(sale => {
+    message += `${sale.date}\n`;
+    message += `${sale.name} × ${sale.qty}\n`;
+    message += `售價 $${sale.price} · 成本 $${sale.cost}\n`;
+    message += `營業額 $${sale.revenue} · 毛利 $${sale.profit}\n\n`;
+  });
+  
+  if (salesData.length > 20) {
+    message += `... 還有 ${salesData.length - 20} 筆記錄\n請使用「匯出報表」查看完整資料`;
+  }
+  
+  alert(message);
+}
+
+function clearData() {
+  if (!confirm('確定要清空所有銷售資料嗎？\n\n此操作無法復原！建議先匯出報表備份。')) {
+    return;
+  }
+  
+  if (!confirm('再次確認：真的要刪除所有 ' + salesData.length + ' 筆銷售記錄嗎？')) {
+    return;
+  }
+  
+  salesData = [];
+  saveSalesData();
+  updateDashboard();
+  alert('✅ 已清空所有資料');
+}
+
+function closeModal() {
+  document.getElementById('saleModal').style.display = 'none';
+}
+
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+});
+</script>
+</body>
+</html>

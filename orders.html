@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>訂單管理系統</title>
+<style>
+* { box-sizing: border-box; }
+body { 
+  font-family: "微軟正黑體", Arial, sans-serif;
+  background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%);
+  margin: 0;
+  padding: 20px;
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  padding: 2em;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 3px solid #ff6a88;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+h2 { color: #2c3e50; margin: 0; }
+.status-tabs {
+  display: flex;
+  gap: 0.5em;
+  margin-bottom: 1.5em;
+  flex-wrap: wrap;
+}
+.status-tab {
+  padding: 10px 20px;
+  border: 2px solid #ff6a88;
+  background: white;
+  color: #ff6a88;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.status-tab.active {
+  background: #ff6a88;
+  color: white;
+}
+.status-badge {
+  background: white;
+  color: #ff6a88;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.9em;
+}
+.status-tab.active .status-badge {
+  background: rgba(255,255,255,0.3);
+  color: white;
+}
+.order-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5em;
+  margin-bottom: 1em;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-left: 5px solid #ff6a88;
+  transition: all 0.3s;
+}
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.order-card.pending { border-left-color: #f39c12; }
+.order-card.processing { border-left-color: #3498db; }
+.order-card.shipped { border-left-color: #9b59b6; }
+.order-card.completed { border-left-color: #27ae60; }
+.order-card.cancelled { border-left-color: #e74c3c; }
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1em;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+.order-number {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #2c3e50;
+}
+.order-date {
+  color: #7f8c8d;
+  font-size: 0.9em;
+}
+.order-status {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.status-pending { background: #fff3cd; color: #856404; }
+.status-processing { background: #d1ecf1; color: #0c5460; }
+.status-shipped { background: #e2d5f0; color: #6c3483; }
+.status-completed { background: #d4edda; color: #155724; }
+.status-cancelled { background: #f8d7da; color: #721c24; }
+.order-body {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5em;
+  margin-bottom: 1em;
+}
+.order-items {
+  background: #f8f9fa;
+  padding: 1em;
+  border-radius: 8px;
+}
+.order-item {
+  padding: 0.5em 0;
+  border-bottom: 1px solid #dee2e6;
+}
+.order-item:last-child {
+  border-bottom: none;
+}
+.item-name {
+  font-weight: bold;
+  color: #2c3e50;
+}
+.item-price {
+  color: #7f8c8d;
+  font-size: 0.95em;
+}
+.order-customer {
+  background: #fff9e6;
+  padding: 1em;
+  border-radius: 8px;
+}
+.customer-info {
+  margin: 0.5em 0;
+  font-size: 0.95em;
+}
+.customer-label {
+  color: #7f8c8d;
+  display: inline-block;
+  width: 60px;
+}
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1em;
+  border-top: 1px solid #dee2e6;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+.order-total {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #ff6a88;
+}
+.order-actions {
+  display: flex;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+button {
+  background: #ff6a88;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9em;
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+button.success { background: #27ae60; }
+button.warning { background: #f39c12; }
+button.danger { background: #e74c3c; }
+button.info { background: #3498db; }
+.search-box {
+  margin-bottom: 1.5em;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  padding: 12px 12px 12px 45px;
+  border: 2px solid #ddd;
+  border-radius: 25px;
+  font-size: 1em;
+}
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2em;
+  color: #7f8c8d;
+}
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+.modal-content {
+  background: white;
+  padding: 2em;
+  border-radius: 15px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 2em;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 0.5em 0;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #ff6a88;
+}
+.item-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 0.5em;
+  margin-bottom: 0.5em;
+  align-items: center;
+}
+.quick-add {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff9a56, #ff6a88);
+  color: white;
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 100;
+}
+.quick-add:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+}
+.empty-state {
+  text-align: center;
+  padding: 3em;
+  color: #7f8c8d;
+}
+.empty-icon {
+  font-size: 4em;
+  margin-bottom: 0.5em;
+}
+@media (max-width: 768px) {
+  .container { padding: 1em; }
+  .order-body { grid-template-columns: 1fr; }
+  .item-row { grid-template-columns: 1fr; }
+  .order-footer { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2>📋 訂單管理系統</h2>
+    <div style="display: flex; gap: 0.5em; flex-wrap: wrap;">
+      <button onclick="exportOrders()" class="warning">📊 匯出訂單</button>
+      <button onclick="showStats()" class="info">📈 統計</button>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜尋訂單編號、客戶姓名、電話、商品...">
+  </div>
+
+  <div class="status-tabs">
+    <div class="status-tab active" onclick="filterStatus('all')">
+      全部訂單 <span class="status-badge" id="countAll">0</span>
+    </div>
+    <div class="status-tab" onclick="filterStatus('pending')">
+      待處理 <span class="status-badge" id="countPending">0</span>
+    </div>
+    <div class="status-tab" onclick="filterStatus('processing')">
+      處理中 <span class="status-badge" id="countProcessing">0</span>
+    </div>
+    <div class="status-tab" onclick="filterStatus('shipped')">
+      已出貨 <span class="status-badge" id="countShipped">0</span>
+    </div>
+    <div class="status-tab" onclick="filterStatus('completed')">
+      已完成 <span class="status-badge" id="countCompleted">0</span>
+    </div>
+    <div class="status-tab" onclick="filterStatus('cancelled')">
+      已取消 <span class="status-badge" id="countCancelled">0</span>
+    </div>
+  </div>
+
+  <div id="ordersList">
+    <div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <h3>目前沒有訂單</h3>
+      <p>點擊右下角「➕」新增第一筆訂單</p>
+    </div>
+  </div>
+</div>
+
+<div class="quick-add" onclick="showAddOrder()" title="新增訂單">➕</div>
+
+<!-- 新增/編輯訂單 Modal -->
+<div id="orderModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">新增訂單</h3>
+    <input type="hidden" id="orderId">
+    
+    <label>訂單日期：</label>
+    <input type="date" id="orderDate">
+    
+    <h4 style="margin-top: 1.5em; color: #2c3e50; border-bottom: 2px solid #ff6a88; padding-bottom: 0.5em;">👤 客戶資訊</h4>
+    
+    <label>客戶姓名：</label>
+    <input type="text" id="customerName" placeholder="必填">
+    
+    <label>聯絡電話：</label>
+    <input type="tel" id="customerPhone" placeholder="必填">
+    
+    <label>收件地址：</label>
+    <textarea id="customerAddress" rows="2" placeholder="必填"></textarea>
+    
+    <label>備註：</label>
+    <input type="text" id="customerNote" placeholder="選填">
+    
+    <h4 style="margin-top: 1.5em; color: #2c3e50; border-bottom: 2px solid #ff6a88; padding-bottom: 0.5em;">🛒 訂購商品</h4>
+    
+    <div id="itemsContainer">
+      <div class="item-row">
+        <input type="text" placeholder="商品名稱" class="item-name-input">
+        <input type="number" placeholder="單價" class="item-price-input" min="0" value="0">
+        <input type="number" placeholder="數量" class="item-qty-input" min="1" value="1">
+        <button onclick="removeItem(this)" class="danger" style="padding: 10px;">🗑️</button>
+      </div>
+    </div>
+    
+    <button onclick="addItemRow()" class="success" style="margin-bottom: 1em;">➕ 新增商品</button>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1em;">
+      <div>
+        <label>運費：</label>
+        <input type="number" id="shippingFee" value="60" min="0">
+      </div>
+      <div>
+        <label>折扣：</label>
+        <input type="number" id="discount" value="0" min="0">
+      </div>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 1em; border-radius: 8px; margin: 1em 0;">
+      <strong>訂單總額：<span id="modalTotal" style="font-size: 1.3em; color: #ff6a88;">$0</span></strong>
+    </div>
+    
+    <label>訂單狀態：</label>
+    <select id="orderStatus">
+      <option value="pending">待處理</option>
+      <option value="processing">處理中</option>
+      <option value="shipped">已出貨</option>
+      <option value="completed">已完成</option>
+      <option value="cancelled">已取消</option>
+    </select>
+    
+    <div style="margin-top: 1.5em; display: flex; gap: 1em;">
+      <button onclick="saveOrder()" class="success">💾 保存訂單</button>
+      <button onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 訂單詳情 Modal -->
+<div id="detailModal" class="modal">
+  <div class="modal-content">
+    <h3>📋 訂單詳情</h3>
+    <div id="orderDetail"></div>
+    <button onclick="closeModal()" style="margin-top: 1em; width: 100%;">關閉</button>
+  </div>
+</div>
+
+<script>
+let orders = [];
+let currentFilter = 'all';
+
+window.onload = function() {
+  loadOrders();
+  updateCounts();
+  renderOrders();
+  document.getElementById('orderDate').valueAsDate = new Date();
+  document.getElementById('searchInput').addEventListener('input', renderOrders);
+  
+  // 監聽商品欄位變化計算總額
+  document.getElementById('itemsContainer').addEventListener('input', calculateModalTotal);
+  document.getElementById('shippingFee').addEventListener('input', calculateModalTotal);
+  document.getElementById('discount').addEventListener('input', calculateModalTotal);
+};
+
+function loadOrders() {
+  try {
+    if (window.ordersData) {
+      orders = window.ordersData;
+    }
+  } catch(e) {
+    console.log('載入訂單失敗');
+  }
+}
+
+function saveOrders() {
+  try {
+    window.ordersData = orders;
+  } catch(e) {
+    console.log('保存訂單失敗');
+  }
+}
+
+function showAddOrder() {
+  document.getElementById('modalTitle').textContent = '新增訂單';
+  document.getElementById('orderId').value = '';
+  document.getElementById('orderDate').valueAsDate = new Date();
+  document.getElementById('customerName').value = '';
+  document.getElementById('customerPhone').value = '';
+  document.getElementById('customerAddress').value = '';
+  document.getElementById('customerNote').value = '';
+  document.getElementById('shippingFee').value = '60';
+  document.getElementById('discount').value = '0';
+  document.getElementById('orderStatus').value = 'pending';
+  
+  document.getElementById('itemsContainer').innerHTML = `
+    <div class="item-row">
+      <input type="text" placeholder="商品名稱" class="item-name-input">
+      <input type="number" placeholder="單價" class="item-price-input" min="0" value="0">
+      <input type="number" placeholder="數量" class="item-qty-input" min="1" value="1">
+      <button onclick="removeItem(this)" class="danger" style="padding: 10px;">🗑️</button>
+    </div>
+  `;
+  
+  calculateModalTotal();
+  document.getElementById('orderModal').style.display = 'flex';
+}
+
+function addItemRow() {
+  let row = document.createElement('div');
+  row.className = 'item-row';
+  row.innerHTML = `
+    <input type="text" placeholder="商品名稱" class="item-name-input">
+    <input type="number" placeholder="單價" class="item-price-input" min="0" value="0">
+    <input type="number" placeholder="數量" class="item-qty-input" min="1" value="1">
+    <button onclick="removeItem(this)" class="danger" style="padding: 10px;">🗑️</button>
+  `;
+  document.getElementById('itemsContainer').appendChild(row);
+  calculateModalTotal();
+}
+
+function removeItem(btn) {
+  if (document.querySelectorAll('.item-row').length > 1) {
+    btn.parentElement.remove();
+    calculateModalTotal();
+  } else {
+    alert('至少需要一個商品！');
+  }
+}
+
+function calculateModalTotal() {
+  let total = 0;
+  
+  document.querySelectorAll('.item-row').forEach(row => {
+    let price = parseFloat(row.querySelector('.item-price-input').value) || 0;
+    let qty = parseInt(row.querySelector('.item-qty-input').value) || 0;
+    total += price * qty;
+  });
+  
+  let shipping = parseFloat(document.getElementById('shippingFee').value) || 0;
+  let discount = parseFloat(document.getElementById('discount').value) || 0;
+  
+  total = total + shipping - discount;
+  document.getElementById('modalTotal').textContent = ' + total.toFixed(0);
+}
+
+function saveOrder() {
+  let id = document.getElementById('orderId').value;
+  
+  let customerName = document.getElementById('customerName').value.trim();
+  let customerPhone = document.getElementById('customerPhone').value.trim();
+  let customerAddress = document.getElementById('customerAddress').value.trim();
+  
+  if (!customerName || !customerPhone || !customerAddress) {
+    alert('請填寫完整的客戶資訊！');
+    return;
+  }
+  
+  let items = [];
+  document.querySelectorAll('.item-row').forEach(row => {
+    let name = row.querySelector('.item-name-input').value.trim();
+    let price = parseFloat(row.querySelector('.item-price-input').value) || 0;
+    let qty = parseInt(row.querySelector('.item-qty-input').value) || 1;
+    
+    if (name) {
+      items.push({ name, price, qty, subtotal: price * qty });
+    }
+  });
+  
+  if (items.length === 0) {
+    alert('請至少新增一個商品！');
+    return;
+  }
+  
+  let itemsTotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+  let shipping = parseFloat(document.getElementById('shippingFee').value) || 0;
+  let discount = parseFloat(document.getElementById('discount').value) || 0;
+  let total = itemsTotal + shipping - discount;
+  
+  let order = {
+    id: id || 'ORD' + Date.now(),
+    date: document.getElementById('orderDate').value,
+    customer: {
+      name: customerName,
+      phone: customerPhone,
+      address: customerAddress,
+      note: document.getElementById('customerNote').value.trim()
+    },
+    items: items,
+    shipping: shipping,
+    discount: discount,
+    total: total,
+    status: document.getElementById('orderStatus').value,
+    createdAt: id ? orders.find(o => o.id === id).createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  if (id) {
+    let index = orders.findIndex(o => o.id === id);
+    orders[index] = order;
+  } else {
+    orders.unshift(order);
+  }
+  
+  saveOrders();
+  updateCounts();
+  renderOrders();
+  closeModal();
+  alert('✅ 訂單已保存！');
+}
+
+function editOrder(id) {
+  let order = orders.find(o => o.id === id);
+  if (!order) return;
+  
+  document.getElementById('modalTitle').textContent = '編輯訂單';
+  document.getElementById('orderId').value = order.id;
+  document.getElementById('orderDate').value = order.date;
+  document.getElementById('customerName').value = order.customer.name;
+  document.getElementById('customerPhone').value = order.customer.phone;
+  document.getElementById('customerAddress').value = order.customer.address;
+  document.getElementById('customerNote').value = order.customer.note || '';
+  document.getElementById('shippingFee').value = order.shipping;
+  document.getElementById('discount').value = order.discount;
+  document.getElementById('orderStatus').value = order.status;
+  
+  document.getElementById('itemsContainer').innerHTML = '';
+  order.items.forEach(item => {
+    let row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <input type="text" placeholder="商品名稱" class="item-name-input" value="${item.name}">
+      <input type="number" placeholder="單價" class="item-price-input" min="0" value="${item.price}">
+      <input type="number" placeholder="數量" class="item-qty-input" min="1" value="${item.qty}">
+      <button onclick="removeItem(this)" class="danger" style="padding: 10px;">🗑️</button>
+    `;
+    document.getElementById('itemsContainer').appendChild(row);
+  });
+  
+  calculateModalTotal();
+  document.getElementById('orderModal').style.display = 'flex';
+}
+
+function updateOrderStatus(id, newStatus) {
+  let order = orders.find(o => o.id === id);
+  if (!order) return;
+  
+  let statusNames = {
+    pending: '待處理',
+    processing: '處理中',
+    shipped: '已出貨',
+    completed: '已完成',
+    cancelled: '已取消'
+  };
+  
+  if (confirm(`確定要將訂單 ${order.id} 更新為「${statusNames[newStatus]}」嗎？`)) {
+    order.status = newStatus;
+    order.updatedAt = new Date().toISOString();
+    saveOrders();
+    updateCounts();
+    renderOrders();
+    alert('✅ 訂單狀態已更新！');
+  }
+}
+
+function deleteOrder(id) {
+  let order = orders.find(o => o.id === id);
+  if (!order) return;
+  
+  if (confirm(`確定要刪除訂單 ${order.id} 嗎？\n客戶：${order.customer.name}\n總額：${order.total}\n\n此操作無法復原！`)) {
+    orders = orders.filter(o => o.id !== id);
+    saveOrders();
+    updateCounts();
+    renderOrders();
+    alert('✅ 訂單已刪除');
+  }
+}
+
+function showOrderDetail(id) {
+  let order = orders.find(o => o.id === id);
+  if (!order) return;
+  
+  let statusNames = {
+    pending: '待處理',
+    processing: '處理中',
+    shipped: '已出貨',
+    completed: '已完成',
+    cancelled: '已取消'
+  };
+  
+  let statusClasses = {
+    pending: 'status-pending',
+    processing: 'status-processing',
+    shipped: 'status-shipped',
+    completed: 'status-completed',
+    cancelled: 'status-cancelled'
+  };
+  
+  let itemsHtml = order.items.map(item => `
+    <div style="padding: 0.5em 0; border-bottom: 1px solid #dee2e6;">
+      <strong>${item.name}</strong><br>
+      <span style="color: #7f8c8d;">${item.price} × ${item.qty} = ${item.subtotal}</span>
+    </div>
+  `).join('');
+  
+  let html = `
+    <div style="background: #f8f9fa; padding: 1em; border-radius: 8px; margin-bottom: 1em;">
+      <strong style="font-size: 1.2em;">${order.id}</strong><br>
+      <span style="color: #7f8c8d;">${order.date}</span>
+      <span class="order-status ${statusClasses[order.status]}" style="margin-left: 1em;">${statusNames[order.status]}</span>
+    </div>
+    
+    <h4 style="color: #2c3e50; border-bottom: 2px solid #ff6a88; padding-bottom: 0.5em;">👤 客戶資訊</h4>
+    <div style="background: #fff9e6; padding: 1em; border-radius: 8px; margin-bottom: 1em;">
+      <div style="margin: 0.5em 0;"><strong>姓名：</strong>${order.customer.name}</div>
+      <div style="margin: 0.5em 0;"><strong>電話：</strong>${order.customer.phone}</div>
+      <div style="margin: 0.5em 0;"><strong>地址：</strong>${order.customer.address}</div>
+      ${order.customer.note ? `<div style="margin: 0.5em 0;"><strong>備註：</strong>${order.customer.note}</div>` : ''}
+    </div>
+    
+    <h4 style="color: #2c3e50; border-bottom: 2px solid #ff6a88; padding-bottom: 0.5em;">🛒 訂購商品</h4>
+    <div style="background: #f8f9fa; padding: 1em; border-radius: 8px; margin-bottom: 1em;">
+      ${itemsHtml}
+    </div>
+    
+    <div style="background: #e8f4f8; padding: 1em; border-radius: 8px;">
+      <div style="display: flex; justify-content: space-between; margin: 0.5em 0;">
+        <span>商品小計：</span>
+        <strong>${order.items.reduce((sum, item) => sum + item.subtotal, 0)}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 0.5em 0;">
+        <span>運費：</span>
+        <strong>${order.shipping}</strong>
+      </div>
+      ${order.discount > 0 ? `
+      <div style="display: flex; justify-content: space-between; margin: 0.5em 0; color: #e74c3c;">
+        <span>折扣：</span>
+        <strong>-${order.discount}</strong>
+      </div>` : ''}
+      <div style="display: flex; justify-content: space-between; margin-top: 1em; padding-top: 1em; border-top: 2px solid #dee2e6; font-size: 1.3em;">
+        <span><strong>訂單總額：</strong></span>
+        <strong style="color: #ff6a88;">${order.total}</strong>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('orderDetail').innerHTML = html;
+  document.getElementById('detailModal').style.display = 'flex';
+}
+
+function filterStatus(status) {
+  currentFilter = status;
+  document.querySelectorAll('.status-tab').forEach(tab => tab.classList.remove('active'));
+  event.target.closest('.status-tab').classList.add('active');
+  renderOrders();
+}
+
+function updateCounts() {
+  document.getElementById('countAll').textContent = orders.length;
+  document.getElementById('countPending').textContent = orders.filter(o => o.status === 'pending').length;
+  document.getElementById('countProcessing').textContent = orders.filter(o => o.status === 'processing').length;
+  document.getElementById('countShipped').textContent = orders.filter(o => o.status === 'shipped').length;
+  document.getElementById('countCompleted').textContent = orders.filter(o => o.status === 'completed').length;
+  document.getElementById('countCancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
+}
+
+function renderOrders() {
+  let searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  
+  let filtered = orders.filter(order => {
+    let matchStatus = currentFilter === 'all' || order.status === currentFilter;
+    let matchSearch = order.id.toLowerCase().includes(searchTerm) ||
+                     order.customer.name.toLowerCase().includes(searchTerm) ||
+                     order.customer.phone.includes(searchTerm) ||
+                     order.items.some(item => item.name.toLowerCase().includes(searchTerm));
+    return matchStatus && matchSearch;
+  });
+  
+  let html = '';
+  
+  if (filtered.length === 0) {
+    html = `
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>沒有找到符合的訂單</h3>
+        <p>試試調整篩選條件或搜尋關鍵字</p>
+      </div>
+    `;
+  } else {
+    filtered.forEach(order => {
+      let statusNames = {
+        pending: '待處理',
+        processing: '處理中',
+        shipped: '已出貨',
+        completed: '已完成',
+        cancelled: '已取消'
+      };
+      
+      let statusClasses = {
+        pending: 'status-pending',
+        processing: 'status-processing',
+        shipped: 'status-shipped',
+        completed: 'status-completed',
+        cancelled: 'status-cancelled'
+      };
+      
+      let itemsList = order.items.slice(0, 3).map(item => 
+        `<div class="order-item"><span class="item-name">${item.name}</span> <span class="item-price">× ${item.qty}</span></div>`
+      ).join('');
+      
+      if (order.items.length > 3) {
+        itemsList += `<div class="order-item" style="color: #7f8c8d;">... 還有 ${order.items.length - 3} 項商品</div>`;
+      }
+      
+      html += `
+        <div class="order-card ${order.status}">
+          <div class="order-header">
+            <div>
+              <div class="order-number">${order.id}</div>
+              <div class="order-date">${order.date}</div>
+            </div>
+            <span class="order-status ${statusClasses[order.status]}">${statusNames[order.status]}</span>
+          </div>
+          
+          <div class="order-body">
+            <div class="order-items">
+              <strong style="color: #2c3e50; display: block; margin-bottom: 0.5em;">訂購商品：</strong>
+              ${itemsList}
+            </div>
+            
+            <div class="order-customer">
+              <strong style="color: #2c3e50; display: block; margin-bottom: 0.5em;">客戶資訊：</strong>
+              <div class="customer-info">
+                <span class="customer-label">姓名：</span>${order.customer.name}
+              </div>
+              <div class="customer-info">
+                <span class="customer-label">電話：</span>${order.customer.phone}
+              </div>
+              <div class="customer-info">
+                <span class="customer-label">地址：</span>${order.customer.address}
+              </div>
+            </div>
+          </div>
+          
+          <div class="order-footer">
+            <div class="order-total">總額：${order.total}</div>
+            <div class="order-actions">
+              ${order.status === 'pending' ? `
+                <button onclick="updateOrderStatus('${order.id}', 'processing')" class="info">✅ 開始處理</button>
+              ` : ''}
+              ${order.status === 'processing' ? `
+                <button onclick="updateOrderStatus('${order.id}', 'shipped')" class="warning">🚚 標記出貨</button>
+              ` : ''}
+              ${order.status === 'shipped' ? `
+                <button onclick="updateOrderStatus('${order.id}', 'completed')" class="success">✅ 完成訂單</button>
+              ` : ''}
+              <button onclick="showOrderDetail('${order.id}')" class="info">👁️ 詳情</button>
+              <button onclick="editOrder('${order.id}')" class="warning">✏️ 編輯</button>
+              <button onclick="deleteOrder('${order.id}')" class="danger">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  document.getElementById('ordersList').innerHTML = html;
+}
+
+function exportOrders() {
+  if (orders.length === 0) {
+    alert('目前沒有訂單可以匯出！');
+    return;
+  }
+  
+  let csv = '訂單編號,日期,客戶姓名,聯絡電話,收件地址,商品清單,商品總計,運費,折扣,訂單總額,狀態,備註\n';
+  
+  orders.forEach(order => {
+    let itemsList = order.items.map(item => `${item.name}(${item.qty})`).join(';');
+    let itemsTotal = order.items.reduce((sum, item) => sum + item.subtotal, 0);
+    let statusNames = {
+      pending: '待處理',
+      processing: '處理中',
+      shipped: '已出貨',
+      completed: '已完成',
+      cancelled: '已取消'
+    };
+    
+    csv += `"${order.id}","${order.date}","${order.customer.name}","${order.customer.phone}","${order.customer.address}","${itemsList}",${itemsTotal},${order.shipping},${order.discount},${order.total},${statusNames[order.status]},"${order.customer.note || ''}"\n`;
+  });
+  
+  let blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '訂單明細_' + new Date().toLocaleDateString('zh-TW') + '.csv';
+  link.click();
+  
+  alert('✅ 訂單資料已匯出！');
+}
+
+function showStats() {
+  if (orders.length === 0) {
+    alert('目前沒有訂單資料！');
+    return;
+  }
+  
+  let total = orders.reduce((sum, order) => sum + order.total, 0);
+  let completed = orders.filter(o => o.status === 'completed');
+  let completedTotal = completed.reduce((sum, order) => sum + order.total, 0);
+  let pending = orders.filter(o => o.status === 'pending').length;
+  let processing = orders.filter(o => o.status === 'processing').length;
+  let shipped = orders.filter(o => o.status === 'shipped').length;
+  
+  let message = `📊 訂單統計\n\n`;
+  message += `總訂單數：${orders.length} 筆\n`;
+  message += `訂單總額：${total.toFixed(0)}\n\n`;
+  message += `已完成：${completed.length} 筆 (${completedTotal.toFixed(0)})\n`;
+  message += `待處理：${pending} 筆\n`;
+  message += `處理中：${processing} 筆\n`;
+  message += `已出貨：${shipped} 筆\n\n`;
+  message += `平均客單價：${(total / orders.length).toFixed(0)}`;
+  
+  alert(message);
+}
+
+function closeModal() {
+  document.getElementById('orderModal').style.display = 'none';
+  document.getElementById('detailModal').style.display = 'none';
+}
+
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+});
+</script>
+</body>
+</html>

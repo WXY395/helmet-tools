@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🏍️ 機車安全帽電商管理工具</title>
+<style>
+* { box-sizing: border-box; }
+body { 
+  font-family: "微軟正黑體", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.header {
+  text-align: center;
+  color: white;
+  margin-bottom: 3em;
+  padding: 2em;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+.header h1 {
+  margin: 0;
+  font-size: 3em;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+.header p {
+  font-size: 1.2em;
+  margin: 0.5em 0 0 0;
+  opacity: 0.95;
+}
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2em;
+  margin-bottom: 3em;
+}
+.tool-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2em;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.tool-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+.tool-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+.tool-icon {
+  font-size: 4em;
+  margin-bottom: 0.3em;
+  display: block;
+}
+.tool-title {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 0.5em;
+}
+.tool-desc {
+  color: #7f8c8d;
+  line-height: 1.6;
+  margin-bottom: 1em;
+}
+.tool-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.tool-features li {
+  padding: 0.3em 0;
+  color: #34495e;
+  font-size: 0.9em;
+}
+.tool-features li::before {
+  content: '✓ ';
+  color: #27ae60;
+  font-weight: bold;
+}
+.tool-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+.quick-stats {
+  background: rgba(255,255,255,0.95);
+  border-radius: 20px;
+  padding: 2em;
+  margin-bottom: 2em;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5em;
+  margin-top: 1em;
+}
+.stat-item {
+  text-align: center;
+  padding: 1.5em;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-radius: 15px;
+}
+.stat-value {
+  font-size: 2.5em;
+  font-weight: bold;
+  margin: 0.2em 0;
+}
+.stat-label {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+.footer {
+  text-align: center;
+  color: white;
+  margin-top: 3em;
+  padding: 2em;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+@media (max-width: 768px) {
+  .header h1 { font-size: 2em; }
+  .tools-grid { grid-template-columns: 1fr; }
+  .tool-icon { font-size: 3em; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🏍️ 機車安全帽電商管理工具</h1>
+    <p>專為 EVO、華泰安全帽賣家打造的完整營運系統</p>
+  </div>
+
+  <div class="quick-stats">
+    <h2 style="margin-top: 0; color: #2c3e50; text-align: center;">📊 今日快速總覽</h2>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-label">今日業績</div>
+        <div class="stat-value" id="todaySales">--</div>
+      </div>
+      <div class="stat-item" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+        <div class="stat-label">待處理訂單</div>
+        <div class="stat-value" id="pendingOrders">--</div>
+      </div>
+      <div class="stat-item" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+        <div class="stat-label">低庫存商品</div>
+        <div class="stat-value" id="lowStock">--</div>
+      </div>
+      <div class="stat-item" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+        <div class="stat-label">本月利潤</div>
+        <div class="stat-value" id="monthProfit">--</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="color: white; text-align: center; margin-bottom: 1.5em; font-size: 2em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🛠️ 管理工具</h2>
+
+  <div class="tools-grid">
+    <div class="tool-card" onclick="openTool('pricing.html')">
+      <span class="tool-badge">核心</span>
+      <span class="tool-icon">💰</span>
+      <div class="tool-title">訂價計算系統</div>
+      <div class="tool-desc">智能計算最佳售價，競品分析，利潤最大化</div>
+      <ul class="tool-features">
+        <li>快速競品輸入面板</li>
+        <li>蝦皮費用精算</li>
+        <li>組合優惠方案</li>
+        <li>安全帽專用模板</li>
+      </ul>
+    </div>
+
+    <div class="tool-card" onclick="openTool('inventory.html')">
+      <span class="tool-badge">核心</span>
+      <span class="tool-icon">📦</span>
+      <div class="tool-title">庫存管理系統</div>
+      <div class="tool-desc">進出貨管理，補貨提醒，庫存價值追蹤</div>
+      <ul class="tool-features">
+        <li>進出貨快速記錄</li>
+        <li>低庫存自動警示</li>
+        <li>供應商資料管理</li>
+        <li>庫存報表匯出</li>
+      </ul>
+    </div>
+
+    <div class="tool-card" onclick="openTool('sales.html')">
+      <span class="tool-badge">分析</span>
+      <span class="tool-icon">📊</span>
+      <div class="tool-title">銷售分析儀表板</div>
+      <div class="tool-desc">視覺化圖表，暢銷排行，趨勢預測</div>
+      <ul class="tool-features">
+        <li>營業額趨勢圖表</li>
+        <li>熱銷商品 TOP 10</li>
+        <li>多期間數據對比</li>
+        <li>利潤率分析</li>
+      </ul>
+    </div>
+
+    <div class="tool-card" onclick="openTool('orders.html')">
+      <span class="tool-badge">核心</span>
+      <span class="tool-icon">📋</span>
+      <div class="tool-title">訂單管理系統</div>
+      <div class="tool-desc">訂單追蹤，狀態管理，客戶資料維護</div>
+      <ul class="tool-features">
+        <li>訂單狀態流程管理</li>
+        <li>客戶資訊記錄</li>
+        <li>出貨單自動生成</li>
+        <li>訂單搜尋篩選</li>
+      </ul>
+    </div>
+
+    <div class="tool-card" onclick="openTool('accounting.html')">
+      <span class="tool-badge">財務</span>
+      <span class="tool-icon">💸</span>
+      <div class="tool-title">收支記帳系統</div>
+      <div class="tool-desc">收入支出分類管理，損益報表自動生成</div>
+      <ul class="tool-features">
+        <li>收支快速記錄</li>
+        <li>分類統計分析</li>
+        <li>月度損益報表</li>
+        <li>收支趨勢圖表</li>
+      </ul>
+    </div>
+
+    <div class="tool-card" onclick="alert('即將推出！')">
+      <span class="tool-badge" style="background: #95a5a6;">即將推出</span>
+      <span class="tool-icon">🏢</span>
+      <div class="tool-title">供應商管理系統</div>
+      <div class="tool-desc">供應商資料庫，報價比較，採購單管理</div>
+      <ul class="tool-features">
+        <li>供應商評價比較</li>
+        <li>歷史報價記錄</li>
+        <li>付款狀態追蹤</li>
+        <li>採購單生成</li>
+      </ul>
+    </div>
+
+    <div class="tool-card" onclick="alert('即將推出！')">
+      <span class="tool-badge" style="background: #95a5a6;">即將推出</span>
+      <span class="tool-icon">🎁</span>
+      <div class="tool-title">促銷活動規劃器</div>
+      <div class="tool-desc">組合方案設計，折扣策略，活動 ROI 計算</div>
+      <ul class="tool-features">
+        <li>組合優惠設計</li>
+        <li>折扣影響試算</li>
+        <li>活動排程提醒</li>
+        <li>成效追蹤分析</li>
+      </ul>
+    </div>
+
+    <div class="tool-card" onclick="alert('即將推出！')">
+      <span class="tool-badge" style="background: #95a5a6;">即將推出</span>
+      <span class="tool-icon">💬</span>
+      <div class="tool-title">客服回覆模板庫</div>
+      <div class="tool-desc">常見問題快速回覆，一鍵複製貼上</div>
+      <ul class="tool-features">
+        <li>分類模板管理</li>
+        <li>快速搜尋功能</li>
+        <li>一鍵複製回覆</li>
+        <li>自訂模板編輯</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <h3 style="margin-top: 0;">🚀 使用說明</h3>
+    <p style="line-height: 1.8; max-width: 800px; margin: 1em auto;">
+      所有工具完全免費使用，數據存儲在您的瀏覽器本地，隱私安全有保障。<br>
+      建議將此頁面加入書籤，方便隨時開啟使用。<br>
+      如需跨裝置使用，請定期使用各系統的「匯出」功能備份數據。
+    </p>
+    <p style="margin-top: 2em; opacity: 0.8;">
+      專為機車安全帽賣家打造 | EVO & 華泰品牌適用<br>
+      © 2025 電商管理工具組
+    </p>
+  </div>
+</div>
+
+<script>
+window.onload = function() {
+  loadQuickStats();
+};
+
+function loadQuickStats() {
+  // 從各系統讀取數據
+  try {
+    // 今日銷售
+    if (window.salesData) {
+      let today = new Date().toISOString().split('T')[0];
+      let todaySales = window.salesData.filter(s => s.date === today);
+      let todayTotal = todaySales.reduce((sum, s) => sum + s.revenue, 0);
+      document.getElementById('todaySales').textContent = '$' + todayTotal.toFixed(0);
+    } else {
+      document.getElementById('todaySales').textContent = '$0';
+    }
+    
+    // 待處理訂單
+    if (window.ordersData) {
+      let pending = window.ordersData.filter(o => o.status === 'pending').length;
+      document.getElementById('pendingOrders').textContent = pending;
+    } else {
+      document.getElementById('pendingOrders').textContent = '0';
+    }
+    
+    // 低庫存商品
+    if (window.inventoryData) {
+      let lowStock = window.inventoryData.filter(i => i.stock <= i.safeStock).length;
+      document.getElementById('lowStock').textContent = lowStock;
+    } else {
+      document.getElementById('lowStock').textContent = '0';
+    }
+    
+    // 本月利潤
+    if (window.accountingData) {
+      let now = new Date();
+      let startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      let monthRecords = window.accountingData.filter(r => new Date(r.date) >= startOfMonth);
+      let income = monthRecords.filter(r => r.type === 'income').reduce((sum, r) => sum + r.amount, 0);
+      let expense = monthRecords.filter(r => r.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
+      let profit = income - expense;
+      document.getElementById('monthProfit').textContent = '$' + profit.toFixed(0);
+    } else {
+      document.getElementById('monthProfit').textContent = '$0';
+    }
+  } catch(e) {
+    console.log('載入統計資料失敗');
+  }
+}
+
+function openTool(url) {
+  window.location.href = url;
+}
+</script>
+</body>
+</html>

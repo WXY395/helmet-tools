@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>蝦皮機車安全帽訂價系統 Pro</title>
+<style>
+* { box-sizing: border-box; }
+body { 
+  font-family: "微軟正黑體", "Segoe UI", Arial, sans-serif; 
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  margin: 0;
+  padding: 20px;
+}
+.container { 
+  max-width: 1400px; 
+  margin: 0 auto; 
+  background: #fff; 
+  padding: 2em; 
+  border-radius: 20px; 
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+  flex-wrap: wrap;
+  gap: 1em;
+  padding-bottom: 1em;
+  border-bottom: 3px solid #f39c12;
+}
+h2 { 
+  color: #2c3e50; 
+  margin: 0;
+  font-size: 1.8em;
+}
+.brand-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-left: 10px;
+}
+.btn-group {
+  display: flex;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+button { 
+  background: #3498db; 
+  color: #fff; 
+  border: none; 
+  padding: 10px 20px; 
+  border-radius: 8px; 
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+button:hover { 
+  background: #2980b9; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+button.secondary { background: #95a5a6; }
+button.secondary:hover { background: #7f8c8d; }
+button.success { background: #27ae60; }
+button.success:hover { background: #229954; }
+button.danger { background: #e74c3c; }
+button.danger:hover { background: #c0392b; }
+button.warning { background: #f39c12; }
+button.warning:hover { background: #e67e22; }
+
+.templates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1em;
+  margin-bottom: 2em;
+  padding: 1em;
+  background: linear-gradient(135deg, #fff5e6, #ffe6cc);
+  border-radius: 12px;
+  border-left: 5px solid #f39c12;
+}
+.templates h3 {
+  grid-column: 1 / -1;
+  margin: 0 0 0.5em 0;
+  color: #2c3e50;
+}
+.template-card {
+  padding: 1em;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  text-align: center;
+}
+.template-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 16px rgba(243, 156, 18, 0.3);
+  border-color: #f39c12;
+}
+.template-card .icon {
+  font-size: 2em;
+  margin-bottom: 0.3em;
+}
+.template-card .name {
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 0.3em;
+}
+.template-card .price {
+  font-size: 0.85em;
+  color: #7f8c8d;
+}
+
+label { 
+  display: block; 
+  margin-top: 1em;
+  color: #34495e;
+  font-weight: 500;
+}
+input[type="number"], input[type="text"] { 
+  padding: 8px; 
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  transition: border 0.3s;
+}
+input[type="number"]:focus, input[type="text"]:focus {
+  outline: none;
+  border-color: #f39c12;
+}
+input[type="number"] { width: 90px; }
+input[type="text"] { width: 140px; }
+
+table { 
+  border-collapse: collapse; 
+  width: 100%; 
+  margin-top: 1em;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+th { 
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  color: white;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+td { 
+  border: 1px solid #ecf0f1; 
+  padding: 10px 8px; 
+  text-align: center;
+  font-size: 0.9em;
+}
+tr:hover { background: #f8f9fa; }
+
+.combo-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #e74c3c;
+  color: white;
+  border-radius: 10px;
+  font-size: 0.75em;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.profit-indicator {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.profit-good { background: #d4edda; color: #155724; }
+.profit-fair { background: #fff3cd; color: #856404; }
+.profit-poor { background: #f8d7da; color: #721c24; }
+
+.options { 
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin: 1.5em 0;
+  padding: 1em;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+.options label { 
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+.options input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.result-section {
+  margin-top: 2em;
+  padding: 1.5em;
+  background: linear-gradient(135deg, #1e3c7215 0%, #2a529815 100%);
+  border-radius: 12px;
+  border-left: 5px solid #1e3c72;
+}
+.result { 
+  font-size: 1.3em; 
+  color: #2c3e50;
+  font-weight: bold;
+  margin: 0.5em 0;
+}
+.suggested { 
+  font-size: 1.5em; 
+  color: #27ae60;
+  font-weight: bold;
+  margin: 0.5em 0;
+}
+.warning-text {
+  color: #e74c3c;
+  font-size: 1.1em;
+  margin-top: 0.5em;
+}
+
+.competitor-analysis {
+  margin-top: 2em;
+  padding: 1.5em;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.competitor-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+  margin: 0.5em 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+.price-comparison {
+  display: flex;
+  gap: 2em;
+  align-items: center;
+}
+.price-tag {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+.price-tag.yours { background: #d4edda; color: #155724; }
+.price-tag.competitor { background: #fff3cd; color: #856404; }
+.price-tag.expensive { background: #f8d7da; color: #721c24; }
+
+.combo-section {
+  margin-top: 2em;
+  padding: 1.5em;
+  background: linear-gradient(135deg, #fff5e6, #ffe6cc);
+  border-radius: 12px;
+  border-left: 5px solid #f39c12;
+}
+.combo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1em;
+  margin-top: 1em;
+}
+.combo-card {
+  padding: 1.2em;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-top: 4px solid #f39c12;
+}
+.combo-card h4 {
+  margin-top: 0;
+  color: #2c3e50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.combo-savings {
+  background: #27ae60;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85em;
+}
+
+.supplier-section {
+  margin-top: 2em;
+  padding: 1.5em;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.supplier-comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1em;
+  margin-top: 1em;
+}
+.supplier-card {
+  padding: 1em;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+.modal-content {
+  background: white;
+  padding: 2em;
+  border-radius: 15px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: 2em;
+}
+.modal-content h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 2px solid #f39c12;
+  padding-bottom: 0.5em;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 1em; }
+  table, th, td { font-size: 12px; padding: 6px 4px; }
+  input[type="number"] { width: 70px; }
+  input[type="text"] { width: 100px; }
+  .header { flex-direction: column; align-items: stretch; }
+  .btn-group { justify-content: center; }
+  h2 { font-size: 1.4em; text-align: center; }
+  .templates { grid-template-columns: 1fr; }
+}
+
+@media print {
+  body { background: white; }
+  .btn-group, button { display: none; }
+  .container { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h2>🏍️ 蝦皮機車安全帽訂價系統</h2>
+      <span class="brand-tag">EVO</span>
+      <span class="brand-tag">華泰</span>
+    </div>
+    <div class="btn-group">
+      <button onclick="saveData()" class="success">💾 保存方案</button>
+      <button onclick="loadData()" class="warning">📂 載入方案</button>
+      <button onclick="addCompetitor()" class="secondary">🔍 新增競品</button>
+      <button onclick="window.print()" class="secondary">🖨️ 列印</button>
+    </div>
+  </div>
+
+  <div class="templates">
+    <h3>⚡ 快速套用商品模板</h3>
+    <div class="template-card" onclick="applyTemplate('full-face')">
+      <div class="icon">🪖</div>
+      <div class="name">全罩式安全帽</div>
+      <div class="price">建議售價 1200-3000</div>
+    </div>
+    <div class="template-card" onclick="applyTemplate('half-face')">
+      <div class="icon">🎽</div>
+      <div class="name">半罩式安全帽</div>
+      <div class="price">建議售價 600-1500</div>
+    </div>
+    <div class="template-card" onclick="applyTemplate('3-4-face')">
+      <div class="icon">🏍️</div>
+      <div class="name">四分之三</div>
+      <div class="price">建議售價 800-2000</div>
+    </div>
+    <div class="template-card" onclick="applyTemplate('kids')">
+      <div class="icon">👶</div>
+      <div class="name">兒童安全帽</div>
+      <div class="price">建議售價 300-800</div>
+    </div>
+    <div class="template-card" onclick="applyTemplate('lens')">
+      <div class="icon">🕶️</div>
+      <div class="name">鏡片配件</div>
+      <div class="price">平均成本 28-55</div>
+    </div>
+    <div class="template-card" onclick="applyTemplate('liner')">
+      <div class="icon">🧽</div>
+      <div class="name">內襯配件</div>
+      <div class="price">平均成本 31-42</div>
+    </div>
+  </div>
+
+  <form id="goodsForm">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">品名/型號</th>
+          <th style="width: 8%;">品牌</th>
+          <th style="width: 10%;">進貨成本</th>
+          <th style="width: 6%;">數量</th>
+          <th style="width: 8%;">包材費</th>
+          <th style="width: 8%;">處理時間</th>
+          <th style="width: 10%;">競品均價</th>
+          <th style="width: 8%;">成本小計</th>
+          <th style="width: 6%;">組合</th>
+          <th style="width: 11%;">操作</th>
+        </tr>
+      </thead>
+      <tbody id="goodsBody">
+        <tr>
+          <td><input type="text" name="name[]" placeholder="EVO 1200"></td>
+          <td>
+            <select name="brand[]" style="width: 80px; padding: 6px;">
+              <option value="EVO">EVO</option>
+              <option value="華泰">華泰</option>
+              <option value="其他">其他</option>
+            </select>
+          </td>
+          <td><input type="number" name="price[]" value="0" min="0" step="0.1"></td>
+          <td><input type="number" name="qty[]" value="1" min="1"></td>
+          <td><input type="number" name="pack[]" value="65" min="0" step="0.1"></td>
+          <td><input type="number" name="labor[]" value="5" min="0" step="0.1"></td>
+          <td><input type="number" name="competitor[]" value="0" min="0" placeholder="選填"></td>
+          <td class="subtotal"></td>
+          <td><input type="checkbox" name="combo[]" title="勾選表示為組合商品"></td>
+          <td>
+            <button type="button" onclick="copyRow(this)" class="secondary" style="padding: 6px 8px; font-size: 11px;">📋</button>
+            <button type="button" onclick="removeRow(this)" class="danger" style="padding: 6px 8px; font-size: 11px;">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <button type="button" onclick="addRow()">➕ 新增商品</button>
+    <button type="button" onclick="calculateCombo()" class="warning">🎁 計算組合優惠</button>
+  </form>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em; margin-top: 1.5em;">
+    <label>運費（元）<input type="number" id="shipping" value="60" min="0" title="參加蝦皮免運活動一般規範內尺寸"></label>
+    <label>人事時薪（元/小時）<input type="number" id="laborWage" value="200" min="1"></label>
+    <label>廣告成本（元/單）<input type="number" id="adCost" value="10" min="0" step="0.1"></label>
+    <label>目標利潤率（%）<input type="number" id="targetProfit" value="15" min="1" max="95"></label>
+  </div>
+
+  <div class="options">
+    <strong style="width: 100%; color: #2c3e50;">🎯 蝦皮費用選項</strong>
+    <label><input type="checkbox" id="promotion"> 蝦皮活動（雙11/特賣）</label>
+    <label><input type="checkbox" id="freeShipping" checked> 參加免運活動</label>
+    <label><input type="checkbox" id="preorder"> 預購商品</label>
+    <label><input type="checkbox" id="coin"> 蝦幣/回饋活動</label>
+    <label><input type="checkbox" id="tax" checked> 需開發票或營業稅</label>
+  </div>
+
+  <div class="result-section">
+    <div class="result" id="calcNet">總成本：-- 元｜估算毛利：-- 元</div>
+    <div class="suggested" id="calcSuggest">建議最低售價：-- 元</div>
+    <div id="warningText"></div>
+  </div>
+
+  <div class="competitor-analysis" id="competitorSection" style="display: none;">
+    <h3 style="color: #2c3e50; margin-top: 0;">📊 競品價格分析</h3>
+    <div id="competitorList"></div>
+  </div>
+
+  <div class="combo-section" id="comboSection" style="display: none;">
+    <h3 style="color: #2c3e50; margin-top: 0;">🎁 組合優惠方案建議</h3>
+    <div class="combo-grid" id="comboGrid"></div>
+  </div>
+
+  <div class="supplier-section">
+    <h3 style="color: #2c3e50; margin-top: 0;">📦 供應商成本分析</h3>
+    <button onclick="addSupplier()" class="success" style="margin-bottom: 1em;">➕ 新增供應商比較</button>
+    <div class="supplier-comparison" id="supplierList">
+      <p style="color: #7f8c8d;">點擊「新增供應商比較」開始記錄不同供應商的報價</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 2em; padding: 1em; background: #e8f4f8; border-radius: 10px; border-left: 4px solid #3498db;">
+    <strong>💡 安全帽業者專用提示：</strong>
+    <ul style="margin: 0.5em 0;">
+      <li><strong>包材費建議</strong>：全罩帽 65-80元（大箱+氣泡）、半罩帽 45-60元、配件 15-25元</li>
+      <li><strong>目標利潤</strong>：安全帽業界平均 15-20%，配件可提高至 25-30%</li>
+      <li><strong>競品比價</strong>：建議至少輸入 3-5 個競品價格，系統會自動分析競爭力</li>
+      <li><strong>組合銷售</strong>：勾選「組合」的商品會計算套裝優惠方案</li>
+      <li><strong>品牌定位</strong>：EVO 主打 CP 值、華泰強調安全認證，定價策略可不同</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 模態框：新增競品 -->
+<div id="competitorModal" class="modal">
+  <div class="modal-content">
+    <h3>🔍 新增競品資料</h3>
+    <label>賣家名稱：<input type="text" id="compSellerName" placeholder="例如：XX安全帽專賣" style="width: 100%;"></label>
+    <label>商品型號：<input type="text" id="compProductName" placeholder="例如：EVO 1200 全罩" style="width: 100%;"></label>
+    <label>售價：<input type="number" id="compPrice" placeholder="例如：1680" style="width: 100%;"></label>
+    <label>月銷量：<input type="number" id="compSales" placeholder="選填，例如：85" style="width: 100%;"></label>
+    <label>備註：<input type="text" id="compNotes" placeholder="例如：送鏡片" style="width: 100%;"></label>
+    <div style="margin-top: 1em; display: flex; gap: 1em;">
+      <button onclick="saveCompetitor()" class="success">確定新增</button>
+      <button onclick="closeModal('competitorModal')" class="secondary">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 模態框：新增供應商 -->
+<div id="supplierModal" class="modal">
+  <div class="modal-content">
+    <h3>📦 新增供應商報價</h3>
+    <label>供應商名稱：<input type="text" id="suppName" placeholder="例如：XX貿易" style="width: 100%;"></label>
+    <label>商品型號：<input type="text" id="suppProduct" placeholder="例如：EVO 1200" style="width: 100%;"></label>
+    <label>進貨價：<input type="number" id="suppPrice" placeholder="例如：850" style="width: 100%;"></label>
+    <label>最低訂購量：<input type="number" id="suppMOQ" placeholder="例如：10" style="width: 100%;"></label>
+    <label>付款條件：<input type="text" id="suppPayment" placeholder="例如：貨到付款" style="width: 100%;"></label>
+    <div style="margin-top: 1em; display: flex; gap: 1em;">
+      <button onclick="saveSupplier()" class="success">確定新增</button>
+      <button onclick="closeModal('supplierModal')" class="secondary">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 模態框：保存/載入方案 -->
+<div id="saveModal" class="modal">
+  <div class="modal-content">
+    <h3>💾 保存定價方案</h3>
+    <label>方案名稱：<input type="text" id="saveName" placeholder="例如：2025春季全罩帽組" style="width: 100%;"></label>
+    <div style="margin-top: 1em; display: flex; gap: 1em;">
+      <button onclick="confirmSave()" class="success">確定保存</button>
+      <button onclick="closeModal('saveModal')" class="secondary">取消</button>
+    </div>
+  </div>
+</div>
+
+<div id="loadModal" class="modal">
+  <div class="modal-content">
+    <h3>📂 載入定價方案</h3>
+    <div id="savedSchemes"></div>
+    <button onclick="closeModal('loadModal')" class="secondary" style="margin-top: 1em;">關閉</button>
+  </div>
+</div>
+
+<script>
+// ========== 全局變數 ==========
+let competitors = [];
+let suppliers = [];
+let savedSchemes = {};
+
+// ========== 初始化 ==========
+window.onload = function() {
+  loadFromMemory();
+  loadCompetitors();
+  loadSuppliers();
+  calcAll();
+  attachEvents();
+};
+
+function attachEvents() {
+  document.querySelectorAll('#goodsForm input, #goodsForm select, #shipping, #laborWage, #adCost, #targetProfit').forEach(el => {
+    el.removeEventListener('input', handleInput);
+    el.addEventListener('input', handleInput);
+  });
+  document.querySelectorAll('.options input[type="checkbox"]').forEach(el => {
+    el.removeEventListener('change', handleInput);
+    el.addEventListener('change', handleInput);
+  });
+}
+
+function handleInput() {
+  calcAll();
+  saveToMemory();
+}
+
+// ========== 模板應用 ==========
+const templates = {
+  'full-face': { 
+    name: 'EVO 全罩式', brand: 'EVO', price: 900, pack: 75, labor: 5, 
+    competitor: 1680, desc: '全罩安全帽，保護性最佳'
+  },
+  'half-face': { 
+    name: 'EVO 半罩式', brand: 'EVO', price: 500, pack: 50, labor: 4, 
+    competitor: 980, desc: '半罩安全帽，輕便舒適'
+  },
+  '3-4-face': { 
+    name: 'EVO 3/4罩', brand: 'EVO', price: 650, pack: 60, labor: 4.5, 
+    competitor: 1280, desc: '四分之三安全帽，平衡款'
+  },
+  'kids': { 
+    name: '華泰兒童帽', brand: '華泰', price: 350, pack: 40, labor: 4, 
+    competitor: 680, desc: '兒童專用，小頭圍'
+  },
+  'lens': { 
+    name: '防霧鏡片', brand: '其他', price: 42, pack: 12, labor: 2, 
+    competitor: 120, desc: '通用鏡片配件'
+  },
+  'liner': { 
+    name: '替換內襯', brand: '其他', price: 33, pack: 10, labor: 2, 
+    competitor: 90, desc: '可水洗內襯'
+  }
+};
+
+function applyTemplate(type) {
+  let t = templates[type];
+  if (!t) return;
+  
+  addRow();
+  let rows = document.querySelectorAll("#goodsBody tr");
+  let lastRow = rows[rows.length - 1];
+  
+  lastRow.querySelector('input[name="name[]"]').value = t.name;
+  lastRow.querySelector('select[name="brand[]"]').value = t.brand;
+  lastRow.querySelector('input[name="price[]"]').value = t.price;
+  lastRow.querySelector('input[name="pack[]"]').value = t.pack;
+  lastRow.querySelector('input[name="labor[]"]').value = t.labor;
+  lastRow.querySelector('input[name="competitor[]"]').value = t.competitor;
+  
+  calcAll();
+}
+
+// ========== 行操作 ==========
+function addRow() {
+  let row = `<tr>
+    <td><input type="text" name="name[]" placeholder="商品型號"></td>
+    <td>
+      <select name="brand[]" style="width: 80px; padding: 6px;">
+        <option value="EVO">EVO</option>
+        <option value="華泰">華泰</option>
+        <option value="其他">其他</option>
+      </select>
+    </td>
+    <td><input type="number" name="price[]" value="0" min="0" step="0.1"></td>
+    <td><input type="number" name="qty[]" value="1" min="1"></td>
+    <td><input type="number" name="pack[]" value="65" min="0" step="0.1"></td>
+    <td><input type="

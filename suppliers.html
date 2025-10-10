@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>供應商管理系統</title>
+<style>
+* { box-sizing: border-box; }
+body { 
+  font-family: "微軟正黑體", Arial, sans-serif;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  margin: 0;
+  padding: 20px;
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  padding: 2em;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 3px solid #4facfe;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+h2 { color: #2c3e50; margin: 0; }
+.supplier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5em;
+  margin-bottom: 2em;
+}
+.supplier-card {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5em;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-left: 5px solid #4facfe;
+  transition: all 0.3s;
+}
+.supplier-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+}
+.supplier-card.best {
+  border-left-color: #27ae60;
+  background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
+}
+.supplier-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1em;
+}
+.supplier-name {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #2c3e50;
+}
+.best-badge {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.85em;
+  font-weight: bold;
+}
+.rating {
+  display: flex;
+  gap: 0.3em;
+  margin: 0.5em 0;
+}
+.star {
+  color: #f39c12;
+  font-size: 1.2em;
+}
+.supplier-info {
+  margin: 0.8em 0;
+  padding: 0.8em;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5em 0;
+  font-size: 0.95em;
+}
+.info-label {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+.info-value {
+  color: #2c3e50;
+  font-weight: bold;
+}
+.product-list {
+  margin-top: 1em;
+  padding-top: 1em;
+  border-top: 1px solid #dee2e6;
+}
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5em;
+  background: #fff;
+  border-radius: 6px;
+  margin: 0.3em 0;
+  border-left: 3px solid #4facfe;
+}
+.product-name {
+  color: #2c3e50;
+  font-weight: 500;
+}
+.product-price {
+  color: #27ae60;
+  font-weight: bold;
+}
+.supplier-actions {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 1em;
+  flex-wrap: wrap;
+}
+button {
+  background: #4facfe;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9em;
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+button.success { background: #27ae60; }
+button.warning { background: #f39c12; }
+button.danger { background: #e74c3c; }
+button.info { background: #3498db; }
+.comparison-section {
+  background: #f8f9fa;
+  padding: 1.5em;
+  border-radius: 15px;
+  margin-bottom: 2em;
+}
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.comparison-table th {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+}
+.comparison-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+.comparison-table tr:hover {
+  background: #f8f9fa;
+}
+.price-best {
+  background: #d4edda;
+  color: #155724;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+.modal-content {
+  background: white;
+  padding: 2em;
+  border-radius: 15px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 2em;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 0.5em 0;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #4facfe;
+}
+.quick-add {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 100;
+}
+.quick-add:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+}
+@media (max-width: 768px) {
+  .container { padding: 1em; }
+  .supplier-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2>🏢 供應商管理系統</h2>
+    <div style="display: flex; gap: 0.5em; flex-wrap: wrap;">
+      <button onclick="showComparison()" class="info">📊 價格比較</button>
+      <button onclick="exportSuppliers()" class="warning">📄 匯出資料</button>
+      <button onclick="window.location.href='index.html'">🏠 返回首頁</button>
+    </div>
+  </div>
+
+  <div id="suppliersList">
+    <div style="text-align: center; color: #7f8c8d; padding: 3em;">
+      <div style="font-size: 3em; margin-bottom: 0.5em;">🏢</div>
+      目前沒有供應商資料<br>點擊右下角「➕」新增第一個供應商
+    </div>
+  </div>
+
+  <div id="comparisonSection" style="display: none;" class="comparison-section">
+    <h3 style="color: #2c3e50; margin-top: 0;">📊 同商品價格比較</h3>
+    <div id="comparisonContent"></div>
+  </div>
+</div>
+
+<div class="quick-add" onclick="showAddSupplier()" title="新增供應商">➕</div>
+
+<!-- 新增供應商 Modal -->
+<div id="supplierModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">新增供應商</h3>
+    <input type="hidden" id="supplierId">
+    
+    <label>供應商名稱：</label>
+    <input type="text" id="supplierName" placeholder="例如：XX貿易公司">
+    
+    <label>聯絡人：</label>
+    <input type="text" id="contactPerson" placeholder="例如：王經理">
+    
+    <label>聯絡電話：</label>
+    <input type="tel" id="contactPhone" placeholder="例如：0912-345-678">
+    
+    <label>電子信箱：</label>
+    <input type="email" id="contactEmail" placeholder="選填">
+    
+    <label>地址：</label>
+    <textarea id="supplierAddress" rows="2" placeholder="選填"></textarea>
+    
+    <label>付款條件：</label>
+    <select id="paymentTerms">
+      <option value="貨到付款">貨到付款</option>
+      <option value="月結30天">月結30天</option>
+      <option value="月結60天">月結60天</option>
+      <option value="預付款">預付款</option>
+      <option value="其他">其他</option>
+    </select>
+    
+    <label>最低訂購量：</label>
+    <input type="number" id="minOrder" value="1" min="1">
+    
+    <label>評分（1-5星）：</label>
+    <select id="supplierRating">
+      <option value="5">⭐⭐⭐⭐⭐ 非常好</option>
+      <option value="4">⭐⭐⭐⭐ 很好</option>
+      <option value="3" selected>⭐⭐⭐ 普通</option>
+      <option value="2">⭐⭐ 不太好</option>
+      <option value="1">⭐ 差</option>
+    </select>
+    
+    <label>備註：</label>
+    <textarea id="supplierNotes" rows="2" placeholder="例如：品質穩定、交貨準時"></textarea>
+    
+    <div style="margin-top: 1.5em; display: flex; gap: 1em;">
+      <button onclick="saveSupplier()" class="success">💾 保存</button>
+      <button onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增商品報價 Modal -->
+<div id="productModal" class="modal">
+  <div class="modal-content">
+    <h3>新增商品報價</h3>
+    <input type="hidden" id="productSupplierId">
+    
+    <label>商品名稱/型號：</label>
+    <input type="text" id="productName" placeholder="例如：EVO 全罩安全帽">
+    
+    <label>進貨單價（元）：</label>
+    <input type="number" id="productPrice" value="0" min="0" step="0.1">
+    
+    <label>報價日期：</label>
+    <input type="date" id="quoteDate">
+    
+    <label>備註：</label>
+    <input type="text" id="productNote" placeholder="選填">
+    
+    <div style="margin-top: 1.5em; display: flex; gap: 1em;">
+      <button onclick="saveProduct()" class="success">💾 保存</button>
+      <button onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let suppliers = [];
+
+window.onload = function() {
+  loadSuppliers();
+  renderSuppliers();
+  document.getElementById('quoteDate').valueAsDate = new Date();
+};
+
+function loadSuppliers() {
+  try {
+    if (window.suppliersFullData) {
+      suppliers = window.suppliersFullData;
+    }
+  } catch(e) {
+    console.log('載入供應商資料失敗');
+  }
+}
+
+function saveSuppliers() {
+  try {
+    window.suppliersFullData = suppliers;
+  } catch(e) {
+    console.log('保存供應商資料失敗');
+  }
+}
+
+function showAddSupplier() {
+  document.getElementById('modalTitle').textContent = '新增供應商';
+  document.getElementById('supplierId').value = '';
+  document.getElementById('supplierName').value = '';
+  document.getElementById('contactPerson').value = '';
+  document.getElementById('contactPhone').value = '';
+  document.getElementById('contactEmail').value = '';
+  document.getElementById('supplierAddress').value = '';
+  document.getElementById('paymentTerms').value = '貨到付款';
+  document.getElementById('minOrder').value = '1';
+  document.getElementById('supplierRating').value = '3';
+  document.getElementById('supplierNotes').value = '';
+  document.getElementById('supplierModal').style.display = 'flex';
+}
+
+function saveSupplier() {
+  let id = document.getElementById('supplierId').value;
+  let name = document.getElementById('supplierName').value.trim();
+  
+  if (!name) {
+    alert('請輸入供應商名稱！');
+    return;
+  }
+  
+  let supplier = {
+    id: id || Date.now().toString(),
+    name: name,
+    contactPerson: document.getElementById('contactPerson').value.trim(),
+    contactPhone: document.getElementById('contactPhone').value.trim(),
+    contactEmail: document.getElementById('contactEmail').value.trim(),
+    address: document.getElementById('supplierAddress').value.trim(),
+    paymentTerms: document.getElementById('paymentTerms').value,
+    minOrder: parseInt(document.getElementById('minOrder').value) || 1,
+    rating: parseInt(document.getElementById('supplierRating').value) || 3,
+    notes: document.getElementById('supplierNotes').value.trim(),
+    products: id ? suppliers.find(s => s.id === id).products : [],
+    createdAt: id ? suppliers.find(s => s.id === id).createdAt : new Date().toISOString()
+  };
+  
+  if (id) {
+    let index = suppliers.findIndex(s => s.id === id);
+    suppliers[index] = supplier;
+  } else {
+    suppliers.push(supplier);
+  }
+  
+  saveSuppliers();
+  renderSuppliers();
+  closeModal();
+  alert('✅ 供應商資料已保存！');
+}
+
+function editSupplier(id) {
+  let supplier = suppliers.find(s => s.id === id);
+  if (!supplier) return;
+  
+  document.getElementById('modalTitle').textContent = '編輯供應商';
+  document.getElementById('supplierId').value = supplier.id;
+  document.getElementById('supplierName').value = supplier.name;
+  document.getElementById('contactPerson').value = supplier.contactPerson;
+  document.getElementById('contactPhone').value = supplier.contactPhone;
+  document.getElementById('contactEmail').value = supplier.contactEmail;
+  document.getElementById('supplierAddress').value = supplier.address;
+  document.getElementById('paymentTerms').value = supplier.paymentTerms;
+  document.getElementById('minOrder').value = supplier.minOrder;
+  document.getElementById('supplierRating').value = supplier.rating;
+  document.getElementById('supplierNotes').value = supplier.notes;
+  document.getElementById('supplierModal').style.display = 'flex';
+}
+
+function deleteSupplier(id) {
+  let supplier = suppliers.find(s => s.id === id);
+  if (!supplier) return;
+  
+  if (confirm(`確定要刪除供應商「${supplier.name}」嗎？\n\n此操作會同時刪除該供應商的所有商品報價，無法復原！`)) {
+    suppliers = suppliers.filter(s => s.id !== id);
+    saveSuppliers();
+    renderSuppliers();
+    alert('✅ 供應商已刪除');
+  }
+}
+
+function showAddProduct(supplierId) {
+  document.getElementById('productSupplierId').value = supplierId;
+  document.getElementById('productName').value = '';
+  document.getElementById('productPrice').value = '0';
+  document.getElementById('quoteDate').valueAsDate = new Date();
+  document.getElementById('productNote').value = '';
+  document.getElementById('productModal').style.display = 'flex';
+}
+
+function saveProduct() {
+  let supplierId = document.getElementById('productSupplierId').value;
+  let supplier = suppliers.find(s => s.id === supplierId);
+  if (!supplier) return;
+  
+  let productName = document.getElementById('productName').value.trim();
+  let productPrice = parseFloat(document.getElementById('productPrice').value) || 0;
+  
+  if (!productName) {
+    alert('請輸入商品名稱！');
+    return;
+  }
+  
+  if (productPrice <= 0) {
+    alert('請輸入有效的價格！');
+    return;
+  }
+  
+  if (!supplier.products) {
+    supplier.products = [];
+  }
+  
+  supplier.products.push({
+    id: Date.now().toString(),
+    name: productName,
+    price: productPrice,
+    quoteDate: document.getElementById('quoteDate').value,
+    note: document.getElementById('productNote').value.trim()
+  });
+  
+  saveSuppliers();
+  renderSuppliers();
+  closeModal();
+  alert('✅ 商品報價已新增！');
+}
+
+function deleteProduct(supplierId, productId) {
+  let supplier = suppliers.find(s => s.id === supplierId);
+  if (!supplier) return;
+  
+  if (confirm('確定要刪除這個商品報價嗎？')) {
+    supplier.products = supplier.products.filter(p => p.id !== productId);
+    saveSuppliers();
+    renderSuppliers();
+    alert('✅ 商品報價已刪除');
+  }
+}
+
+function renderSuppliers() {
+  if (suppliers.length === 0) {
+    document.getElementById('suppliersList').innerHTML = `
+      <div style="text-align: center; color: #7f8c8d; padding: 3em;">
+        <div style="font-size: 3em; margin-bottom: 0.5em;">🏢</div>
+        目前沒有供應商資料<br>點擊右下角「➕」新增第一個供應商
+      </div>
+    `;
+    return;
+  }
+  
+  // 找出每個商品的最低價供應商
+  let productPrices = {};
+  suppliers.forEach(supplier => {
+    if (supplier.products) {
+      supplier.products.forEach(product => {
+        if (!productPrices[product.name] || product.price < productPrices[product.name].price) {
+          productPrices[product.name] = {
+            price: product.price,
+            supplierId: supplier.id
+          };
+        }
+      });
+    }
+  });
+  
+  let html = '<div class="supplier-grid">';
+  
+  suppliers.forEach(supplier => {
+    let isBest = false;
+    let bestCount = 0;
+    
+    if (supplier.products) {
+      supplier.products.forEach(product => {
+        if (productPrices[product.name] && productPrices[product.name].supplierId === supplier.id) {
+          bestCount++;
+        }
+      });
+      if (bestCount > 0 && supplier.products.length > 0) {
+        isBest = true;
+      }
+    }
+    
+    let stars = '';
+    for (let i = 0; i < 5; i++) {
+      stars += i < supplier.rating ? '<span class="star">⭐</span>' : '<span class="star" style="opacity:0.3">⭐</span>';
+    }
+    
+    let productsHtml = '';
+    if (supplier.products && supplier.products.length > 0) {
+      productsHtml = '<div class="product-list"><strong style="color: #2c3e50;">商品報價：</strong>';
+      supplier.products.forEach(product => {
+        let isCheapest = productPrices[product.name] && productPrices[product.name].supplierId === supplier.id;
+        productsHtml += `
+          <div class="product-item" ${isCheapest ? 'style="border-left-color: #27ae60; background: #d4edda;"' : ''}>
+            <span class="product-name">${product.name} ${isCheapest ? '🏆' : ''}</span>
+            <div>
+              <span class="product-price">$${product.price}</span>
+              <button onclick="deleteProduct('${supplier.id}', '${product.id}')" class="danger" style="padding: 2px 6px; font-size: 0.8em; margin-left: 0.5em;">🗑️</button>
+            </div>
+          </div>
+        `;
+      });
+      productsHtml += '</div>';
+    }
+    
+    html += `
+      <div class="supplier-card ${isBest ? 'best' : ''}">
+        <div class="supplier-header">
+          <div class="supplier-name">${supplier.name}</div>
+          ${isBest ? `<span class="best-badge">🏆 最佳 ${bestCount} 項</span>` : ''}
+        </div>
+        
+        <div class="rating">${stars}</div>
+        
+        <div class="supplier-info">
+          ${supplier.contactPerson ? `<div class="info-row"><span class="info-label">聯絡人：</span><span class="info-value">${supplier.contactPerson}</span></div>` : ''}
+          ${supplier.contactPhone ? `<div class="info-row"><span class="info-label">電話：</span><span class="info-value">${supplier.contactPhone}</span></div>` : ''}
+          <div class="info-row"><span class="info-label">付款條件：</span><span class="info-value">${supplier.paymentTerms}</span></div>
+          <div class="info-row"><span class="info-label">最低訂購：</span><span class="info-value">${supplier.minOrder} 件</span></div>
+        </div>
+        
+        ${supplier.notes ? `<div style="margin-top: 0.8em; padding: 0.8em; background: #fff3cd; border-radius: 6px; font-size: 0.9em; color: #856404;">💡 ${supplier.notes}</div>` : ''}
+        
+        ${productsHtml}
+        
+        <div class="supplier-actions">
+          <button onclick="showAddProduct('${supplier.id}')" class="success">➕ 新增報價</button>
+          <button onclick="editSupplier('${supplier.id}')" class="warning">✏️ 編輯</button>
+          <button onclick="deleteSupplier('${supplier.id}')" class="danger">🗑️ 刪除</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  document.getElementById('suppliersList').innerHTML = html;
+}
+
+function showComparison() {
+  let productMap = {};
+  
+  suppliers.forEach(supplier => {
+    if (supplier.products) {
+      supplier.products.forEach(product => {
+        if (!productMap[product.name]) {
+          productMap[product.name] = [];
+        }
+        productMap[product.name].push({
+          supplier: supplier.name,
+          price: product.price,
+          quoteDate: product.quoteDate,
+          note: product.note
+        });
+      });
+    }
+  });
+  
+  if (Object.keys(productMap).length === 0) {
+    alert('目前沒有商品報價可以比較！');
+    return;
+  }
+  
+  let html = '';
+  
+  for (let productName in productMap) {
+    let quotes = productMap[productName];
+    quotes.sort((a, b) => a.price - b.price);
+    let minPrice = quotes[0].price;
+    
+    html += `
+      <h4 style="color: #2c3e50; margin-top: 1.5em;">${productName}</h4>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>供應商</th>
+            <th>報價</th>
+            <th>報價日期</th>
+            <th>備註</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    quotes.forEach(quote => {
+      html += `
+        <tr>
+          <td><strong>${quote.supplier}</strong></td>
+          <td><span class="${quote.price === minPrice ? 'price-best' : ''}" style="font-size: 1.1em;">$${quote.price}</span> ${quote.price === minPrice ? '🏆' : ''}</td>
+          <td>${quote.quoteDate}</td>
+          <td style="color: #7f8c8d;">${quote.note || '-'}</td>
+        </tr>
+      `;
+    });
+    
+    html += '</tbody></table>';
+  }
+  
+  document.getElementById('comparisonContent').innerHTML = html;
+  document.getElementById('comparisonSection').style.display = 'block';
+  document.getElementById('comparisonSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function exportSuppliers() {
+  if (suppliers.length === 0) {
+    alert('目前沒有供應商資料可以匯出！');
+    return;
+  }
+  
+  let csv = '供應商名稱,聯絡人,聯絡電話,電子信箱,地址,付款條件,最低訂購量,評分,備註\n';
+  
+  suppliers.forEach(supplier => {
+    csv += `"${supplier.name}","${supplier.contactPerson}","${supplier.contactPhone}","${supplier.contactEmail}","${supplier.address}","${supplier.paymentTerms}",${supplier.minOrder},${supplier.rating},"${supplier.notes}"\n`;
+  });
+  
+  let blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '供應商資料_' + new Date().toLocaleDateString('zh-TW') + '.csv';
+  link.click();
+  
+  alert('✅ 供應商資料已匯出！');
+}
+
+function closeModal() {
+  document.getElementById('supplierModal').style.display = 'none';
+  document.getElementById('productModal').style.display = 'none';
+}
+
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+});
+</script>
+</body>
+</html>
