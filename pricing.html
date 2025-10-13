@@ -583,6 +583,81 @@ tr:hover { background: #f8f9fa; }
       <li><strong>品牌定位</strong>：EVO 主打 CP 值、華泰強調安全認證，定價策略可不同</li>
     </ul>
   </div>
+
+  <!-- 反推售價分析器 -->
+  <div style="margin-top: 2em; padding: 2em; background: linear-gradient(135deg, #ffeaa7, #fdcb6e); border-radius: 15px; border-left: 5px solid #f39c12;">
+    <h3 style="margin-top: 0; color: #2c3e50; display: flex; align-items: center; gap: 0.5em;">
+      🔄 反推售價分析器
+      <span style="font-size: 0.7em; background: #e74c3c; color: white; padding: 4px 10px; border-radius: 15px;">超實用！</span>
+    </h3>
+    <p style="color: #7f8c8d; margin-bottom: 1.5em;">
+      已知競品售價，想知道如果跟著賣能賺多少？輸入售價立即分析！
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1em; margin-bottom: 1em;">
+      <div>
+        <label style="color: #2c3e50; font-weight: bold;">🏷️ 假設售價（元）</label>
+        <input type="number" id="reversePrice" placeholder="例如：1500" 
+               style="width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #f39c12; border-radius: 8px;"
+               oninput="reverseCalculate()">
+      </div>
+      <div>
+        <label style="color: #2c3e50; font-weight: bold;">💰 使用上方成本</label>
+        <div style="padding: 12px; background: white; border-radius: 8px; font-size: 1.1em; font-weight: bold; color: #2c3e50; border: 2px solid #ddd;">
+          <span id="displayTotalCost">計算中...</span>
+        </div>
+      </div>
+      <div>
+        <label style="color: #2c3e50; font-weight: bold;">📦 使用上方運費</label>
+        <div style="padding: 12px; background: white; border-radius: 8px; font-size: 1.1em; font-weight: bold; color: #2c3e50; border: 2px solid #ddd;">
+          <span id="displayShipping">60</span> 元
+        </div>
+      </div>
+    </div>
+
+    <div id="reverseResult" style="display: none; background: white; padding: 1.5em; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <h4 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #f39c12; padding-bottom: 0.5em;">📊 獲利分析結果</h4>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em; margin-top: 1em;">
+        <div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 1.2em; border-radius: 10px; text-align: center;">
+          <div style="font-size: 0.9em; opacity: 0.9;">蝦皮扣款後淨收</div>
+          <div style="font-size: 2em; font-weight: bold; margin: 0.3em 0;" id="reverseNetIncome">$0</div>
+          <div style="font-size: 0.85em; opacity: 0.9;">實際拿到的錢</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #55efc4, #00b894); color: white; padding: 1.2em; border-radius: 10px; text-align: center;">
+          <div style="font-size: 0.9em; opacity: 0.9;">毛利潤</div>
+          <div style="font-size: 2em; font-weight: bold; margin: 0.3em 0;" id="reverseGrossProfit">$0</div>
+          <div style="font-size: 0.85em; opacity: 0.9;">淨收 - 成本</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 1.2em; border-radius: 10px; text-align: center;">
+          <div style="font-size: 0.9em; opacity: 0.9;">毛利率</div>
+          <div style="font-size: 2em; font-weight: bold; margin: 0.3em 0;" id="reverseGrossRate">0%</div>
+          <div style="font-size: 0.85em; opacity: 0.9;">利潤 ÷ 售價</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: white; padding: 1.2em; border-radius: 10px; text-align: center;">
+          <div style="font-size: 0.9em; opacity: 0.9;">投資報酬率</div>
+          <div style="font-size: 2em; font-weight: bold; margin: 0.3em 0;" id="reverseROI">0%</div>
+          <div style="font-size: 0.85em; opacity: 0.9;">利潤 ÷ 成本</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5em; padding: 1em; border-radius: 8px;" id="reverseSuggestion">
+      </div>
+
+      <div style="margin-top: 1em; padding: 1em; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db;">
+        <strong style="color: #2c3e50;">💡 詳細說明：</strong>
+        <div style="margin-top: 0.5em; color: #7f8c8d; font-size: 0.95em;" id="reverseBreakdown"></div>
+      </div>
+    </div>
+
+    <div id="reversePlaceholder" style="text-align: center; padding: 2em; color: #7f8c8d;">
+      <div style="font-size: 3em; margin-bottom: 0.3em;">🔍</div>
+      <p>輸入售價後立即顯示獲利分析</p>
+    </div>
+  </div>
 </div>
 
 <!-- 模態框：新增競品 -->
