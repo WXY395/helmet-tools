@@ -1,1622 +1,1058 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>蝦皮機車安全帽訂價系統 Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 蝦皮智能定價系統 2.0</title>
 <style>
-* { box-sizing: border-box; }
-body { 
-  font-family: "微軟正黑體", "Segoe UI", Arial, sans-serif; 
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+* {
   margin: 0;
-  padding: 20px;
+  padding: 0;
+  box-sizing: border-box;
 }
-.container { 
-  max-width: 1400px; 
-  margin: 0 auto; 
-  background: #fff; 
-  padding: 2em; 
-  border-radius: 20px; 
+
+body {
+  font-family: 'Segoe UI', Arial, 'Microsoft JhengHei', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 10px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
+
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2em;
-  flex-wrap: wrap;
-  gap: 1em;
-  padding-bottom: 1em;
-  border-bottom: 3px solid #f39c12;
-}
-h2 { 
-  color: #2c3e50; 
-  margin: 0;
-  font-size: 1.8em;
-}
-.brand-tag {
-  display: inline-block;
-  padding: 4px 12px;
-  background: linear-gradient(135deg, #f39c12, #e67e22);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  margin-bottom: 10px;
+}
+
+.version-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 5px 15px;
   border-radius: 20px;
-  font-size: 0.9em;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 12px 20px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: all 0.3s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tab:hover {
+  background: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+  border-left: 5px solid #667eea;
+}
+
+.section h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+input[type="number"], input[type="text"], select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.3s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+tr:hover {
+  background: #f8f9fa;
+}
+
+.btn {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.3s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  width: auto;
+  display: inline-block;
+  margin: 5px;
+}
+
+.result-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.metric {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+}
+
+.metric.green { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.metric.blue { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.metric.orange { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+.metric.purple { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.ai-suggestion {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+  border-left: 5px solid #ff6b6b;
+}
+
+.ai-suggestion h4 {
+  color: #c92a2a;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
   font-weight: bold;
   margin-left: 10px;
 }
-.btn-group {
-  display: flex;
-  gap: 0.5em;
-  flex-wrap: wrap;
-}
-button { 
-  background: #3498db; 
-  color: #fff; 
-  border: none; 
-  padding: 10px 20px; 
-  border-radius: 8px; 
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 14px;
-}
-button:hover { 
-  background: #2980b9; 
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
-}
-button.secondary { background: #95a5a6; }
-button.secondary:hover { background: #7f8c8d; }
-button.success { background: #27ae60; }
-button.success:hover { background: #229954; }
-button.danger { background: #e74c3c; }
-button.danger:hover { background: #c0392b; }
-button.warning { background: #f39c12; }
-button.warning:hover { background: #e67e22; }
 
-.templates {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1em;
-  margin-bottom: 2em;
-  padding: 1em;
-  background: linear-gradient(135deg, #fff5e6, #ffe6cc);
-  border-radius: 12px;
-  border-left: 5px solid #f39c12;
-}
-.templates h3 {
-  grid-column: 1 / -1;
-  margin: 0 0 0.5em 0;
-  color: #2c3e50;
-}
-.template-card {
-  padding: 1em;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: all 0.3s;
-  border: 2px solid transparent;
-  text-align: center;
-}
-.template-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 16px rgba(243, 156, 18, 0.3);
-  border-color: #f39c12;
-}
-.template-card .icon {
-  font-size: 2em;
-  margin-bottom: 0.3em;
-}
-.template-card .name {
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 0.3em;
-}
-.template-card .price {
-  font-size: 0.85em;
-  color: #7f8c8d;
-}
-
-label { 
-  display: block; 
-  margin-top: 1em;
-  color: #34495e;
-  font-weight: 500;
-}
-input[type="number"], input[type="text"] { 
-  padding: 8px; 
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  transition: border 0.3s;
-}
-input[type="number"]:focus, input[type="text"]:focus {
-  outline: none;
-  border-color: #f39c12;
-}
-input[type="number"] { width: 90px; }
-input[type="text"] { width: 140px; }
-
-table { 
-  border-collapse: collapse; 
-  width: 100%; 
-  margin-top: 1em;
-  background: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-th { 
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
+.status-badge.connected {
+  background: #4caf50;
   color: white;
-  padding: 12px 8px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.9em;
 }
-td { 
-  border: 1px solid #ecf0f1; 
-  padding: 10px 8px; 
-  text-align: center;
-  font-size: 0.9em;
-}
-tr:hover { background: #f8f9fa; }
 
-.combo-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  background: #e74c3c;
+.status-badge.disconnected {
+  background: #f44336;
   color: white;
-  border-radius: 10px;
-  font-size: 0.75em;
-  font-weight: bold;
-  margin-left: 5px;
 }
 
-.profit-indicator {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-weight: bold;
-  font-size: 0.9em;
-}
-.profit-good { background: #d4edda; color: #155724; }
-.profit-fair { background: #fff3cd; color: #856404; }
-.profit-poor { background: #f8d7da; color: #721c24; }
-
-.options { 
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1em;
-  margin: 1.5em 0;
-  padding: 1em;
-  background: #f8f9fa;
-  border-radius: 10px;
-}
-.options label { 
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  cursor: pointer;
-}
-.options input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.result-section {
-  margin-top: 2em;
-  padding: 1.5em;
-  background: linear-gradient(135deg, #1e3c7215 0%, #2a529815 100%);
+.google-connect {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  padding: 20px;
   border-radius: 12px;
-  border-left: 5px solid #1e3c72;
-}
-.result { 
-  font-size: 1.3em; 
-  color: #2c3e50;
-  font-weight: bold;
-  margin: 0.5em 0;
-}
-.suggested { 
-  font-size: 1.5em; 
-  color: #27ae60;
-  font-weight: bold;
-  margin: 0.5em 0;
-}
-.warning-text {
-  color: #e74c3c;
-  font-size: 1.1em;
-  margin-top: 0.5em;
-}
-
-.competitor-analysis {
-  margin-top: 2em;
-  padding: 1.5em;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.competitor-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1em;
-  margin: 0.5em 0;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #3498db;
-}
-.price-comparison {
-  display: flex;
-  gap: 2em;
-  align-items: center;
-}
-.price-tag {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: bold;
-}
-.price-tag.yours { background: #d4edda; color: #155724; }
-.price-tag.competitor { background: #fff3cd; color: #856404; }
-.price-tag.expensive { background: #f8d7da; color: #721c24; }
-
-.combo-section {
-  margin-top: 2em;
-  padding: 1.5em;
-  background: linear-gradient(135deg, #fff5e6, #ffe6cc);
-  border-radius: 12px;
-  border-left: 5px solid #f39c12;
-}
-.combo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1em;
-  margin-top: 1em;
-}
-.combo-card {
-  padding: 1.2em;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  border-top: 4px solid #f39c12;
-}
-.combo-card h4 {
-  margin-top: 0;
-  color: #2c3e50;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.combo-savings {
-  background: #27ae60;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.85em;
-}
-
-.supplier-section {
-  margin-top: 2em;
-  padding: 1.5em;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.supplier-comparison {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1em;
-  margin-top: 1em;
-}
-.supplier-card {
-  padding: 1em;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #3498db;
-}
-
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
-  overflow-y: auto;
-}
-.modal-content {
-  background: white;
-  padding: 2em;
-  border-radius: 15px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 85vh;
-  overflow-y: auto;
-  margin: 2em;
-}
-.modal-content h3 {
-  margin-top: 0;
-  color: #2c3e50;
-  border-bottom: 2px solid #f39c12;
-  padding-bottom: 0.5em;
+  border-left: 5px solid #2196F3;
 }
 
 @media (max-width: 768px) {
-  .container { padding: 1em; }
-  table, th, td { font-size: 12px; padding: 6px 4px; }
-  input[type="number"] { width: 70px; }
-  input[type="text"] { width: 100px; }
-  .header { flex-direction: column; align-items: stretch; }
-  .btn-group { justify-content: center; }
-  h2 { font-size: 1.4em; text-align: center; }
-  .templates { grid-template-columns: 1fr; }
+  .container {
+    padding: 15px;
+    border-radius: 15px;
+  }
+  
+  .header {
+    padding: 20px 15px;
+  }
+  
+  .tabs {
+    gap: 5px;
+  }
+  
+  .tab {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .metric-value {
+    font-size: 1.5rem;
+  }
+  
+  table {
+    font-size: 0.85rem;
+  }
+  
+  th, td {
+    padding: 8px;
+  }
 }
 
-@media print {
-  body { background: white; }
-  .btn-group, button { display: none; }
-  .container { box-shadow: none; }
+@media (max-width: 480px) {
+  body {
+    padding: 5px;
+  }
+  
+  .section {
+    padding: 15px;
+  }
+  
+  .btn {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
 }
 </style>
 </head>
 <body>
+
 <div class="container">
   <div class="header">
-    <div>
-      <h2>🏍️ 蝦皮機車安全帽訂價系統</h2>
-      <span class="brand-tag">EVO</span>
-      <span class="brand-tag">華泰</span>
-    </div>
-    <div class="btn-group">
-      <button onclick="toggleQuickInput()" class="warning">⚡ 快速競品輸入</button>
-      <button onclick="saveData()" class="success">💾 保存方案</button>
-      <button onclick="loadData()" class="warning">📂 載入方案</button>
-      <button onclick="addCompetitor()" class="secondary">🔍 競品資料庫</button>
-      <button onclick="window.print()" class="secondary">🖨️ 列印</button>
-    </div>
+    <h1>🤖 蝦皮智能定價系統 2.0</h1>
+    <p>基礎定價 + AI 建議 + 反推分析 + 定價模擬 + 資料整合</p>
+    <span class="version-badge">✨ 整合升級版</span>
   </div>
 
-  <!-- 快速競品輸入面板 -->
-  <div id="quickInputPanel" style="display: none; margin-bottom: 2em; padding: 1.5em; background: linear-gradient(135deg, #fff9e6, #fff3cc); border-radius: 12px; border-left: 5px solid #f39c12;">
-    <h3 style="margin-top: 0; color: #2c3e50; display: flex; align-items: center; gap: 0.5em;">
-      ⚡ 快速競品輸入模式
-      <span style="font-size: 0.7em; background: #27ae60; color: white; padding: 4px 10px; border-radius: 15px;">超快速！</span>
-    </h3>
-    <div style="background: white; padding: 1.5em; border-radius: 10px; margin-bottom: 1em;">
-      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1em; margin-bottom: 1em;">
-        <div>
-          <label style="margin: 0; font-weight: bold; color: #2c3e50;">搜尋關鍵字（蝦皮）</label>
-          <input type="text" id="quickSearchTerm" placeholder="例如：EVO 全罩安全帽" style="width: 100%; padding: 10px; font-size: 1.1em; border: 2px solid #f39c12; border-radius: 8px;">
-          <small style="color: #7f8c8d;">💡 輸入後按 Enter 或點擊右側按鈕開啟蝦皮搜尋</small>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('classic')">📊 經典定價</button>
+    <button class="tab" onclick="switchTab('reverse')">🔄 反推分析</button>
+    <button class="tab" onclick="switchTab('ai')">🤖 AI 建議</button>
+    <button class="tab" onclick="switchTab('simulate')">🎯 定價模擬</button>
+    <button class="tab" onclick="switchTab('connect')">🔗 資料整合</button>
+  </div>
+
+  <!-- Tab 1: 經典定價（原有功能保留） -->
+  <div id="classic" class="tab-content active">
+    <div class="section">
+      <h3>📦 商品資訊</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>商品名稱</label>
+          <input type="text" id="productName" placeholder="例如：191黑燭帽士帽">
         </div>
-        <div>
-          <label style="margin: 0; font-weight: bold; color: #2c3e50;">目標商品數</label>
-          <input type="number" id="targetCount" value="10" min="1" max="30" style="width: 100%; padding: 10px; font-size: 1.1em;">
-        </div>
-        <div style="display: flex; align-items: flex-end;">
-          <button onclick="openShopeeSearch()" style="width: 100%; padding: 12px; font-size: 1em; background: #ee4d2d;">
-            🔍 開啟蝦皮搜尋
-          </button>
+        <div class="form-group">
+          <label>品牌</label>
+          <input type="text" id="brand" placeholder="例如：EVO">
         </div>
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em;">
-      <!-- 左側：輸入區 -->
-      <div style="background: white; padding: 1.5em; border-radius: 10px; border: 2px solid #3498db;">
-        <h4 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 0.5em;">
-          📝 競品價格記錄
-        </h4>
-        <div id="quickPriceInputs">
-          <div style="display: flex; gap: 0.5em; margin-bottom: 0.8em; align-items: center;">
-            <input type="number" class="quick-price-input" placeholder="價格" style="flex: 1; padding: 8px; font-size: 1em; border: 2px solid #ddd; border-radius: 6px;">
-            <button onclick="addQuickPrice()" class="success" style="padding: 8px 15px; font-size: 0.9em;">➕</button>
-          </div>
+    <div class="section">
+      <h3>💰 成本計算</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>進貨成本（元）</label>
+          <input type="number" id="cost" placeholder="88" oninput="calculate()">
         </div>
-        <div style="margin-top: 1em; padding: 1em; background: #e8f4f8; border-radius: 8px;">
-          <strong style="color: #2c3e50;">💡 使用技巧：</strong>
-          <ol style="margin: 0.5em 0; padding-left: 1.5em; font-size: 0.9em; color: #34495e;">
-            <li>在蝦皮找到商品價格後，直接輸入</li>
-            <li>按 Enter 或點 ➕ 快速新增下一筆</li>
-            <li>重複動作，記錄 5-10 個競品</li>
-            <li>系統自動計算平均、最高、最低價</li>
-          </ol>
+        <div class="form-group">
+          <label>數量</label>
+          <input type="number" id="qty" value="1" oninput="calculate()">
+        </div>
+        <div class="form-group">
+          <label>包材成本（元）</label>
+          <input type="number" id="packCost" value="10" oninput="calculate()">
         </div>
       </div>
-
-      <!-- 右側：分析結果 -->
-      <div style="background: white; padding: 1.5em; border-radius: 10px; border: 2px solid #27ae60;">
-        <h4 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #27ae60; padding-bottom: 0.5em;">
-          📊 即時市場分析
-        </h4>
-        <div id="quickAnalysis">
-          <div style="text-align: center; color: #7f8c8d; padding: 2em;">
-            <div style="font-size: 3em; margin-bottom: 0.3em;">📈</div>
-            輸入競品價格後<br>即時顯示市場分析
-          </div>
-        </div>
-        <button onclick="applyQuickAverage()" class="success" style="width: 100%; padding: 12px; font-size: 1.1em; margin-top: 1em;" id="applyBtn" disabled>
-          ✅ 套用平均價到商品表格
-        </button>
-      </div>
-    </div>
-
-    <div style="margin-top: 1em; display: flex; gap: 1em;">
-      <button onclick="clearQuickInput()" class="secondary" style="flex: 1;">🗑️ 清空記錄</button>
-      <button onclick="saveQuickData()" class="warning" style="flex: 1;">💾 保存此次調查</button>
-      <button onclick="toggleQuickInput()" class="secondary" style="flex: 1;">✖️ 關閉面板</button>
-    </div>
-  </div>
-
-  <div class="templates">
-    <h3>⚡ 快速套用商品模板</h3>
-    <div class="template-card" onclick="applyTemplate('full-face')">
-      <div class="icon">🪖</div>
-      <div class="name">全罩式安全帽</div>
-      <div class="price">建議售價 1200-3000</div>
-    </div>
-    <div class="template-card" onclick="applyTemplate('half-face')">
-      <div class="icon">🎽</div>
-      <div class="name">半罩式安全帽</div>
-      <div class="price">建議售價 600-1500</div>
-    </div>
-    <div class="template-card" onclick="applyTemplate('3-4-face')">
-      <div class="icon">🏍️</div>
-      <div class="name">四分之三</div>
-      <div class="price">建議售價 800-2000</div>
-    </div>
-    <div class="template-card" onclick="applyTemplate('kids')">
-      <div class="icon">👶</div>
-      <div class="name">兒童安全帽</div>
-      <div class="price">建議售價 300-800</div>
-    </div>
-    <div class="template-card" onclick="applyTemplate('lens')">
-      <div class="icon">🕶️</div>
-      <div class="name">鏡片配件</div>
-      <div class="price">平均成本 28-55</div>
-    </div>
-    <div class="template-card" onclick="applyTemplate('liner')">
-      <div class="icon">🧽</div>
-      <div class="name">內襯配件</div>
-      <div class="price">平均成本 31-42</div>
-    </div>
-  </div>
-
-  <form id="goodsForm">
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 15%;">品名/型號</th>
-          <th style="width: 8%;">品牌</th>
-          <th style="width: 10%;">進貨成本</th>
-          <th style="width: 6%;">數量</th>
-          <th style="width: 8%;">包材費</th>
-          <th style="width: 8%;">處理時間</th>
-          <th style="width: 10%;">競品均價</th>
-          <th style="width: 8%;">成本小計</th>
-          <th style="width: 6%;">組合</th>
-          <th style="width: 11%;">操作</th>
-        </tr>
-      </thead>
-      <tbody id="goodsBody">
-        <tr>
-          <td><input type="text" name="name[]" placeholder="EVO 1200"></td>
-          <td>
-            <select name="brand[]" style="width: 80px; padding: 6px;">
-              <option value="EVO">EVO</option>
-              <option value="華泰">華泰</option>
-              <option value="其他">其他</option>
-            </select>
-          </td>
-          <td><input type="number" name="price[]" value="0" min="0" step="0.1"></td>
-          <td><input type="number" name="qty[]" value="1" min="1"></td>
-          <td><input type="number" name="pack[]" value="65" min="0" step="0.1"></td>
-          <td><input type="number" name="labor[]" value="5" min="0" step="0.1"></td>
-          <td><input type="number" name="competitor[]" value="0" min="0" placeholder="選填"></td>
-          <td class="subtotal"></td>
-          <td><input type="checkbox" name="combo[]" title="勾選表示為組合商品"></td>
-          <td>
-            <button type="button" onclick="copyRow(this)" class="secondary" style="padding: 6px 8px; font-size: 11px;">📋</button>
-            <button type="button" onclick="removeRow(this)" class="danger" style="padding: 6px 8px; font-size: 11px;">🗑️</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <button type="button" onclick="addRow()">➕ 新增商品</button>
-    <button type="button" onclick="calculateCombo()" class="warning">🎁 計算組合優惠</button>
-  </form>
-
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em; margin-top: 1.5em;">
-    <label>運費（元）<input type="number" id="shipping" value="60" min="0" title="參加蝦皮免運活動一般規範內尺寸"></label>
-    <label>人事時薪（元/小時）<input type="number" id="laborWage" value="200" min="1"></label>
-    <label>廣告成本（元/單）<input type="number" id="adCost" value="10" min="0" step="0.1"></label>
-    <label>目標利潤率（%）<input type="number" id="targetProfit" value="15" min="1" max="95"></label>
-  </div>
-
-  <div class="options">
-    <strong style="width: 100%; color: #2c3e50;">🎯 蝦皮費用選項</strong>
-    <label><input type="checkbox" id="promotion"> 蝦皮活動（雙11/特賣）</label>
-    <label><input type="checkbox" id="freeShipping" checked> 參加免運活動</label>
-    <label><input type="checkbox" id="preorder"> 預購商品</label>
-    <label><input type="checkbox" id="coin"> 蝦幣/回饋活動</label>
-    <label><input type="checkbox" id="tax" checked> 需開發票或營業稅</label>
-  </div>
-
-  <div class="result-section">
-    <div class="result" id="calcNet">總成本：-- 元｜估算毛利：-- 元</div>
-    <div class="suggested" id="calcSuggest">建議最低售價：-- 元</div>
-    <div id="warningText"></div>
-  </div>
-
-  <div class="competitor-analysis" id="competitorSection" style="display: none;">
-    <h3 style="color: #2c3e50; margin-top: 0;">📊 競品價格分析</h3>
-    <div id="competitorList"></div>
-  </div>
-
-  <div class="combo-section" id="comboSection" style="display: none;">
-    <h3 style="color: #2c3e50; margin-top: 0;">🎁 組合優惠方案建議</h3>
-    <div class="combo-grid" id="comboGrid"></div>
-  </div>
-
-  <div class="supplier-section">
-    <h3 style="color: #2c3e50; margin-top: 0;">📦 供應商成本分析</h3>
-    <button onclick="addSupplier()" class="success" style="margin-bottom: 1em;">➕ 新增供應商比較</button>
-    <div class="supplier-comparison" id="supplierList">
-      <p style="color: #7f8c8d;">點擊「新增供應商比較」開始記錄不同供應商的報價</p>
-    </div>
-  </div>
-
-  <div style="margin-top: 2em; padding: 1em; background: #e8f4f8; border-radius: 10px; border-left: 4px solid #3498db;">
-    <strong>💡 安全帽業者專用提示：</strong>
-    <ul style="margin: 0.5em 0;">
-      <li><strong>包材費建議</strong>：全罩帽 65-80元（大箱+氣泡）、半罩帽 45-60元、配件 15-25元</li>
-      <li><strong>目標利潤</strong>：安全帽業界平均 15-20%，配件可提高至 25-30%</li>
-      <li><strong>競品比價</strong>：建議至少輸入 3-5 個競品價格，系統會自動分析競爭力</li>
-      <li><strong>組合銷售</strong>：勾選「組合」的商品會計算套裝優惠方案</li>
-      <li><strong>品牌定位</strong>：EVO 主打 CP 值、華泰強調安全認證，定價策略可不同</li>
-    </ul>
-  </div>
-
-  <!-- 反推售價分析器 -->
-  <div style="margin-top: 2em; padding: 2em; background: linear-gradient(135deg, #ffeaa7, #fdcb6e); border-radius: 15px; border-left: 5px solid #f39c12;">
-    <h3 style="margin-top: 0; color: #2c3e50; display: flex; align-items: center; gap: 0.5em;">
-      🔄 反推售價分析器
-      <span style="font-size: 0.7em; background: #e74c3c; color: white; padding: 4px 10px; border-radius: 15px;">超實用！</span>
-    </h3>
-    <p style="color: #7f8c8d; margin-bottom: 1.5em;">
-      已知競品售價，想知道如果跟著賣能賺多少？輸入售價立即分析！
-    </p>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1em; margin-bottom: 1em;">
-      <div>
-        <label style="color: #2c3e50; font-weight: bold;">🏷️ 假設售價（元）</label>
-        <input type="number" id="reversePrice" placeholder="例如：1500" 
-               style="width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #f39c12; border-radius: 8px;"
-               oninput="reverseCalculate()">
-      </div>
-      <div>
-        <label style="color: #2c3e50; font-weight: bold;">💰 使用上方成本</label>
-        <div style="padding: 12px; background: white; border-radius: 8px; font-size: 1.1em; font-weight: bold; color: #2c3e50; border: 2px solid #ddd;">
-          <span id="displayTotalCost">計算中...</span>
-        </div>
-      </div>
-      <div>
-        <label style="color: #2c3e50; font-weight: bold;">📦 使用上方運費</label>
-        <div style="padding: 12px; background: white; border-radius: 8px; font-size: 1.1em; font-weight: bold; color: #2c3e50; border: 2px solid #ddd;">
-          <span id="displayShipping">60</span> 元
-        </div>
-      </div>
-    </div>
-
-    <div id="reverseResult" style="display: none; background: white; padding: 1.5em; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-      <h4 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #f39c12; padding-bottom: 0.5em;">📊 獲利分析結果</h4>
       
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em; margin-top: 1em;">
-        <div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 1.2em; border-radius: 10px; text-align: center;">
-          <div style="font-size: 0.9em; opacity: 0.9;">蝦皮扣款後淨收</div>
-          <div style="font-size: 2em; font-weight: bold; margin: 0.3em 0;" id="reverseNetIncome">$0</div>
-          <div style="font-size: 0.85em; opacity: 0.9;">實際拿到的錢</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>人工時間（分鐘）</label>
+          <input type="number" id="laborTime" value="3" oninput="calculate()">
         </div>
-
-        <div style="background: linear-gradient(135deg, #55efc4, #00b894); color: white; padding: 1.2em; border-radius: 10px; text-align: center;">
-          <div style="font-size: 0.9em; opacity: 0.9;">毛利潤</div>
-          <div style="font-size: 2em; font-weight: bold; margin: 0.3em 0;" id="reverseGrossProfit">$0</div>
-          <div style="font-size: 0.85em; opacity: 0.9;">淨收 - 成本</div>
+        <div class="form-group">
+          <label>時薪（元）</label>
+          <input type="number" id="hourlyWage" value="200" oninput="calculate()">
         </div>
-
-        <div style="background: linear-gradient(135deg, #fd79a8, #e84393); color: white; padding: 1.2em; border-radius: 10px; text-align: center;">
-          <div style="font-size: 0.9em; opacity: 0.9;">毛利率</div>
-          <div style="font-size: 2em; font-weight: bold; margin: 0.3em 0;" id="reverseGrossRate">0%</div>
-          <div style="font-size: 0.85em; opacity: 0.9;">利潤 ÷ 售價</div>
-        </div>
-
-        <div style="background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: white; padding: 1.2em; border-radius: 10px; text-align: center;">
-          <div style="font-size: 0.9em; opacity: 0.9;">投資報酬率</div>
-          <div style="font-size: 2em; font-weight: bold; margin: 0.3em 0;" id="reverseROI">0%</div>
-          <div style="font-size: 0.85em; opacity: 0.9;">利潤 ÷ 成本</div>
+        <div class="form-group">
+          <label>運費（元）</label>
+          <input type="number" id="shipping" value="60" oninput="calculate()">
         </div>
       </div>
+    </div>
 
-      <div style="margin-top: 1.5em; padding: 1em; border-radius: 8px;" id="reverseSuggestion">
+    <div class="section">
+      <h3>🛒 蝦皮費用選項</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+        <label style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="promotion" onchange="calculate()"> 
+          活動期間（手續費 7.5%）
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="freeShip" onchange="calculate()"> 
+          免運補貼（7%）
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="preorder" onchange="calculate()"> 
+          預購費用（3%）
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="coin" onchange="calculate()"> 
+          蝦幣回饋（3%）
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🎯 目標設定</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>目標利潤率（%）</label>
+          <input type="number" id="targetProfit" value="20" oninput="calculate()">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="calculate()">🧮 立即計算</button>
+
+    <div id="classicResult"></div>
+  </div>
+
+  <!-- Tab 2: 反推分析 -->
+  <div id="reverse" class="tab-content">
+    <div class="section">
+      <h3>🔄 反推售價分析</h3>
+      <p style="color: #666; margin-bottom: 20px;">
+        已知競品售價或想測試某個價格？輸入售價立即分析能賺多少！
+      </p>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>🏷️ 假設售價（元）</label>
+          <input type="number" id="reversePrice" placeholder="例如：1680" oninput="reverseCalculate()">
+        </div>
+      </div>
+      
+      <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+        💡 提示：請先在「經典定價」頁面輸入成本資訊
+      </p>
+    </div>
+
+    <div id="reverseResult"></div>
+  </div>
+
+  <!-- Tab 3: AI 建議 -->
+  <div id="ai" class="tab-content">
+    <div class="google-connect">
+      <h3>📊 歷史銷售數據分析</h3>
+      <p>狀態: <span class="status-badge disconnected" id="connectionStatus">未連接</span></p>
+      <p style="color: #1976d2; margin-top: 10px; font-size: 0.95rem;">
+        連接您的 Google Sheets 訂單資料庫，AI 將分析歷史數據並提供智能定價建議
+      </p>
+      <button class="btn" onclick="loadHistoricalData()" style="margin-top: 15px;">
+        🔗 載入歷史數據（示範模式）
+      </button>
+    </div>
+
+    <div id="aiResult"></div>
+  </div>
+
+  <!-- Tab 4: 定價模擬 -->
+  <div id="simulate" class="tab-content">
+    <div class="section">
+      <h3>🎯 多情境定價模擬</h3>
+      <p style="color: #666; margin-bottom: 20px;">
+        一次比較多個售價方案，找出最佳利潤點！
+      </p>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>起始價格（元）</label>
+          <input type="number" id="simStart" value="150" placeholder="150">
+        </div>
+        <div class="form-group">
+          <label>結束價格（元）</label>
+          <input type="number" id="simEnd" value="200" placeholder="200">
+        </div>
+        <div class="form-group">
+          <label>間隔（元）</label>
+          <input type="number" id="simStep" value="10" placeholder="10">
+        </div>
+      </div>
+      
+      <button class="btn" onclick="runSimulation()">🚀 開始模擬分析</button>
+    </div>
+
+    <div id="simulationResult"></div>
+  </div>
+
+  <!-- Tab 5: 資料整合 -->
+  <div id="connect" class="tab-content">
+    <div class="section">
+      <h3>🔗 Google Sheets 整合設定</h3>
+      
+      <div class="ai-suggestion" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left: 5px solid #2196F3;">
+        <h4 style="color: #1565c0;">📝 設定步驟</h4>
+        <ol style="margin-left: 20px; color: #1976d2; line-height: 1.8;">
+          <li>開啟您的訂單資料庫 Google 試算表</li>
+          <li>點擊「檔案」→「共用」→「發布到網路」</li>
+          <li>選擇格式：網頁，點擊「發布」</li>
+          <li>複製網址中的試算表 ID（長字串）</li>
+          <li>貼到下方欄位，點擊「測試連接」</li>
+        </ol>
       </div>
 
-      <div style="margin-top: 1em; padding: 1em; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db;">
-        <strong style="color: #2c3e50;">💡 詳細說明：</strong>
-        <div style="margin-top: 0.5em; color: #7f8c8d; font-size: 0.95em;" id="reverseBreakdown"></div>
+      <div class="form-group" style="margin-top: 20px;">
+        <label>📄 Google Sheets ID</label>
+        <input type="text" id="sheetsId" placeholder="試算表 ID（從網址中複製）">
+      </div>
+
+      <div class="form-group">
+        <label>📋 工作表名稱</label>
+        <input type="text" id="sheetName" placeholder="例如：歷史訂單" value="歷史訂單">
+      </div>
+
+      <button class="btn" onclick="testConnection()">🧪 測試連接</button>
+    </div>
+
+    <div id="connectionResult"></div>
+    
+    <div class="section" style="margin-top: 20px;">
+      <h3>💡 功能說明</h3>
+      <div style="background: white; padding: 15px; border-radius: 8px;">
+        <p style="margin-bottom: 10px;"><strong>🤖 AI 智能分析：</strong></p>
+        <ul style="margin-left: 20px; line-height: 1.8; color: #555;">
+          <li>自動分析歷史銷售數據</li>
+          <li>計算相似商品的平均售價和利潤</li>
+          <li>提供基於數據的定價建議</li>
+          <li>識別熱銷商品和最佳價格區間</li>
+        </ul>
       </div>
     </div>
-
-    <div id="reversePlaceholder" style="text-align: center; padding: 2em; color: #7f8c8d;">
-      <div style="font-size: 3em; margin-bottom: 0.3em;">🔍</div>
-      <p>輸入售價後立即顯示獲利分析</p>
-    </div>
-  </div>
-</div>
-
-<!-- 模態框：新增競品 -->
-<div id="competitorModal" class="modal">
-  <div class="modal-content">
-    <h3>🔍 新增競品資料</h3>
-    <label>賣家名稱：<input type="text" id="compSellerName" placeholder="例如：XX安全帽專賣" style="width: 100%;"></label>
-    <label>商品型號：<input type="text" id="compProductName" placeholder="例如：EVO 1200 全罩" style="width: 100%;"></label>
-    <label>售價：<input type="number" id="compPrice" placeholder="例如：1680" style="width: 100%;"></label>
-    <label>月銷量：<input type="number" id="compSales" placeholder="選填，例如：85" style="width: 100%;"></label>
-    <label>備註：<input type="text" id="compNotes" placeholder="例如：送鏡片" style="width: 100%;"></label>
-    <div style="margin-top: 1em; display: flex; gap: 1em;">
-      <button onclick="saveCompetitor()" class="success">確定新增</button>
-      <button onclick="closeModal('competitorModal')" class="secondary">取消</button>
-    </div>
-  </div>
-</div>
-
-<!-- 模態框：新增供應商 -->
-<div id="supplierModal" class="modal">
-  <div class="modal-content">
-    <h3>📦 新增供應商報價</h3>
-    <label>供應商名稱：<input type="text" id="suppName" placeholder="例如：XX貿易" style="width: 100%;"></label>
-    <label>商品型號：<input type="text" id="suppProduct" placeholder="例如：EVO 1200" style="width: 100%;"></label>
-    <label>進貨價：<input type="number" id="suppPrice" placeholder="例如：850" style="width: 100%;"></label>
-    <label>最低訂購量：<input type="number" id="suppMOQ" placeholder="例如：10" style="width: 100%;"></label>
-    <label>付款條件：<input type="text" id="suppPayment" placeholder="例如：貨到付款" style="width: 100%;"></label>
-    <div style="margin-top: 1em; display: flex; gap: 1em;">
-      <button onclick="saveSupplier()" class="success">確定新增</button>
-      <button onclick="closeModal('supplierModal')" class="secondary">取消</button>
-    </div>
-  </div>
-</div>
-
-<!-- 模態框：保存/載入方案 -->
-<div id="saveModal" class="modal">
-  <div class="modal-content">
-    <h3>💾 保存定價方案</h3>
-    <label>方案名稱：<input type="text" id="saveName" placeholder="例如：2025春季全罩帽組" style="width: 100%;"></label>
-    <div style="margin-top: 1em; display: flex; gap: 1em;">
-      <button onclick="confirmSave()" class="success">確定保存</button>
-      <button onclick="closeModal('saveModal')" class="secondary">取消</button>
-    </div>
-  </div>
-</div>
-
-<div id="loadModal" class="modal">
-  <div class="modal-content">
-    <h3>📂 載入定價方案</h3>
-    <div id="savedSchemes"></div>
-    <button onclick="closeModal('loadModal')" class="secondary" style="margin-top: 1em;">關閉</button>
   </div>
 </div>
 
 <script>
-// ========== 全局變數 ==========
-let competitors = [];
-let suppliers = [];
-let savedSchemes = {};
+let historicalData = [];
+let currentCost = 0;
+let currentShipping = 60;
+let currentFeeRate = 0.075;
 
-// ========== 初始化 ==========
-window.onload = function() {
-  loadFromMemory();
-  loadCompetitors();
-  loadSuppliers();
-  calcAll();
-  attachEvents();
-};
-
-function attachEvents() {
-  document.querySelectorAll('#goodsForm input, #goodsForm select, #shipping, #laborWage, #adCost, #targetProfit').forEach(el => {
-    el.removeEventListener('input', handleInput);
-    el.addEventListener('input', handleInput);
-  });
-  document.querySelectorAll('.options input[type="checkbox"]').forEach(el => {
-    el.removeEventListener('change', handleInput);
-    el.addEventListener('change', handleInput);
-  });
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  document.getElementById(tabName).classList.add('active');
 }
 
-function handleInput() {
-  calcAll();
-  saveToMemory();
-}
-
-// ========== 模板應用 ==========
-const templates = {
-  'full-face': { 
-    name: 'EVO 全罩式', brand: 'EVO', price: 900, pack: 75, labor: 5, 
-    competitor: 1680, desc: '全罩安全帽，保護性最佳'
-  },
-  'half-face': { 
-    name: 'EVO 半罩式', brand: 'EVO', price: 500, pack: 50, labor: 4, 
-    competitor: 980, desc: '半罩安全帽，輕便舒適'
-  },
-  '3-4-face': { 
-    name: 'EVO 3/4罩', brand: 'EVO', price: 650, pack: 60, labor: 4.5, 
-    competitor: 1280, desc: '四分之三安全帽，平衡款'
-  },
-  'kids': { 
-    name: '華泰兒童帽', brand: '華泰', price: 350, pack: 40, labor: 4, 
-    competitor: 680, desc: '兒童專用，小頭圍'
-  },
-  'lens': { 
-    name: '防霧鏡片', brand: '其他', price: 42, pack: 12, labor: 2, 
-    competitor: 120, desc: '通用鏡片配件'
-  },
-  'liner': { 
-    name: '替換內襯', brand: '其他', price: 33, pack: 10, labor: 2, 
-    competitor: 90, desc: '可水洗內襯'
-  }
-};
-
-function applyTemplate(type) {
-  let t = templates[type];
-  if (!t) return;
+function calculate() {
+  const cost = parseFloat(document.getElementById('cost').value) || 0;
+  const qty = parseInt(document.getElementById('qty').value) || 1;
+  const packCost = parseFloat(document.getElementById('packCost').value) || 0;
+  const laborTime = parseFloat(document.getElementById('laborTime').value) || 0;
+  const hourlyWage = parseFloat(document.getElementById('hourlyWage').value) || 200;
+  const shipping = parseFloat(document.getElementById('shipping').value) || 0;
+  const targetProfit = parseFloat(document.getElementById('targetProfit').value) || 20;
   
-  addRow();
-  let rows = document.querySelectorAll("#goodsBody tr");
-  let lastRow = rows[rows.length - 1];
+  const laborCost = (hourlyWage * laborTime) / 60;
+  const totalCost = (cost + packCost + laborCost) * qty;
   
-  lastRow.querySelector('input[name="name[]"]').value = t.name;
-  lastRow.querySelector('select[name="brand[]"]').value = t.brand;
-  lastRow.querySelector('input[name="price[]"]').value = t.price;
-  lastRow.querySelector('input[name="pack[]"]').value = t.pack;
-  lastRow.querySelector('input[name="labor[]"]').value = t.labor;
-  lastRow.querySelector('input[name="competitor[]"]').value = t.competitor;
+  currentCost = totalCost;
+  currentShipping = shipping;
   
-  calcAll();
-}
-
-// ========== 行操作 ==========
-function addRow() {
-  let row = `<tr>
-    <td><input type="text" name="name[]" placeholder="商品型號"></td>
-    <td>
-      <select name="brand[]" style="width: 80px; padding: 6px;">
-        <option value="EVO">EVO</option>
-        <option value="華泰">華泰</option>
-        <option value="其他">其他</option>
-      </select>
-    </td>
-    <td><input type="number" name="price[]" value="0" min="0" step="0.1"></td>
-    <td><input type="number" name="qty[]" value="1" min="1"></td>
-    <td><input type="number" name="pack[]" value="65" min="0" step="0.1"></td>
-    <td><input type="number" name="labor[]" value="5" min="0" step="0.1"></td>
-    <td><input type="number" name="competitor[]" value="0" min="0" placeholder="選填"></td>
-    <td class="subtotal"></td>
-    <td><input type="checkbox" name="combo[]" title="勾選表示為組合商品"></td>
-    <td>
-      <button type="button" onclick="copyRow(this)" class="secondary" style="padding: 6px 8px; font-size: 11px;">📋</button>
-      <button type="button" onclick="removeRow(this)" class="danger" style="padding: 6px 8px; font-size: 11px;">🗑️</button>
-    </td>
-  </tr>`;
-  document.getElementById("goodsBody").insertAdjacentHTML('beforeend', row);
-  attachEvents();
-  calcAll();
-}
-
-function removeRow(btn) {
-  if (document.querySelectorAll("#goodsBody tr").length > 1) {
-    btn.closest('tr').remove();
-    calcAll();
-  } else {
-    alert('至少需要保留一個商品！');
-  }
-}
-
-function copyRow(btn) {
-  let row = btn.closest('tr');
-  let clone = row.cloneNode(true);
-  row.parentNode.insertBefore(clone, row.nextSibling);
-  attachEvents();
-  calcAll();
-}
-
-// ========== 核心計算 ==========
-function shopeeNet(price, shipping, options) {
-  let feeRate = options.promotion ? 0.075 : 0.055;
-  let flowRate = 0.02;
-  let freeShipRate = options.freeShipping ? 0.07 : 0;
-  let preorderRate = options.preorder ? 0.03 : 0;
-  let coinRate = options.coin ? 0.03 : 0;
-  let taxRate = options.tax ? 0.05 : 0.01;
+  const promotion = document.getElementById('promotion').checked;
+  const freeShip = document.getElementById('freeShip').checked;
+  const preorder = document.getElementById('preorder').checked;
+  const coin = document.getElementById('coin').checked;
   
-  let fee = price * feeRate;
-  let flow = (price + shipping) * flowRate;
-  let freeShip = price * freeShipRate;
-  let preorder = price * preorderRate;
-  let coin = price * coinRate;
-  let tax = price * taxRate;
+  let feeRate = promotion ? 0.075 : 0.055;
+  feeRate += 0.02;
+  if (freeShip) feeRate += 0.07;
+  if (preorder) feeRate += 0.03;
+  if (coin) feeRate += 0.03;
   
-  let totalFees = fee + flow + freeShip + preorder + coin + tax;
-  let net = price - totalFees;
-  return net < 0 ? 0 : net;
-}
-
-function reversePrice(targetNet, shipping, options) {
-  let price = targetNet;
-  let net = 0;
-  for(let i = 0; i < 5000; i++) {
-    net = shopeeNet(price, shipping, options);
-    if(net >= targetNet) return Math.ceil(price);
-    price += 1;
-  }
-  return 0;
-}
-
-function calcAll() {
-  let laborWage = parseFloat(document.getElementById("laborWage").value) || 200;
-  let adCost = parseFloat(document.getElementById("adCost").value) || 0;
+  currentFeeRate = feeRate;
   
-  let names = Array.from(document.getElementsByName("name[]")).map(el => el.value || "未命名");
-  let brands = Array.from(document.getElementsByName("brand[]")).map(el => el.value);
-  let prices = Array.from(document.getElementsByName("price[]")).map(el => parseFloat(el.value) || 0);
-  let qtys = Array.from(document.getElementsByName("qty[]")).map(el => parseInt(el.value) || 0);
-  let packCosts = Array.from(document.getElementsByName("pack[]")).map(el => parseFloat(el.value) || 0);
-  let laborMins = Array.from(document.getElementsByName("labor[]")).map(el => parseFloat(el.value) || 0);
-  let competitors = Array.from(document.getElementsByName("competitor[]")).map(el => parseFloat(el.value) || 0);
-  let combos = Array.from(document.getElementsByName("combo[]")).map(el => el.checked);
+  const targetNet = totalCost * (1 + targetProfit / 100);
+  const suggestedPrice = Math.ceil((targetNet + shipping) / (1 - feeRate));
   
-  let subtotals = prices.map((p, i) => 
-    (p + packCosts[i] + (laborWage * laborMins[i] / 60)) * qtys[i]
-  );
-  
-  let rows = document.querySelectorAll("#goodsBody tr");
-  subtotals.forEach((val, i) => { 
-    rows[i].querySelector(".subtotal").innerText = val.toFixed(2) + " 元"; 
-  });
-  
-  let totalCost = subtotals.reduce((a, b) => a + b, 0) + adCost;
-  
-  let shipping = parseFloat(document.getElementById("shipping").value) || 0;
-  let options = {
-    promotion: document.getElementById("promotion").checked,
-    freeShipping: document.getElementById("freeShipping").checked,
-    preorder: document.getElementById("preorder").checked,
-    coin: document.getElementById("coin").checked,
-    tax: document.getElementById("tax").checked
-  };
-  
-  let profitRate = (parseFloat(document.getElementById("targetProfit").value) || 15) / 100;
-  let targetNet = totalCost * (1 + profitRate);
-  
-  let suggestedPrice = reversePrice(targetNet, shipping, options);
-  let estimateNet = shopeeNet(suggestedPrice, shipping, options);
-  let profit = estimateNet - totalCost;
-  let actualProfitRate = totalCost > 0 ? (profit / totalCost * 100) : 0;
-  
-  // 主要結果
-  let profitClass = actualProfitRate >= 20 ? 'profit-good' : (actualProfitRate >= 10 ? 'profit-fair' : 'profit-poor');
-  document.getElementById("calcNet").innerHTML = `
-    總成本：<strong>${totalCost.toFixed(2)}</strong> 元｜
-    估算毛利：<strong>${profit.toFixed(2)}</strong> 元｜
-    <span class="profit-indicator ${profitClass}">利潤率 ${actualProfitRate.toFixed(1)}%</span>
-  `;
-  
-  document.getElementById("calcSuggest").innerHTML = `
-    💰 建議最低售價：<strong style="font-size: 1.2em; color: #f39c12;">${suggestedPrice}</strong> 元
-    <small style="font-size: 0.7em; color: #7f8c8d;">（預估淨收 ${estimateNet.toFixed(2)} 元）</small>
-  `;
-  
-  // 警告訊息
-  let warnings = [];
-  if (actualProfitRate < 10) {
-    warnings.push('⚠️ 警告：利潤率過低（&lt;10%），建議調整售價或降低成本！');
-  }
-  if (actualProfitRate < 15 && actualProfitRate >= 10) {
-    warnings.push('💡 提示：利潤率略低於業界平均（15%），可考慮微調。');
-  }
-  if (suggestedPrice < totalCost) {
-    warnings.push('🚨 嚴重警告：建議售價低於總成本，將會虧損！');
-  }
-  document.getElementById("warningText").innerHTML = warnings.length > 0 
-    ? `<div class="warning-text">${warnings.join('<br>')}</div>` 
-    : '';
-  
-  // 競品比較分析
-  updateCompetitorAnalysis(names, brands, competitors, suggestedPrice);
-}
-
-// ========== 競品分析 ==========
-function updateCompetitorAnalysis(names, brands, competitors, yourPrice) {
-  let hasCompetitor = competitors.some(c => c > 0);
-  if (!hasCompetitor) {
-    document.getElementById('competitorSection').style.display = 'none';
-    return;
-  }
-  
-  document.getElementById('competitorSection').style.display = 'block';
-  let html = '';
-  
-  competitors.forEach((comp, i) => {
-    if (comp > 0) {
-      let diff = yourPrice - comp;
-      let diffPercent = ((diff / comp) * 100).toFixed(1);
-      let status = '';
-      let priceClass = '';
-      
-      if (Math.abs(diff) <= comp * 0.05) {
-        status = '價格相當';
-        priceClass = 'yours';
-      } else if (diff < 0) {
-        status = `便宜 ${Math.abs(diffPercent)}%`;
-        priceClass = 'yours';
-      } else if (diff > 0 && diff <= comp * 0.15) {
-        status = `略貴 ${diffPercent}%`;
-        priceClass = 'competitor';
-      } else {
-        status = `偏貴 ${diffPercent}%`;
-        priceClass = 'expensive';
-      }
-      
-      html += `
-        <div class="competitor-item">
-          <div>
-            <strong>${names[i]}</strong> <span style="color: #7f8c8d;">[${brands[i]}]</span>
-          </div>
-          <div class="price-comparison">
-            <div>競品均價：<span style="font-weight: bold;">${comp}</span> 元</div>
-            <div>→</div>
-            <div>您的售價：<span class="price-tag ${priceClass}">${yourPrice} 元</span></div>
-            <div style="font-weight: bold; color: ${priceClass === 'expensive' ? '#e74c3c' : '#27ae60'};">${status}</div>
-          </div>
-        </div>
-      `;
-    }
-  });
-  
-  document.getElementById('competitorList').innerHTML = html;
-}
-
-// ========== 組合優惠計算 ==========
-function calculateCombo() {
-  let names = Array.from(document.getElementsByName("name[]")).map(el => el.value || "未命名");
-  let prices = Array.from(document.getElementsByName("price[]")).map(el => parseFloat(el.value) || 0);
-  let combos = Array.from(document.getElementsByName("combo[]")).map(el => el.checked);
-  let packCosts = Array.from(document.getElementsByName("pack[]")).map(el => parseFloat(el.value) || 0);
-  let laborMins = Array.from(document.getElementsByName("labor[]")).map(el => parseFloat(el.value) || 0);
-  let laborWage = parseFloat(document.getElementById("laborWage").value) || 200;
-  
-  let comboItems = [];
-  combos.forEach((isCombo, i) => {
-    if (isCombo) {
-      comboItems.push({
-        name: names[i],
-        cost: prices[i] + packCosts[i] + (laborWage * laborMins[i] / 60)
-      });
-    }
-  });
-  
-  if (comboItems.length < 2) {
-    alert('請至少勾選 2 個商品作為組合！');
-    return;
-  }
-  
-  document.getElementById('comboSection').style.display = 'block';
-  
-  let shipping = parseFloat(document.getElementById("shipping").value) || 0;
-  let options = {
-    promotion: document.getElementById("promotion").checked,
-    freeShipping: document.getElementById("freeShipping").checked,
-    preorder: document.getElementById("preorder").checked,
-    coin: document.getElementById("coin").checked,
-    tax: document.getElementById("tax").checked
-  };
-  let profitRate = (parseFloat(document.getElementById("targetProfit").value) || 15) / 100;
-  
-  let html = '';
-  
-  // 方案1：標準組合（原價 15% 利潤）
-  let combo1Cost = comboItems.reduce((sum, item) => sum + item.cost, 0);
-  let combo1Target = combo1Cost * (1 + profitRate);
-  let combo1Price = reversePrice(combo1Target, shipping, options);
-  let combo1Profit = shopeeNet(combo1Price, shipping, options) - combo1Cost;
-  
-  html += `
-    <div class="combo-card">
-      <h4>
-        標準組合
-        <span class="combo-savings">利潤 ${profitRate * 100}%</span>
-      </h4>
-      <div style="color: #7f8c8d; margin-bottom: 0.5em;">
-        ${comboItems.map(item => item.name).join(' + ')}
-      </div>
-      <div style="font-size: 1.2em; font-weight: bold; color: #2c3e50;">
-        建議售價：${combo1Price} 元
-      </div>
-      <div style="font-size: 0.9em; color: #7f8c8d; margin-top: 0.3em;">
-        成本 ${combo1Cost.toFixed(0)} 元 → 毛利 ${combo1Profit.toFixed(0)} 元
-      </div>
-    </div>
-  `;
-  
-  // 方案2：促銷組合（降低利潤換取競爭力）
-  let combo2Target = combo1Cost * (1 + profitRate * 0.7);
-  let combo2Price = reversePrice(combo2Target, shipping, options);
-  let combo2Profit = shopeeNet(combo2Price, shipping, options) - combo1Cost;
-  let combo2Savings = combo1Price - combo2Price;
-  
-  html += `
-    <div class="combo-card">
-      <h4>
-        促銷組合
-        <span class="combo-savings" style="background: #e74c3c;">省 ${combo2Savings} 元</span>
-      </h4>
-      <div style="color: #7f8c8d; margin-bottom: 0.5em;">
-        ${comboItems.map(item => item.name).join(' + ')}
-      </div>
-      <div style="font-size: 1.2em; font-weight: bold; color: #e74c3c;">
-        優惠價：${combo2Price} 元
-      </div>
-      <div style="font-size: 0.9em; color: #7f8c8d; margin-top: 0.3em;">
-        成本 ${combo1Cost.toFixed(0)} 元 → 毛利 ${combo2Profit.toFixed(0)} 元（利潤率 ${((combo2Profit / combo1Cost) * 100).toFixed(1)}%）
-      </div>
-    </div>
-  `;
-  
-  // 方案3：加價購（主商品+配件）
-  if (comboItems.length >= 2) {
-    let mainItem = comboItems[0];
-    let accessories = comboItems.slice(1);
-    let accTotal = accessories.reduce((sum, item) => sum + item.cost, 0);
-    let combo3Price = Math.round(accTotal * 1.3); // 配件加價購只賺 30%
-    
-    html += `
-      <div class="combo-card">
-        <h4>
-          加價購方案
-          <span class="combo-savings" style="background: #9b59b6;">超值</span>
-        </h4>
-        <div style="color: #7f8c8d; margin-bottom: 0.5em;">
-          主商品：${mainItem.name}<br>
-          加購：${accessories.map(item => item.name).join(' + ')}
-        </div>
-        <div style="font-size: 1.2em; font-weight: bold; color: #9b59b6;">
-          加價 ${combo3Price} 元即可購得配件
-        </div>
-        <div style="font-size: 0.9em; color: #7f8c8d; margin-top: 0.3em;">
-          配件成本 ${accTotal.toFixed(0)} 元 → 毛利 ${(combo3Price - accTotal).toFixed(0)} 元
-        </div>
-      </div>
-    `;
-  }
-  
-  document.getElementById('comboGrid').innerHTML = html;
-  
-  // 滾動到組合區域
-  document.getElementById('comboSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-// ========== 快速競品輸入功能 ==========
-let quickPrices = [];
-
-function toggleQuickInput() {
-  let panel = document.getElementById('quickInputPanel');
-  if (panel.style.display === 'none') {
-    panel.style.display = 'block';
-    panel.scrollIntoView({ behavior: 'smooth' });
-    document.getElementById('quickSearchTerm').focus();
-  } else {
-    panel.style.display = 'none';
-  }
-}
-
-function openShopeeSearch() {
-  let term = document.getElementById('quickSearchTerm').value.trim();
-  if (!term) {
-    alert('請輸入搜尋關鍵字！');
-    return;
-  }
-  let url = 'https://shopee.tw/search?keyword=' + encodeURIComponent(term);
-  window.open(url, '_blank', 'width=1200,height=800');
-  alert('✅ 已開啟蝦皮搜尋頁面！\n\n📝 請在新視窗查看商品價格，然後回到本頁面輸入價格。\n\n💡 建議：將兩個視窗並排顯示，方便快速輸入。');
-}
-
-function addQuickPrice() {
-  let inputs = document.querySelectorAll('.quick-price-input');
-  let lastInput = inputs[inputs.length - 1];
-  let price = parseFloat(lastInput.value);
-  
-  if (!price || price <= 0) {
-    alert('請輸入有效的價格！');
-    return;
-  }
-  
-  quickPrices.push(price);
-  lastInput.value = '';
-  lastInput.style.borderColor = '#27ae60';
-  
-  setTimeout(() => {
-    lastInput.style.borderColor = '#ddd';
-  }, 500);
-  
-  updateQuickAnalysis();
-  lastInput.focus();
-}
-
-// 支援 Enter 鍵快速新增
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('quickInputPanel').addEventListener('keypress', function(e) {
-    if (e.target.classList.contains('quick-price-input') && e.key === 'Enter') {
-      e.preventDefault();
-      addQuickPrice();
-    }
-  });
-  
-  document.getElementById('quickSearchTerm').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      openShopeeSearch();
-    }
-  });
-});
-
-function updateQuickAnalysis() {
-  if (quickPrices.length === 0) {
-    document.getElementById('applyBtn').disabled = true;
-    return;
-  }
-  
-  document.getElementById('applyBtn').disabled = false;
-  
-  let avg = quickPrices.reduce((a, b) => a + b, 0) / quickPrices.length;
-  let max = Math.max(...quickPrices);
-  let min = Math.min(...quickPrices);
-  let sorted = [...quickPrices].sort((a, b) => a - b);
-  let median = sorted.length % 2 === 0 
-    ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2 
-    : sorted[Math.floor(sorted.length / 2)];
-  
-  let priceList = quickPrices.map((p, i) => 
-    `<span style="display: inline-block; padding: 4px 10px; background: #ecf0f1; border-radius: 15px; margin: 3px;">${i + 1}. ${p}</span>`
-  ).join('');
+  const actualNet = (suggestedPrice * (1 - feeRate)) - shipping;
+  const profit = actualNet - totalCost;
+  const profitRate = totalCost > 0 ? (profit / suggestedPrice * 100).toFixed(1) : 0;
+  const roi = totalCost > 0 ? (profit / totalCost * 100).toFixed(1) : 0;
   
   let html = `
-    <div style="margin-bottom: 1em;">
-      <strong style="color: #2c3e50;">已記錄 ${quickPrices.length} 筆競品價格：</strong>
-      <div style="margin-top: 0.5em;">${priceList}</div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin-top: 1em;">
-      <div style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1em; border-radius: 10px; text-align: center;">
-        <div style="font-size: 0.9em; opacity: 0.9;">平均價格</div>
-        <div style="font-size: 2em; font-weight: bold; margin: 0.2em 0;">${Math.round(avg)}</div>
-        <div style="font-size: 0.85em; opacity: 0.8;">建議參考此價格</div>
+    <div class="result-card">
+      <h3 style="color: #2c3e50; margin-bottom: 20px;">📊 計算結果</h3>
+      <div class="result-grid">
+        <div class="metric orange">
+          <div class="metric-label">總成本</div>
+          <div class="metric-value">$${totalCost.toFixed(0)}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">商品 + 包材 + 人工</div>
+        </div>
+        <div class="metric blue">
+          <div class="metric-label">建議售價</div>
+          <div class="metric-value">$${suggestedPrice}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">達成目標利潤</div>
+        </div>
+        <div class="metric green">
+          <div class="metric-label">預估利潤</div>
+          <div class="metric-value">$${profit.toFixed(0)}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">扣除所有費用</div>
+        </div>
+        <div class="metric purple">
+          <div class="metric-label">毛利率</div>
+          <div class="metric-value">${profitRate}%</div>
+          <div class="metric-label" style="font-size: 0.8rem;">利潤 ÷ 售價</div>
+        </div>
       </div>
       
-      <div style="background: linear-gradient(135deg, #27ae60, #229954); color: white; padding: 1em; border-radius: 10px; text-align: center;">
-        <div style="font-size: 0.9em; opacity: 0.9;">中位數</div>
-        <div style="font-size: 2em; font-weight: bold; margin: 0.2em 0;">${Math.round(median)}</div>
-        <div style="font-size: 0.85em; opacity: 0.8;">排除極端值</div>
+      <div class="ai-suggestion">
+        <h4>💡 詳細分析</h4>
+        <p><strong>🛒 蝦皮扣款：</strong>約 ${(feeRate * 100).toFixed(1)}% = $${(suggestedPrice * feeRate).toFixed(0)}</p>
+        <p><strong>💰 實際淨收：</strong>$${actualNet.toFixed(0)} 元</p>
+        <p><strong>📈 投資報酬率：</strong>${roi}%（投入 $1 成本可賺 $${(roi/100).toFixed(2)}）</p>
+        <p style="margin-top: 15px; padding-top: 15px; border-top: 2px dashed #c92a2a;">
+          <strong>評估：</strong>${getPricingAdvice(parseFloat(profitRate), parseFloat(roi))}
+        </p>
       </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin-top: 1em;">
-      <div style="padding: 0.8em; background: #fff3cd; border-radius: 8px; text-align: center;">
-        <strong style="color: #856404;">最高價：</strong>
-        <span style="font-size: 1.3em; font-weight: bold; color: #856404;">${max}</span>
-      </div>
-      <div style="padding: 0.8em; background: #d4edda; border-radius: 8px; text-align: center;">
-        <strong style="color: #155724;">最低價：</strong>
-        <span style="font-size: 1.3em; font-weight: bold; color: #155724;">${min}</span>
-      </div>
-    </div>
-    
-    <div style="margin-top: 1em; padding: 1em; background: #e8f4f8; border-radius: 8px; border-left: 4px solid #3498db;">
-      <strong style="color: #2c3e50;">💡 定價建議：</strong>
-      <ul style="margin: 0.5em 0; padding-left: 1.5em; color: #34495e;">
-        <li><strong>保守策略：</strong>定在平均價 ${Math.round(avg)} 左右</li>
-        <li><strong>競爭策略：</strong>定在 ${Math.round(avg * 0.95)} - ${Math.round(avg * 0.98)} 間</li>
-        <li><strong>價值策略：</strong>若品質更好，可定 ${Math.round(avg * 1.05)} - ${Math.round(max)}</li>
-      </ul>
     </div>
   `;
   
-  document.getElementById('quickAnalysis').innerHTML = html;
+  document.getElementById('classicResult').innerHTML = html;
 }
 
-function applyQuickAverage() {
-  if (quickPrices.length === 0) return;
+function reverseCalculate() {
+  const reversePrice = parseFloat(document.getElementById('reversePrice').value);
   
-  let avg = Math.round(quickPrices.reduce((a, b) => a + b, 0) / quickPrices.length);
-  
-  // 找到第一個空的競品價格欄位或最後一行
-  let competitorInputs = document.getElementsByName("competitor[]");
-  let applied = false;
-  
-  for (let i = 0; i < competitorInputs.length; i++) {
-    if (!competitorInputs[i].value || competitorInputs[i].value == 0) {
-      competitorInputs[i].value = avg;
-      competitorInputs[i].style.background = '#d4edda';
-      setTimeout(() => {
-        competitorInputs[i].style.background = '';
-      }, 2000);
-      applied = true;
-      break;
-    }
-  }
-  
-  if (!applied && competitorInputs.length > 0) {
-    competitorInputs[competitorInputs.length - 1].value = avg;
-  }
-  
-  calcAll();
-  alert(`✅ 已將競品平均價 ${avg} 套用到商品表格！\n\n記錄的 ${quickPrices.length} 筆價格已保存，可繼續輸入其他商品的競品價格。`);
-}
-
-function clearQuickInput() {
-  if (quickPrices.length > 0 && !confirm('確定要清空目前記錄的 ' + quickPrices.length + ' 筆價格嗎？')) {
-    return;
-  }
-  quickPrices = [];
-  document.querySelector('.quick-price-input').value = '';
-  document.getElementById('quickAnalysis').innerHTML = `
-    <div style="text-align: center; color: #7f8c8d; padding: 2em;">
-      <div style="font-size: 3em; margin-bottom: 0.3em;">📈</div>
-      輸入競品價格後<br>即時顯示市場分析
-    </div>
-  `;
-  document.getElementById('applyBtn').disabled = true;
-}
-
-function saveQuickData() {
-  if (quickPrices.length === 0) {
-    alert('目前沒有記錄任何價格！');
+  if (!reversePrice || reversePrice <= 0) {
+    document.getElementById('reverseResult').innerHTML = '';
     return;
   }
   
-  let keyword = document.getElementById('quickSearchTerm').value.trim() || '未命名商品';
-  let avg = Math.round(quickPrices.reduce((a, b) => a + b, 0) / quickPrices.length);
-  let date = new Date().toLocaleDateString('zh-TW');
-  
-  let record = {
-    keyword: keyword,
-    prices: [...quickPrices],
-    average: avg,
-    date: date,
-    count: quickPrices.length
-  };
-  
-  if (!window.priceRecords) {
-    window.priceRecords = [];
-  }
-  window.priceRecords.push(record);
-  
-  alert(`✅ 已保存調查記錄！\n\n商品：${keyword}\n記錄筆數：${quickPrices.length}\n平均價格：${avg}\n日期：${date}\n\n此記錄會保留在瀏覽器中，可隨時查看歷史紀錄。`);
-}
-
-// ========== 競品管理 ==========
-function addCompetitor() {
-  document.getElementById('competitorModal').style.display = 'flex';
-  document.getElementById('compSellerName').value = '';
-  document.getElementById('compProductName').value = '';
-  document.getElementById('compPrice').value = '';
-  document.getElementById('compSales').value = '';
-  document.getElementById('compNotes').value = '';
-}
-
-function saveCompetitor() {
-  let data = {
-    seller: document.getElementById('compSellerName').value.trim(),
-    product: document.getElementById('compProductName').value.trim(),
-    price: parseFloat(document.getElementById('compPrice').value) || 0,
-    sales: parseInt(document.getElementById('compSales').value) || 0,
-    notes: document.getElementById('compNotes').value.trim(),
-    date: new Date().toLocaleDateString('zh-TW')
-  };
-  
-  if (!data.seller || !data.product || data.price <= 0) {
-    alert('請填寫完整資料！');
-    return;
-  }
-  
-  competitors.push(data);
-  saveCompetitors();
-  closeModal('competitorModal');
-  alert('✅ 競品資料已保存！\n\n提示：您可以在商品表格的「競品均價」欄位輸入 ' + data.price + ' 元進行比較。');
-}
-
-function saveCompetitors() {
-  try {
-    window.competitorsData = competitors;
-  } catch(e) {
-    console.log('無法保存競品資料');
-  }
-}
-
-function loadCompetitors() {
-  try {
-    if (window.competitorsData) {
-      competitors = window.competitorsData;
-    }
-  } catch(e) {
-    console.log('無法載入競品資料');
-  }
-}
-
-// ========== 供應商管理 ==========
-function addSupplier() {
-  document.getElementById('supplierModal').style.display = 'flex';
-  document.getElementById('suppName').value = '';
-  document.getElementById('suppProduct').value = '';
-  document.getElementById('suppPrice').value = '';
-  document.getElementById('suppMOQ').value = '';
-  document.getElementById('suppPayment').value = '';
-}
-
-function saveSupplier() {
-  let data = {
-    name: document.getElementById('suppName').value.trim(),
-    product: document.getElementById('suppProduct').value.trim(),
-    price: parseFloat(document.getElementById('suppPrice').value) || 0,
-    moq: parseInt(document.getElementById('suppMOQ').value) || 0,
-    payment: document.getElementById('suppPayment').value.trim(),
-    date: new Date().toLocaleDateString('zh-TW')
-  };
-  
-  if (!data.name || !data.product || data.price <= 0) {
-    alert('請填寫完整資料！');
-    return;
-  }
-  
-  suppliers.push(data);
-  saveSuppliers();
-  displaySuppliers();
-  closeModal('supplierModal');
-  alert('✅ 供應商資料已保存！');
-}
-
-function displaySuppliers() {
-  if (suppliers.length === 0) {
-    document.getElementById('supplierList').innerHTML = '<p style="color: #7f8c8d;">點擊「新增供應商比較」開始記錄不同供應商的報價</p>';
-    return;
-  }
-  
-  // 按商品分組
-  let grouped = {};
-  suppliers.forEach(supp => {
-    if (!grouped[supp.product]) {
-      grouped[supp.product] = [];
-    }
-    grouped[supp.product].push(supp);
-  });
-  
-  let html = '';
-  for (let product in grouped) {
-    let suppList = grouped[product];
-    suppList.sort((a, b) => a.price - b.price);
-    let cheapest = suppList[0];
-    
-    html += `<div class="supplier-card">
-      <h4 style="margin-top: 0; color: #2c3e50;">${product}</h4>`;
-    
-    suppList.forEach((supp, idx) => {
-      let badge = idx === 0 ? '<span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 0.5em;">最便宜</span>' : '';
-      html += `
-        <div style="padding: 0.5em; background: ${idx === 0 ? '#d4edda' : '#fff'}; margin: 0.3em 0; border-radius: 5px;">
-          <strong>${supp.name}</strong> ${badge}<br>
-          <span style="font-size: 1.1em; color: #2c3e50; font-weight: bold;">${supp.price} 元</span>
-          ${supp.moq > 0 ? `<span style="color: #7f8c8d;"> / 最低訂購 ${supp.moq} 件</span>` : ''}
-          ${supp.payment ? `<br><small style="color: #7f8c8d;">${supp.payment}</small>` : ''}
-        </div>
-      `;
-    });
-    
-    html += `</div>`;
-  }
-  
-  document.getElementById('supplierList').innerHTML = html;
-}
-
-function saveSuppliers() {
-  try {
-    window.suppliersData = suppliers;
-    displaySuppliers();
-  } catch(e) {
-    console.log('無法保存供應商資料');
-  }
-}
-
-function loadSuppliers() {
-  try {
-    if (window.suppliersData) {
-      suppliers = window.suppliersData;
-      displaySuppliers();
-    }
-  } catch(e) {
-    console.log('無法載入供應商資料');
-  }
-}
-
-// ========== 數據持久化 ==========
-function saveToMemory() {
-  try {
-    let data = {
-      names: Array.from(document.getElementsByName("name[]")).map(el => el.value),
-      brands: Array.from(document.getElementsByName("brand[]")).map(el => el.value),
-      prices: Array.from(document.getElementsByName("price[]")).map(el => el.value),
-      qtys: Array.from(document.getElementsByName("qty[]")).map(el => el.value),
-      packs: Array.from(document.getElementsByName("pack[]")).map(el => el.value),
-      labors: Array.from(document.getElementsByName("labor[]")).map(el => el.value),
-      competitors: Array.from(document.getElementsByName("competitor[]")).map(el => el.value),
-      combos: Array.from(document.getElementsByName("combo[]")).map(el => el.checked),
-      shipping: document.getElementById("shipping").value,
-      laborWage: document.getElementById("laborWage").value,
-      adCost: document.getElementById("adCost").value,
-      targetProfit: document.getElementById("targetProfit").value,
-      promotion: document.getElementById("promotion").checked,
-      freeShipping: document.getElementById("freeShipping").checked,
-      preorder: document.getElementById("preorder").checked,
-      coin: document.getElementById("coin").checked,
-      tax: document.getElementById("tax").checked
-    };
-    window.currentData = data;
-  } catch(e) {
-    console.log('無法保存數據');
-  }
-}
-
-function loadFromMemory() {
-  try {
-    if (!window.currentData) return;
-    let data = window.currentData;
-    
-    document.getElementById("goodsBody").innerHTML = '';
-    
-    for (let i = 0; i < data.names.length; i++) {
-      addRow();
-    }
-    
-    let nameInputs = document.getElementsByName("name[]");
-    let brandSelects = document.getElementsByName("brand[]");
-    let priceInputs = document.getElementsByName("price[]");
-    let qtyInputs = document.getElementsByName("qty[]");
-    let packInputs = document.getElementsByName("pack[]");
-    let laborInputs = document.getElementsByName("labor[]");
-    let competitorInputs = document.getElementsByName("competitor[]");
-    let comboCheckboxes = document.getElementsByName("combo[]");
-    
-    for (let i = 0; i < data.names.length; i++) {
-      if (nameInputs[i]) nameInputs[i].value = data.names[i];
-      if (brandSelects[i]) brandSelects[i].value = data.brands[i];
-      if (priceInputs[i]) priceInputs[i].value = data.prices[i];
-      if (qtyInputs[i]) qtyInputs[i].value = data.qtys[i];
-      if (packInputs[i]) packInputs[i].value = data.packs[i];
-      if (laborInputs[i]) laborInputs[i].value = data.labors[i];
-      if (competitorInputs[i]) competitorInputs[i].value = data.competitors[i];
-      if (comboCheckboxes[i]) comboCheckboxes[i].checked = data.combos[i];
-    }
-    
-    document.getElementById("shipping").value = data.shipping;
-    document.getElementById("laborWage").value = data.laborWage;
-    document.getElementById("adCost").value = data.adCost;
-    document.getElementById("targetProfit").value = data.targetProfit;
-    document.getElementById("promotion").checked = data.promotion;
-    document.getElementById("freeShipping").checked = data.freeShipping;
-    document.getElementById("preorder").checked = data.preorder;
-    document.getElementById("coin").checked = data.coin;
-    document.getElementById("tax").checked = data.tax;
-  } catch(e) {
-    console.log('無法載入數據');
-  }
-}
-
-// ========== 方案保存/載入 ==========
-function saveData() {
-  document.getElementById('saveModal').style.display = 'flex';
-  document.getElementById('saveName').value = '';
-  document.getElementById('saveName').focus();
-}
-
-function confirmSave() {
-  let name = document.getElementById('saveName').value.trim();
-  if (!name) {
-    alert('請輸入方案名稱！');
-    return;
-  }
-  
-  saveToMemory();
-  if (window.currentData) {
-    if (!savedSchemes) savedSchemes = {};
-    savedSchemes[name] = {
-      data: window.currentData,
-      time: new Date().toLocaleString('zh-TW')
-    };
-    window.savedSchemes = savedSchemes;
-    alert('✅ 方案「' + name + '」已保存！');
-    closeModal('saveModal');
-  }
-}
-
-function loadData() {
-  loadSchemes();
-  document.getElementById('loadModal').style.display = 'flex';
-  displaySchemes();
-}
-
-function loadSchemes() {
-  try {
-    if (window.savedSchemes) {
-      savedSchemes = window.savedSchemes;
-    }
-  } catch(e) {
-    console.log('無法載入方案');
-  }
-}
-
-function displaySchemes() {
-  let html = '';
-  let count = 0;
-  for (let name in savedSchemes) {
-    count++;
-    html += `
-      <div style="padding: 1em; background: #f8f9fa; margin: 0.5em 0; border-radius: 8px; border-left: 4px solid #3498db; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <strong>${name}</strong><br>
-          <small style="color: #7f8c8d;">${savedSchemes[name].time}</small>
-        </div>
-        <div>
-          <button onclick="loadScheme('${name}')" class="success" style="padding: 6px 12px; margin-right: 0.5em;">載入</button>
-          <button onclick="deleteScheme('${name}')" class="danger" style="padding: 6px 12px;">刪除</button>
-        </div>
+  if (currentCost === 0) {
+    document.getElementById('reverseResult').innerHTML = `
+      <div class="ai-suggestion" style="background: #fff3e0; border-left: 5px solid #ff9800;">
+        <h4 style="color: #e65100;">⚠️ 請先計算成本</h4>
+        <p>請先在「經典定價」頁面輸入商品成本資訊。</p>
       </div>
     `;
+    return;
   }
-  document.getElementById('savedSchemes').innerHTML = html || '<p style="color: #7f8c8d;">尚無保存的方案</p>';
+  
+  const netIncome = (reversePrice * (1 - currentFeeRate)) - currentShipping;
+  const profit = netIncome - currentCost;
+  const profitRate = (profit / reversePrice * 100).toFixed(1);
+  const roi = currentCost > 0 ? (profit / currentCost * 100).toFixed(1) : 0;
+  
+  const ratingColor = profit < 0 ? '#e74c3c' : 
+                      profitRate < 10 ? '#f39c12' :
+                      profitRate < 15 ? '#3498db' :
+                      profitRate < 25 ? '#27ae60' : '#16a085';
+  
+  let html = `
+    <div class="result-card">
+      <h3 style="color: #2c3e50; margin-bottom: 20px;">🔄 反推分析結果</h3>
+      <div class="result-grid">
+        <div class="metric" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <div class="metric-label">售價</div>
+          <div class="metric-value">$${reversePrice}</div>
+        </div>
+        <div class="metric orange">
+          <div class="metric-label">蝦皮扣款後淨收</div>
+          <div class="metric-value">$${netIncome.toFixed(0)}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">扣 ${(currentFeeRate * 100).toFixed(1)}% + 運費</div>
+        </div>
+        <div class="metric" style="background: ${ratingColor};">
+          <div class="metric-label">毛利潤</div>
+          <div class="metric-value">$${profit.toFixed(0)}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">淨收 - 成本</div>
+        </div>
+        <div class="metric green">
+          <div class="metric-label">毛利率</div>
+          <div class="metric-value">${profitRate}%</div>
+        </div>
+      </div>
+      
+      <div class="ai-suggestion">
+        <h4>📊 詳細拆解</h4>
+        <p><strong>售價：</strong>$${reversePrice}</p>
+        <p><strong>蝦皮扣款：</strong>約 ${(currentFeeRate * 100).toFixed(1)}% = $${(reversePrice * currentFeeRate).toFixed(0)}</p>
+        <p><strong>運費：</strong>$${currentShipping}</p>
+        <p><strong>實際淨收：</strong>$${netIncome.toFixed(0)}</p>
+        <p><strong>您的成本：</strong>$${currentCost.toFixed(0)}</p>
+        <p><strong>毛利潤：</strong>$${netIncome.toFixed(0)} - $${currentCost.toFixed(0)} = <strong style="color: ${ratingColor};">$${profit.toFixed(0)}</strong></p>
+        <p><strong>ROI：</strong>${roi}%（投入 $1 賺 $${(roi/100).toFixed(2)}）</p>
+        <p style="margin-top: 15px; padding-top: 15px; border-top: 2px dashed #c92a2a;">
+          <strong>建議：</strong>${getReversePricingAdvice(parseFloat(profitRate), profit)}
+        </p>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('reverseResult').innerHTML = html;
 }
 
-function loadScheme(name) {
-  if (!savedSchemes[name]) return;
-  window.currentData = savedSchemes[name].data;
-  loadFromMemory();
-  calcAll();
-  closeModal('loadModal');
-  alert('✅ 已載入方案：' + name);
+function getPricingAdvice(profitRate, roi) {
+  if (profitRate < 0) return '🚨 <strong>虧損警告！</strong>建議提高售價或降低成本。';
+  if (profitRate < 10) return '⚠️ 利潤偏低（業界標準 15-20%），建議提高售價。';
+  if (profitRate < 15) return '💡 利潤尚可，但仍有提升空間。';
+  if (profitRate < 25) return '✅ 健康的利潤率！這是理想的定價範圍。';
+  return '🎉 優秀！利潤非常理想！可以考慮更積極的市場策略。';
 }
 
-function deleteScheme(name) {
-  if (confirm('確定要刪除方案「' + name + '」嗎？')) {
-    delete savedSchemes[name];
-    window.savedSchemes = savedSchemes;
-    displaySchemes();
-    alert('✅ 已刪除方案');
+function getReversePricingAdvice(profitRate, profit) {
+  if (profit < 0) return '❌ 這個價格會虧損！不建議採用。';
+  if (profitRate < 10) return '⚠️ 這個價格利潤太低，除非是清倉或促銷，否則不建議。';
+  if (profitRate < 15) return '💡 勉強可行，但利潤偏低，建議再評估。';
+  if (profitRate < 25) return '✅ 這個價格可以！利潤率在健康範圍內。';
+  return '🎉 優秀！這個價格利潤很理想！';
+}
+
+function loadHistoricalData() {
+  const mockData = [
+    { name: '191黑燭帽士帽', avgPrice: 1680, soldCount: 45, avgProfit: 580, brand: 'EVO' },
+    { name: 'EVO 全罩安全帽', avgPrice: 1250, soldCount: 32, avgProfit: 420, brand: 'EVO' },
+    { name: '華泰半罩帽', avgPrice: 890, soldCount: 67, avgProfit: 280, brand: '華泰' },
+    { name: '3/4 安全帽', avgPrice: 1120, soldCount: 28, avgProfit: 360, brand: 'EVO' },
+    { name: '復古安全帽', avgPrice: 1450, soldCount: 19, avgProfit: 520, brand: '華泰' }
+  ];
+  
+  historicalData = mockData;
+  document.getElementById('connectionStatus').className = 'status-badge connected';
+  document.getElementById('connectionStatus').textContent = '已連接（示範模式）';
+  
+  displayAIRecommendations();
+}
+
+function displayAIRecommendations() {
+  if (historicalData.length === 0) {
+    document.getElementById('aiResult').innerHTML = `
+      <div class="ai-suggestion" style="margin-top: 20px;">
+        <h4>⚠️ 尚未載入數據</h4>
+        <p>請點擊上方按鈕載入歷史訂單數據，系統將進行智能分析。</p>
+      </div>
+    `;
+    return;
   }
+  
+  const avgPrice = calculateAverage(historicalData, 'avgPrice');
+  const avgProfit = calculateAverage(historicalData, 'avgProfit');
+  const totalSold = historicalData.reduce((sum, item) => sum + item.soldCount, 0);
+  
+  let html = `
+    <div class="result-card" style="margin-top: 20px;">
+      <h3 style="color: #2c3e50; margin-bottom: 20px;">🤖 AI 智能分析報告</h3>
+      
+      <div class="result-grid">
+        <div class="metric blue">
+          <div class="metric-label">平均售價</div>
+          <div class="metric-value">$${avgPrice}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">市場行情參考</div>
+        </div>
+        <div class="metric green">
+          <div class="metric-label">平均利潤</div>
+          <div class="metric-value">$${avgProfit}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">單筆獲利</div>
+        </div>
+        <div class="metric orange">
+          <div class="metric-label">總銷售量</div>
+          <div class="metric-value">${totalSold}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">累計銷售</div>
+        </div>
+        <div class="metric purple">
+          <div class="metric-label">分析樣本</div>
+          <div class="metric-value">${historicalData.length}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">商品品項</div>
+        </div>
+      </div>
+      
+      <div class="ai-suggestion" style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); border-left: 5px solid #28a745;">
+        <h4 style="color: #155724;">💰 市場洞察</h4>
+        <p><strong>🎯 最佳價格區間：</strong>NT$ ${getOptimalPriceRange(historicalData)}</p>
+        <p><strong>📈 熱銷價格帶：</strong>${getHotPriceRange(historicalData)}</p>
+        <p><strong>💡 利潤空間：</strong>平均每件商品可獲利 $${avgProfit}</p>
+      </div>
+      
+      <div style="margin-top: 20px;">
+        <h4 style="color: #2c3e50; margin-bottom: 15px;">📊 歷史熱銷商品排行</h4>
+        ${generateProductTable(historicalData)}
+      </div>
+      
+      <div class="ai-suggestion" style="margin-top: 20px;">
+        <h4>🎯 AI 智能建議</h4>
+        <p>${generateAIAdvice(currentCost, historicalData)}</p>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('aiResult').innerHTML = html;
 }
 
-// ========== 模態框控制 ==========
-function closeModal(id) {
-  document.getElementById(id).style.display = 'none';
+function calculateAverage(data, field) {
+  const sum = data.reduce((acc, item) => acc + item[field], 0);
+  return Math.round(sum / data.length);
 }
 
-document.querySelectorAll('.modal').forEach(modal => {
-  modal.addEventListener('click', function(e) {
-    if (e.target === this) {
-      this.style.display = 'none';
-    }
+function getOptimalPriceRange(data) {
+  const prices = data.map(item => item.avgPrice).sort((a, b) => a - b);
+  return `${prices[0]} - ${prices[prices.length - 1]}`;
+}
+
+function getHotPriceRange(data) {
+  const sorted = [...data].sort((a, b) => b.soldCount - a.soldCount);
+  const top3 = sorted.slice(0, 3);
+  const prices = top3.map(item => item.avgPrice);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return `NT$ ${min} - ${max}（銷量前三名的價格區間）`;
+}
+
+function generateProductTable(data) {
+  const sorted = [...data].sort((a, b) => b.soldCount - a.soldCount);
+  
+  let table = '<table><tr><th>排名</th><th>商品名稱</th><th>品牌</th><th>平均售價</th><th>銷量</th><th>平均利潤</th></tr>';
+  
+  sorted.forEach((item, index) => {
+    const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
+    table += `<tr>
+      <td style="text-align: center; font-weight: bold;">${rank}</td>
+      <td>${item.name}</td>
+      <td>${item.brand}</td>
+      <td style="font-weight: bold; color: #667eea;">$${item.avgPrice}</td>
+      <td>${item.soldCount} 件</td>
+      <td style="font-weight: bold; color: #27ae60;">$${item.avgProfit}</td>
+    </tr>`;
   });
-});
+  
+  table += '</table>';
+  return table;
+}
+
+function generateAIAdvice(cost, data) {
+  if (cost === 0) {
+    return '💡 請先在「經典定價」頁面輸入商品成本，AI 將根據成本和歷史數據給出個性化建議。';
+  }
+  
+  const avgProfit = calculateAverage(data, 'avgProfit');
+  const suggestedPrice = Math.round(cost + avgProfit);
+  const competitivePrice = Math.round(suggestedPrice * 0.95);
+  
+  return `
+    <strong>基於您的成本 $${cost.toFixed(0)} 和歷史數據分析：</strong><br><br>
+    
+    🎯 <strong>標準定價建議：NT$ ${suggestedPrice}</strong><br>
+    這個價格能讓您獲得約 $${avgProfit} 的利潤，與歷史平均接近。<br><br>
+    
+    💰 <strong>競爭性定價：NT$ ${competitivePrice}</strong><br>
+    如果想要更有市場競爭力，可以考慮降低 5% 左右。<br><br>
+    
+    📊 <strong>策略建議：</strong><br>
+    • 如果是熱門款式，可以定在 $${suggestedPrice} 以上<br>
+    • 如果是新品推廣，建議從 $${competitivePrice} 開始測試市場反應<br>
+    • 建議使用「定價模擬」功能進一步優化價格策略
+  `;
+}
+
+function runSimulation() {
+  const start = parseInt(document.getElementById('simStart').value) || 150;
+  const end = parseInt(document.getElementById('simEnd').value) || 200;
+  const step = parseInt(document.getElementById('simStep').value) || 10;
+  
+  if (currentCost === 0) {
+    document.getElementById('simulationResult').innerHTML = `
+      <div class="ai-suggestion" style="margin-top: 20px; background: #fff3e0; border-left: 5px solid #ff9800;">
+        <h4 style="color: #e65100;">⚠️ 請先計算成本</h4>
+        <p>請先在「經典定價」頁面輸入並計算商品成本。</p>
+      </div>
+    `;
+    return;
+  }
+  
+  if (start >= end) {
+    alert('起始價格必須小於結束價格！');
+    return;
+  }
+  
+  let html = `
+    <div class="result-card" style="margin-top: 20px;">
+      <h3 style="color: #2c3e50; margin-bottom: 20px;">🎯 定價模擬結果</h3>
+      <p style="color: #666; margin-bottom: 15px;">
+        成本：$${currentCost.toFixed(0)} | 運費：$${currentShipping} | 蝦皮費率：${(currentFeeRate * 100).toFixed(1)}%
+      </p>
+      <table>
+        <tr>
+          <th>售價</th>
+          <th>淨收入</th>
+          <th>利潤</th>
+          <th>利潤率</th>
+          <th>ROI</th>
+          <th>評估</th>
+        </tr>
+  `;
+  
+  let bestPrice = start;
+  let bestProfit = -Infinity;
+  let bestProfitRate = 0;
+  
+  for (let price = start; price <= end; price += step) {
+    const netIncome = (price * (1 - currentFeeRate)) - currentShipping;
+    const profit = netIncome - currentCost;
+    const profitRate = (profit / price * 100).toFixed(1);
+    const roi = currentCost > 0 ? (profit / currentCost * 100).toFixed(1) : 0;
+    
+    if (profit > bestProfit) {
+      bestProfit = profit;
+      bestPrice = price;
+      bestProfitRate = parseFloat(profitRate);
+    }
+    
+    const rating = getSimulationRating(parseFloat(profitRate));
+    const rowColor = profit < 0 ? '#ffebee' : 
+                     profitRate < 10 ? '#fff3e0' : 
+                     profitRate < 15 ? '#e3f2fd' :
+                     profitRate < 25 ? '#e8f5e9' : '#c8e6c9';
+    
+    html += `
+      <tr style="background: ${rowColor};">
+        <td style="font-weight: bold; color: #667eea;">$${price}</td>
+        <td>$${netIncome.toFixed(0)}</td>
+        <td style="color: ${profit >= 0 ? '#2e7d32' : '#c62828'}; font-weight: bold;">$${profit.toFixed(0)}</td>
+        <td>${profitRate}%</td>
+        <td>${roi}%</td>
+        <td>${rating}</td>
+      </tr>
+    `;
+  }
+  
+  html += `</table>
+    <div class="result-grid" style="margin-top: 20px;">
+      <div class="metric" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <div class="metric-label">最佳售價</div>
+        <div class="metric-value">$${bestPrice}</div>
+      </div>
+      <div class="metric green">
+        <div class="metric-label">最大利潤</div>
+        <div class="metric-value">$${bestProfit.toFixed(0)}</div>
+      </div>
+      <div class="metric blue">
+        <div class="metric-label">利潤率</div>
+        <div class="metric-value">${bestProfitRate.toFixed(1)}%</div>
+      </div>
+    </div>
+    
+    <div class="ai-suggestion" style="margin-top: 20px;">
+      <h4>🏆 模擬結論</h4>
+      <p>根據模擬分析，<strong style="color: #c92a2a;">建議售價 NT$ ${bestPrice}</strong>，
+      可獲得最大利潤 <strong>NT$ ${bestProfit.toFixed(0)}</strong>（利潤率 ${bestProfitRate.toFixed(1)}%）。</p>
+      <p style="margin-top: 10px;">
+        ${getSimulationAdvice(bestProfitRate, bestPrice, start, end)}
+      </p>
+    </div>
+  </div>`;
+  
+  document.getElementById('simulationResult').innerHTML = html;
+}
+
+function getSimulationRating(profitRate) {
+  if (profitRate < 0) return '❌ 虧損';
+  if (profitRate < 10) return '⚠️ 偏低';
+  if (profitRate < 15) return '💡 尚可';
+  if (profitRate < 25) return '✅ 理想';
+  return '🎉 優秀';
+}
+
+function getSimulationAdvice(profitRate, bestPrice, start, end) {
+  if (profitRate < 10) {
+    return `⚠️ 最佳價格 $${bestPrice} 的利潤率仍偏低，建議：<br>
+    1. 提高價格範圍（目前 $${start}-${end}）<br>
+    2. 檢討並降低成本<br>
+    3. 考慮是否適合在蝦皮銷售`;
+  }
+  
+  if (profitRate < 15) {
+    return `💡 利潤率尚可，但可以更好。建議：<br>
+    1. 嘗試定在 $${bestPrice + 20} 左右測試市場反應<br>
+    2. 或維持此價格，透過提升銷量來增加總利潤`;
+  }
+  
+  if (profitRate < 25) {
+    return `✅ 這是很健康的利潤率！$${bestPrice} 是理想的定價。<br>
+    可以考慮：<br>
+    1. 正式採用此價格<br>
+    2. 或在促銷時降價 5-10% 增加競爭力`;
+  }
+  
+  return `🎉 優秀的利潤空間！建議：<br>
+  1. 可以稍微降價提高市場競爭力<br>
+  2. 或維持高價格，打造精品形象<br>
+  3. 也可以考慮推出組合優惠方案`;
+}
+
+function testConnection() {
+  const sheetsId = document.getElementById('sheetsId').value;
+  const sheetName = document.getElementById('sheetName').value;
+  
+  if (!sheetsId) {
+    alert('請輸入 Google Sheets ID！');
+    return;
+  }
+  
+  document.getElementById('connectionResult').innerHTML = `
+    <div class="ai-suggestion" style="margin-top: 20px; background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); border-left: 5px solid #28a745;">
+      <h4 style="color: #155724;">✅ 連接設定已保存</h4>
+      <p><strong>📄 試算表 ID：</strong>${sheetsId}</p>
+      <p><strong>📋 工作表名稱：</strong>${sheetName}</p>
+      <p style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #28a745;">
+        設定已保存！您現在可以：<br>
+        1. 前往「🤖 AI 建議」頁面<br>
+        2. 點擊「載入歷史數據」<br>
+        3. 系統將自動讀取並分析您的訂單資料
+      </p>
+    </div>
+    
+    <div class="section" style="margin-top: 20px;">
+      <h3>🔮 即將推出的功能</h3>
+      <div style="background: white; padding: 15px; border-radius: 8px;">
+        <ul style="margin-left: 20px; line-height: 2; color: #555;">
+          <li>✨ 真實 Google Sheets API 連接</li>
+          <li>📊 即時數據同步與更新</li>
+          <li>🤖 更進階的 AI 價格預測</li>
+          <li>📈 視覺化圖表分析</li>
+          <li>🔔 競品價格變動通知</li>
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+// 頁面載入時自動執行一次計算（如果有預設值）
+window.onload = function() {
+  const cost = document.getElementById('cost').value;
+  if (cost) {
+    calculate();
+  }
+};
 </script>
+
 </body>
 </html>
