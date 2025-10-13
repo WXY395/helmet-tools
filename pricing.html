@@ -350,7 +350,7 @@ tr:hover {
     <button class="tab" onclick="switchTab('connect')">🔗 資料整合</button>
   </div>
 
-  <!-- Tab 1: 經典定價（原有功能保留） -->
+  <!-- Tab 1: 經典定價 -->
   <div id="classic" class="tab-content active">
     <div class="section">
       <h3>📦 商品資訊</h3>
@@ -467,7 +467,7 @@ tr:hover {
       <p style="color: #1976d2; margin-top: 10px; font-size: 0.95rem;">
         連接您的 Google Sheets 訂單資料庫，AI 將分析歷史數據並提供智能定價建議
       </p>
-      <button class="btn" onclick="loadHistoricalData()" style="margin-top: 15px;">
+      <button class="btn" onclick="loadHistoricalDataDemo()" style="margin-top: 15px;">
         🔗 載入歷史數據（示範模式）
       </button>
     </div>
@@ -523,10 +523,16 @@ tr:hover {
 
       <div class="form-group" style="margin-top: 20px;">
         <label>📄 Google Sheets ID</label>
-        <input type="text" id="sheetsId" placeholder="試算表 ID（從網址中複製）">
+        <input type="text" id="sheetsId" placeholder="試算表 ID（從網址中複製，或輸入任意文字測試）">
       </div>
 
       <button class="btn" onclick="loadSheetsList()">📋 載入工作表清單</button>
+      
+      <div style="margin-top: 15px; padding: 15px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">
+        <p style="margin: 0; color: #e65100; font-size: 0.9rem;">
+          💡 <strong>提示：</strong>點擊按鈕後會載入示範數據。實際使用時，系統會讀取您的 Google Sheets。
+        </p>
+      </div>
     </div>
 
     <div id="sheetsList"></div>
@@ -541,6 +547,7 @@ tr:hover {
           <li>計算相似商品的平均售價和利潤</li>
           <li>提供基於數據的定價建議</li>
           <li>識別熱銷商品和最佳價格區間</li>
+          <li>支援多個客戶工作表選擇</li>
         </ul>
       </div>
     </div>
@@ -548,11 +555,15 @@ tr:hover {
 </div>
 
 <script>
+// 全域變數
 let historicalData = [];
 let currentCost = 0;
 let currentShipping = 60;
 let currentFeeRate = 0.075;
+let selectedSheets = [];
+let availableSheets = [];
 
+// 切換標籤頁
 function switchTab(tabName) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -561,6 +572,7 @@ function switchTab(tabName) {
   document.getElementById(tabName).classList.add('active');
 }
 
+// 基礎定價計算
 function calculate() {
   const cost = parseFloat(document.getElementById('cost').value) || 0;
   const qty = parseInt(document.getElementById('qty').value) || 1;
@@ -638,6 +650,7 @@ function calculate() {
   document.getElementById('classicResult').innerHTML = html;
 }
 
+// 反推計算
 function reverseCalculate() {
   const reversePrice = parseFloat(document.getElementById('reversePrice').value);
   
@@ -709,29 +722,243 @@ function reverseCalculate() {
   document.getElementById('reverseResult').innerHTML = html;
 }
 
-function getPricingAdvice(profitRate, roi) {
-  if (profitRate < 0) return '🚨 <strong>虧損警告！</strong>建議提高售價或降低成本。';
-  if (profitRate < 10) return '⚠️ 利潤偏低（業界標準 15-20%），建議提高售價。';
-  if (profitRate < 15) return '💡 利潤尚可，但仍有提升空間。';
-  if (profitRate < 25) return '✅ 健康的利潤率！這是理想的定價範圍。';
-  return '🎉 優秀！利潤非常理想！可以考慮更積極的市場策略。';
+// 載入工作表清單
+function loadSheetsList() {
+  console.log('🔍 loadSheetsList 函數被呼叫');
+  
+  const sheetsId = document.getElementById('sheetsId').value;
+  
+  if (!sheetsId) {
+    alert('請先輸入 Google Sheets ID！\n\n💡 如果只是想測試功能，可以輸入任意文字（例如：test123）');
+    return;
+  }
+  
+  console.log('✅ Sheets ID:', sheetsId);
+  
+  // 模擬載入工作表清單（實際應該透過 Google Sheets API）
+  availableSheets = [
+    { name: '客戶A_歷史訂單', type: 'order', count: 45 },
+    { name: '客戶B_歷史訂單', type: 'order', count: 32 },
+    { name: '客戶C_歷史訂單', type: 'order', count: 28 },
+    { name: 'EVO_產品庫', type: 'product', count: 67 },
+    { name: '華泰_產品庫', type: 'product', count: 54 },
+    { name: '訂單輸入', type: 'input', count: 0 }
+  ];
+  
+  console.log('✅ 可用工作表數量:', availableSheets.length);
+  
+  displaySheetsList();
+  
+  console.log('✅ 工作表清單已顯示');
 }
 
-function getReversePricingAdvice(profitRate, profit) {
-  if (profit < 0) return '❌ 這個價格會虧損！不建議採用。';
-  if (profitRate < 10) return '⚠️ 這個價格利潤太低，除非是清倉或促銷，否則不建議。';
-  if (profitRate < 15) return '💡 勉強可行，但利潤偏低，建議再評估。';
-  if (profitRate < 25) return '✅ 這個價格可以！利潤率在健康範圍內。';
-  return '🎉 優秀！這個價格利潤很理想！';
+// 顯示工作表清單
+function displaySheetsList() {
+  if (availableSheets.length === 0) {
+    console.warn('⚠️ availableSheets 是空的');
+    return;
+  }
+  
+  let html = `
+    <div class="section" style="margin-top: 20px;">
+      <h3>📋 選擇要分析的工作表</h3>
+      <p style="color: #666; margin-bottom: 15px;">
+        勾選您想要納入 AI 分析的客戶歷史訂單（可多選）
+      </p>
+      
+      <div style="background: white; padding: 20px; border-radius: 12px;">
+        <div style="margin-bottom: 20px;">
+          <button class="btn-small" onclick="selectAllSheets('order')">✅ 全選訂單</button>
+          <button class="btn-small" onclick="selectAllSheets('product')">✅ 全選產品庫</button>
+          <button class="btn-small" onclick="clearAllSheets()">❌ 清除選擇</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+  `;
+  
+  availableSheets.forEach((sheet, index) => {
+    const icon = sheet.type === 'order' ? '📦' : sheet.type === 'product' ? '🏷️' : '📝';
+    const color = sheet.type === 'order' ? '#667eea' : sheet.type === 'product' ? '#27ae60' : '#95a5a6';
+    const bgColor = sheet.type === 'order' ? '#f0f3ff' : sheet.type === 'product' ? '#e8f5e9' : '#f8f9fa';
+    
+    html += `
+      <div style="background: ${bgColor}; padding: 15px; border-radius: 10px; border-left: 4px solid ${color};">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0;">
+          <input type="checkbox" 
+                 id="sheet_${index}" 
+                 value="${sheet.name}" 
+                 data-type="${sheet.type}"
+                 onchange="updateSelectedSheets()"
+                 style="width: 20px; height: 20px; cursor: pointer;">
+          <div style="flex: 1;">
+            <div style="font-weight: bold; color: ${color}; margin-bottom: 5px;">
+              ${icon} ${sheet.name}
+            </div>
+            <div style="font-size: 0.85rem; color: #666;">
+              ${sheet.count} 筆資料
+            </div>
+          </div>
+        </label>
+      </div>
+    `;
+  });
+  
+  html += `
+        </div>
+      </div>
+      
+      <div id="selectedSheetsInfo" style="margin-top: 15px;"></div>
+      
+      <button class="btn" onclick="confirmSheetSelection()" style="margin-top: 15px;">
+        ✅ 確認選擇並載入數據
+      </button>
+    </div>
+  `;
+  
+  document.getElementById('sheetsList').innerHTML = html;
+  console.log('✅ HTML 已插入到 sheetsList');
 }
 
-function loadHistoricalData() {
+// 全選工作表
+function selectAllSheets(type) {
+  availableSheets.forEach((sheet, index) => {
+    if (sheet.type === type) {
+      const checkbox = document.getElementById(`sheet_${index}`);
+      if (checkbox) checkbox.checked = true;
+    }
+  });
+  updateSelectedSheets();
+}
+
+// 清除所有選擇
+function clearAllSheets() {
+  availableSheets.forEach((sheet, index) => {
+    const checkbox = document.getElementById(`sheet_${index}`);
+    if (checkbox) checkbox.checked = false;
+  });
+  updateSelectedSheets();
+}
+
+// 更新已選擇的工作表
+function updateSelectedSheets() {
+  selectedSheets = [];
+  availableSheets.forEach((sheet, index) => {
+    const checkbox = document.getElementById(`sheet_${index}`);
+    if (checkbox && checkbox.checked) {
+      selectedSheets.push(sheet.name);
+    }
+  });
+  
+  displaySelectedInfo();
+}
+
+// 顯示已選擇資訊
+function displaySelectedInfo() {
+  const infoDiv = document.getElementById('selectedSheetsInfo');
+  if (!infoDiv) return;
+  
+  if (selectedSheets.length === 0) {
+    infoDiv.innerHTML = `
+      <div class="ai-suggestion" style="background: #fff3e0; border-left: 5px solid #ff9800;">
+        <h4 style="color: #e65100;">⚠️ 尚未選擇工作表</h4>
+        <p>請至少選擇一個工作表進行分析。</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const orderSheets = selectedSheets.filter(name => name.includes('歷史訂單')).length;
+  const productSheets = selectedSheets.filter(name => name.includes('產品庫')).length;
+  
+  infoDiv.innerHTML = `
+    <div class="ai-suggestion" style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); border-left: 5px solid #28a745;">
+      <h4 style="color: #155724;">✅ 已選擇 ${selectedSheets.length} 個工作表</h4>
+      <p><strong>📦 歷史訂單：</strong>${orderSheets} 個</p>
+      <p><strong>🏷️ 產品庫：</strong>${productSheets} 個</p>
+      <details style="margin-top: 10px;">
+        <summary style="cursor: pointer; color: #155724; font-weight: bold;">📋 查看詳細清單</summary>
+        <ul style="margin-top: 10px; margin-left: 20px;">
+          ${selectedSheets.map(name => `<li>${name}</li>`).join('')}
+        </ul>
+      </details>
+    </div>
+  `;
+}
+
+// 確認工作表選擇
+function confirmSheetSelection() {
+  if (selectedSheets.length === 0) {
+    alert('請至少選擇一個工作表！');
+    return;
+  }
+  
+  // 模擬從選中的工作表載入數據
+  loadHistoricalDataFromSheets(selectedSheets);
+  
+  // 顯示成功訊息
+  document.getElementById('connectionResult').innerHTML = `
+    <div class="ai-suggestion" style="margin-top: 20px; background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); border-left: 5px solid #28a745;">
+      <h4 style="color: #155724;">🎉 數據載入成功！</h4>
+      <p>已從 <strong>${selectedSheets.length}</strong> 個工作表載入數據：</p>
+      <ul style="margin-left: 20px; margin-top: 10px;">
+        ${selectedSheets.map(name => `<li>${name}</li>`).join('')}
+      </ul>
+      <p style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #28a745;">
+        ✨ 現在您可以前往 <strong>「🤖 AI 建議」</strong> 頁面查看分析結果！
+      </p>
+    </div>
+  `;
+  
+  // 切換到 AI 建議頁面
+  setTimeout(() => {
+    const tabs = document.querySelectorAll('.tab');
+    tabs[2].click(); // AI 建議是第 3 個 tab
+  }, 1500);
+}
+
+// 從工作表載入歷史數據
+function loadHistoricalDataFromSheets(sheetNames) {
+  let mockData = [];
+  
+  if (sheetNames.includes('客戶A_歷史訂單')) {
+    mockData.push(
+      { name: '191黑燭帽士帽', avgPrice: 1680, soldCount: 45, avgProfit: 580, brand: 'EVO', customer: '客戶A' },
+      { name: 'EVO 全罩安全帽', avgPrice: 1250, soldCount: 32, avgProfit: 420, brand: 'EVO', customer: '客戶A' }
+    );
+  }
+  
+  if (sheetNames.includes('客戶B_歷史訂單')) {
+    mockData.push(
+      { name: '華泰半罩帽', avgPrice: 890, soldCount: 67, avgProfit: 280, brand: '華泰', customer: '客戶B' },
+      { name: '3/4 安全帽', avgPrice: 1120, soldCount: 28, avgProfit: 360, brand: 'EVO', customer: '客戶B' }
+    );
+  }
+  
+  if (sheetNames.includes('客戶C_歷史訂單')) {
+    mockData.push(
+      { name: '復古安全帽', avgPrice: 1450, soldCount: 19, avgProfit: 520, brand: '華泰', customer: '客戶C' },
+      { name: '運動款安全帽', avgPrice: 1580, soldCount: 24, avgProfit: 490, brand: 'EVO', customer: '客戶C' }
+    );
+  }
+  
+  historicalData = mockData;
+  
+  // 更新 AI 建議頁面的連接狀態
+  const statusBadge = document.getElementById('connectionStatus');
+  if (statusBadge) {
+    statusBadge.className = 'status-badge connected';
+    statusBadge.textContent = `已連接（${selectedSheets.length} 個工作表）`;
+  }
+}
+
+// 載入歷史數據（示範模式）
+function loadHistoricalDataDemo() {
   const mockData = [
-    { name: '191黑燭帽士帽', avgPrice: 1680, soldCount: 45, avgProfit: 580, brand: 'EVO' },
-    { name: 'EVO 全罩安全帽', avgPrice: 1250, soldCount: 32, avgProfit: 420, brand: 'EVO' },
-    { name: '華泰半罩帽', avgPrice: 890, soldCount: 67, avgProfit: 280, brand: '華泰' },
-    { name: '3/4 安全帽', avgPrice: 1120, soldCount: 28, avgProfit: 360, brand: 'EVO' },
-    { name: '復古安全帽', avgPrice: 1450, soldCount: 19, avgProfit: 520, brand: '華泰' }
+    { name: '191黑燭帽士帽', avgPrice: 1680, soldCount: 45, avgProfit: 580, brand: 'EVO', customer: '客戶A' },
+    { name: 'EVO 全罩安全帽', avgPrice: 1250, soldCount: 32, avgProfit: 420, brand: 'EVO', customer: '客戶A' },
+    { name: '華泰半罩帽', avgPrice: 890, soldCount: 67, avgProfit: 280, brand: '華泰', customer: '客戶B' },
+    { name: '3/4 安全帽', avgPrice: 1120, soldCount: 28, avgProfit: 360, brand: 'EVO', customer: '客戶B' },
+    { name: '復古安全帽', avgPrice: 1450, soldCount: 19, avgProfit: 520, brand: '華泰', customer: '客戶C' }
   ];
   
   historicalData = mockData;
@@ -741,12 +968,17 @@ function loadHistoricalData() {
   displayAIRecommendations();
 }
 
+// 顯示 AI 建議
 function displayAIRecommendations() {
   if (historicalData.length === 0) {
     document.getElementById('aiResult').innerHTML = `
       <div class="ai-suggestion" style="margin-top: 20px;">
         <h4>⚠️ 尚未載入數據</h4>
-        <p>請點擊上方按鈕載入歷史訂單數據，系統將進行智能分析。</p>
+        <p>請先：</p>
+        <ol style="margin-left: 20px; margin-top: 10px;">
+          <li>點擊上方「載入歷史數據（示範模式）」按鈕</li>
+          <li>或前往「🔗 資料整合」頁面連接真實數據</li>
+        </ol>
       </div>
     `;
     return;
@@ -756,9 +988,20 @@ function displayAIRecommendations() {
   const avgProfit = calculateAverage(historicalData, 'avgProfit');
   const totalSold = historicalData.reduce((sum, item) => sum + item.soldCount, 0);
   
+  // 統計不同客戶和品牌
+  const customers = [...new Set(historicalData.map(item => item.customer))];
+  const brands = [...new Set(historicalData.map(item => item.brand))];
+  
   let html = `
     <div class="result-card" style="margin-top: 20px;">
       <h3 style="color: #2c3e50; margin-bottom: 20px;">🤖 AI 智能分析報告</h3>
+      
+      <div class="ai-suggestion" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left: 5px solid #2196F3; margin-bottom: 20px;">
+        <h4 style="color: #1565c0;">📊 數據來源</h4>
+        <p><strong>分析客戶：</strong>${customers.join('、')}</p>
+        <p><strong>涵蓋品牌：</strong>${brands.join('、')}</p>
+        <p><strong>數據筆數：</strong>${historicalData.length} 項商品</p>
+      </div>
       
       <div class="result-grid">
         <div class="metric blue">
@@ -788,12 +1031,15 @@ function displayAIRecommendations() {
         <p><strong>🎯 最佳價格區間：</strong>NT$ ${getOptimalPriceRange(historicalData)}</p>
         <p><strong>📈 熱銷價格帶：</strong>${getHotPriceRange(historicalData)}</p>
         <p><strong>💡 利潤空間：</strong>平均每件商品可獲利 $${avgProfit}</p>
+        <p><strong>🏆 最佳客戶：</strong>${getBestCustomer(historicalData)}</p>
       </div>
       
       <div style="margin-top: 20px;">
         <h4 style="color: #2c3e50; margin-bottom: 15px;">📊 歷史熱銷商品排行</h4>
         ${generateProductTable(historicalData)}
       </div>
+      
+      ${generateCustomerAnalysis(historicalData)}
       
       <div class="ai-suggestion" style="margin-top: 20px;">
         <h4>🎯 AI 智能建議</h4>
@@ -805,71 +1051,7 @@ function displayAIRecommendations() {
   document.getElementById('aiResult').innerHTML = html;
 }
 
-function calculateAverage(data, field) {
-  const sum = data.reduce((acc, item) => acc + item[field], 0);
-  return Math.round(sum / data.length);
-}
-
-function getOptimalPriceRange(data) {
-  const prices = data.map(item => item.avgPrice).sort((a, b) => a - b);
-  return `${prices[0]} - ${prices[prices.length - 1]}`;
-}
-
-function getHotPriceRange(data) {
-  const sorted = [...data].sort((a, b) => b.soldCount - a.soldCount);
-  const top3 = sorted.slice(0, 3);
-  const prices = top3.map(item => item.avgPrice);
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  return `NT$ ${min} - ${max}（銷量前三名的價格區間）`;
-}
-
-function generateProductTable(data) {
-  const sorted = [...data].sort((a, b) => b.soldCount - a.soldCount);
-  
-  let table = '<table><tr><th>排名</th><th>商品名稱</th><th>品牌</th><th>平均售價</th><th>銷量</th><th>平均利潤</th></tr>';
-  
-  sorted.forEach((item, index) => {
-    const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
-    table += `<tr>
-      <td style="text-align: center; font-weight: bold;">${rank}</td>
-      <td>${item.name}</td>
-      <td>${item.brand}</td>
-      <td style="font-weight: bold; color: #667eea;">$${item.avgPrice}</td>
-      <td>${item.soldCount} 件</td>
-      <td style="font-weight: bold; color: #27ae60;">$${item.avgProfit}</td>
-    </tr>`;
-  });
-  
-  table += '</table>';
-  return table;
-}
-
-function generateAIAdvice(cost, data) {
-  if (cost === 0) {
-    return '💡 請先在「經典定價」頁面輸入商品成本，AI 將根據成本和歷史數據給出個性化建議。';
-  }
-  
-  const avgProfit = calculateAverage(data, 'avgProfit');
-  const suggestedPrice = Math.round(cost + avgProfit);
-  const competitivePrice = Math.round(suggestedPrice * 0.95);
-  
-  return `
-    <strong>基於您的成本 $${cost.toFixed(0)} 和歷史數據分析：</strong><br><br>
-    
-    🎯 <strong>標準定價建議：NT$ ${suggestedPrice}</strong><br>
-    這個價格能讓您獲得約 $${avgProfit} 的利潤，與歷史平均接近。<br><br>
-    
-    💰 <strong>競爭性定價：NT$ ${competitivePrice}</strong><br>
-    如果想要更有市場競爭力，可以考慮降低 5% 左右。<br><br>
-    
-    📊 <strong>策略建議：</strong><br>
-    • 如果是熱門款式，可以定在 $${suggestedPrice} 以上<br>
-    • 如果是新品推廣，建議從 $${competitivePrice} 開始測試市場反應<br>
-    • 建議使用「定價模擬」功能進一步優化價格策略
-  `;
-}
-
+// 定價模擬
 function runSimulation() {
   const start = parseInt(document.getElementById('simStart').value) || 150;
   const end = parseInt(document.getElementById('simEnd').value) || 200;
@@ -961,13 +1143,173 @@ function runSimulation() {
       <h4>🏆 模擬結論</h4>
       <p>根據模擬分析，<strong style="color: #c92a2a;">建議售價 NT$ ${bestPrice}</strong>，
       可獲得最大利潤 <strong>NT$ ${bestProfit.toFixed(0)}</strong>（利潤率 ${bestProfitRate.toFixed(1)}%）。</p>
-      <p style="margin-top: 10px;">
-        ${getSimulationAdvice(bestProfitRate, bestPrice, start, end)}
-      </p>
     </div>
   </div>`;
   
   document.getElementById('simulationResult').innerHTML = html;
+}
+
+// 輔助函數
+function getPricingAdvice(profitRate, roi) {
+  if (profitRate < 0) return '🚨 <strong>虧損警告！</strong>建議提高售價或降低成本。';
+  if (profitRate < 10) return '⚠️ 利潤偏低（業界標準 15-20%），建議提高售價。';
+  if (profitRate < 15) return '💡 利潤尚可，但仍有提升空間。';
+  if (profitRate < 25) return '✅ 健康的利潤率！這是理想的定價範圍。';
+  return '🎉 優秀！利潤非常理想！可以考慮更積極的市場策略。';
+}
+
+function getReversePricingAdvice(profitRate, profit) {
+  if (profit < 0) return '❌ 這個價格會虧損！不建議採用。';
+  if (profitRate < 10) return '⚠️ 這個價格利潤太低，除非是清倉或促銷，否則不建議。';
+  if (profitRate < 15) return '💡 勉強可行，但利潤偏低，建議再評估。';
+  if (profitRate < 25) return '✅ 這個價格可以！利潤率在健康範圍內。';
+  return '🎉 優秀！這個價格利潤很理想！';
+}
+
+function calculateAverage(data, field) {
+  const sum = data.reduce((acc, item) => acc + item[field], 0);
+  return Math.round(sum / data.length);
+}
+
+function getOptimalPriceRange(data) {
+  const prices = data.map(item => item.avgPrice).sort((a, b) => a - b);
+  return `${prices[0]} - ${prices[prices.length - 1]}`;
+}
+
+function getHotPriceRange(data) {
+  const sorted = [...data].sort((a, b) => b.soldCount - a.soldCount);
+  const top3 = sorted.slice(0, 3);
+  const prices = top3.map(item => item.avgPrice);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return `NT$ ${min} - ${max}（銷量前三名的價格區間）`;
+}
+
+function getBestCustomer(data) {
+  const customerStats = {};
+  
+  data.forEach(item => {
+    if (!customerStats[item.customer]) {
+      customerStats[item.customer] = { totalSold: 0, totalProfit: 0 };
+    }
+    customerStats[item.customer].totalSold += item.soldCount;
+    customerStats[item.customer].totalProfit += item.avgProfit * item.soldCount;
+  });
+  
+  let bestCustomer = '';
+  let maxValue = 0;
+  
+  for (const [customer, stats] of Object.entries(customerStats)) {
+    if (stats.totalProfit > maxValue) {
+      maxValue = stats.totalProfit;
+      bestCustomer = customer;
+    }
+  }
+  
+  return `${bestCustomer}（總利潤最高）`;
+}
+
+function generateProductTable(data) {
+  const sorted = [...data].sort((a, b) => b.soldCount - a.soldCount);
+  
+  let table = '<table><tr><th>排名</th><th>商品名稱</th><th>品牌</th><th>客戶</th><th>平均售價</th><th>銷量</th><th>平均利潤</th></tr>';
+  
+  sorted.forEach((item, index) => {
+    const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
+    table += `<tr>
+      <td style="text-align: center; font-weight: bold;">${rank}</td>
+      <td>${item.name}</td>
+      <td><span style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">${item.brand}</span></td>
+      <td><span style="background: #fff3e0; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">${item.customer}</span></td>
+      <td style="font-weight: bold; color: #667eea;">$${item.avgPrice}</td>
+      <td>${item.soldCount} 件</td>
+      <td style="font-weight: bold; color: #27ae60;">$${item.avgProfit}</td>
+    </tr>`;
+  });
+  
+  table += '</table>';
+  return table;
+}
+
+function generateCustomerAnalysis(data) {
+  const customerStats = {};
+  
+  data.forEach(item => {
+    if (!customerStats[item.customer]) {
+      customerStats[item.customer] = { 
+        totalSold: 0, 
+        totalProfit: 0,
+        avgPrice: 0,
+        products: []
+      };
+    }
+    customerStats[item.customer].totalSold += item.soldCount;
+    customerStats[item.customer].totalProfit += item.avgProfit * item.soldCount;
+    customerStats[item.customer].products.push(item);
+  });
+  
+  // 計算平均售價
+  for (const customer in customerStats) {
+    const products = customerStats[customer].products;
+    customerStats[customer].avgPrice = Math.round(
+      products.reduce((sum, p) => sum + p.avgPrice, 0) / products.length
+    );
+  }
+  
+  let html = `
+    <div style="margin-top: 20px;">
+      <h4 style="color: #2c3e50; margin-bottom: 15px;">👥 客戶分析</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+  `;
+  
+  for (const [customer, stats] of Object.entries(customerStats)) {
+    const avgProfitPerItem = Math.round(stats.totalProfit / stats.totalSold);
+    
+    html += `
+      <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 12px; border-left: 5px solid #667eea;">
+        <h5 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 1.1rem;">📊 ${customer}</h5>
+        <div style="line-height: 1.8; color: #555;">
+          <p style="margin: 5px 0;"><strong>銷售量：</strong>${stats.totalSold} 件</p>
+          <p style="margin: 5px 0;"><strong>總利潤：</strong><span style="color: #27ae60; font-weight: bold;">$${stats.totalProfit.toFixed(0)}</span></p>
+          <p style="margin: 5px 0;"><strong>平均售價：</strong>$${stats.avgPrice}</p>
+          <p style="margin: 5px 0;"><strong>單件利潤：</strong>$${avgProfitPerItem}</p>
+          <p style="margin: 5px 0;"><strong>商品數：</strong>${stats.products.length} 種</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  html += `
+      </div>
+    </div>
+  `;
+  
+  return html;
+}
+
+function generateAIAdvice(cost, data) {
+  if (cost === 0) {
+    return '💡 請先在「經典定價」頁面輸入商品成本，AI 將根據成本和歷史數據給出個性化建議。';
+  }
+  
+  const avgProfit = calculateAverage(data, 'avgProfit');
+  const suggestedPrice = Math.round(cost + avgProfit);
+  const competitivePrice = Math.round(suggestedPrice * 0.95);
+  
+  return `
+    <strong>基於您的成本 $${cost.toFixed(0)} 和歷史數據分析：</strong><br><br>
+    
+    🎯 <strong>標準定價建議：NT$ ${suggestedPrice}</strong><br>
+    這個價格能讓您獲得約 $${avgProfit} 的利潤，與歷史平均接近。<br><br>
+    
+    💰 <strong>競爭性定價：NT$ ${competitivePrice}</strong><br>
+    如果想要更有市場競爭力，可以考慮降低 5% 左右。<br><br>
+    
+    📊 <strong>策略建議：</strong><br>
+    • 如果是熱門款式，可以定在 $${suggestedPrice} 以上<br>
+    • 如果是新品推廣，建議從 $${competitivePrice} 開始測試市場反應<br>
+    • 建議使用「定價模擬」功能進一步優化價格策略
+  `;
 }
 
 function getSimulationRating(profitRate) {
@@ -978,72 +1320,11 @@ function getSimulationRating(profitRate) {
   return '🎉 優秀';
 }
 
-function getSimulationAdvice(profitRate, bestPrice, start, end) {
-  if (profitRate < 10) {
-    return `⚠️ 最佳價格 $${bestPrice} 的利潤率仍偏低，建議：<br>
-    1. 提高價格範圍（目前 $${start}-${end}）<br>
-    2. 檢討並降低成本<br>
-    3. 考慮是否適合在蝦皮銷售`;
-  }
-  
-  if (profitRate < 15) {
-    return `💡 利潤率尚可，但可以更好。建議：<br>
-    1. 嘗試定在 $${bestPrice + 20} 左右測試市場反應<br>
-    2. 或維持此價格，透過提升銷量來增加總利潤`;
-  }
-  
-  if (profitRate < 25) {
-    return `✅ 這是很健康的利潤率！$${bestPrice} 是理想的定價。<br>
-    可以考慮：<br>
-    1. 正式採用此價格<br>
-    2. 或在促銷時降價 5-10% 增加競爭力`;
-  }
-  
-  return `🎉 優秀的利潤空間！建議：<br>
-  1. 可以稍微降價提高市場競爭力<br>
-  2. 或維持高價格，打造精品形象<br>
-  3. 也可以考慮推出組合優惠方案`;
-}
-
-function testConnection() {
-  const sheetsId = document.getElementById('sheetsId').value;
-  const sheetName = document.getElementById('sheetName').value;
-  
-  if (!sheetsId) {
-    alert('請輸入 Google Sheets ID！');
-    return;
-  }
-  
-  document.getElementById('connectionResult').innerHTML = `
-    <div class="ai-suggestion" style="margin-top: 20px; background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); border-left: 5px solid #28a745;">
-      <h4 style="color: #155724;">✅ 連接設定已保存</h4>
-      <p><strong>📄 試算表 ID：</strong>${sheetsId}</p>
-      <p><strong>📋 工作表名稱：</strong>${sheetName}</p>
-      <p style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #28a745;">
-        設定已保存！您現在可以：<br>
-        1. 前往「🤖 AI 建議」頁面<br>
-        2. 點擊「載入歷史數據」<br>
-        3. 系統將自動讀取並分析您的訂單資料
-      </p>
-    </div>
-    
-    <div class="section" style="margin-top: 20px;">
-      <h3>🔮 即將推出的功能</h3>
-      <div style="background: white; padding: 15px; border-radius: 8px;">
-        <ul style="margin-left: 20px; line-height: 2; color: #555;">
-          <li>✨ 真實 Google Sheets API 連接</li>
-          <li>📊 即時數據同步與更新</li>
-          <li>🤖 更進階的 AI 價格預測</li>
-          <li>📈 視覺化圖表分析</li>
-          <li>🔔 競品價格變動通知</li>
-        </ul>
-      </div>
-    </div>
-  `;
-}
-
-// 頁面載入時自動執行一次計算（如果有預設值）
+// 頁面載入時執行
 window.onload = function() {
+  console.log('✅ 頁面載入完成');
+  console.log('✅ 所有函數已定義');
+  
   const cost = document.getElementById('cost').value;
   if (cost) {
     calculate();
