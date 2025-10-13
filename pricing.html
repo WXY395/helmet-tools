@@ -916,34 +916,135 @@ function confirmSheetSelection() {
   }, 1500);
 }
 
-// 從工作表載入歷史數據
+// 從工作表載入數據（只需產品庫數據 + 蝦皮競品數據）
 function loadHistoricalDataFromSheets(sheetNames) {
   let mockData = [];
   
-  if (sheetNames.includes('客戶A_歷史訂單')) {
-    mockData.push(
-      { name: '191黑燭帽士帽', avgPrice: 1680, soldCount: 45, avgProfit: 580, brand: 'EVO', customer: '客戶A' },
-      { name: 'EVO 全罩安全帽', avgPrice: 1250, soldCount: 32, avgProfit: 420, brand: 'EVO', customer: '客戶A' }
-    );
+  // 模擬從產品庫讀取商品資料 + 蝦皮競品價格
+  if (sheetNames.some(name => name.includes('產品庫') || name.includes('客戶'))) {
+    mockData = [
+      { 
+        name: '191黑燭帽士帽',
+        brand: 'EVO',
+        costPrice: 880,        // 進貨單價（從產品庫）
+        spec: 'L',
+        color: '黑色',
+        // 蝦皮競品價格（手動輸入或爬蟲抓取）
+        competitorPrices: {
+          highest: 1880,       // 最高競品價
+          average: 1650,       // 平均競品價
+          lowest: 1480,        // 最低競品價
+          count: 15            // 競品數量
+        },
+        soldCount: 45          // 歷史銷量（僅供參考熱門度）
+      },
+      { 
+        name: 'EVO 全罩安全帽',
+        brand: 'EVO',
+        costPrice: 650,
+        spec: 'M',
+        color: '白色',
+        competitorPrices: {
+          highest: 1380,
+          average: 1200,
+          lowest: 1050,
+          count: 23
+        },
+        soldCount: 32
+      },
+      { 
+        name: '華泰半罩帽',
+        brand: '華泰',
+        costPrice: 450,
+        spec: 'M',
+        color: '藍色',
+        competitorPrices: {
+          highest: 990,
+          average: 850,
+          lowest: 720,
+          count: 31
+        },
+        soldCount: 67
+      },
+      { 
+        name: '3/4 安全帽',
+        brand: 'EVO',
+        costPrice: 580,
+        spec: 'L',
+        color: '紅色',
+        competitorPrices: {
+          highest: 1280,
+          average: 1080,
+          lowest: 950,
+          count: 18
+        },
+        soldCount: 28
+      },
+      { 
+        name: '復古安全帽',
+        brand: '華泰',
+        costPrice: 720,
+        spec: 'L',
+        color: '棕色',
+        competitorPrices: {
+          highest: 1650,
+          average: 1420,
+          lowest: 1250,
+          count: 12
+        },
+        soldCount: 19
+      },
+      { 
+        name: '運動款安全帽',
+        brand: 'EVO',
+        costPrice: 850,
+        spec: 'XL',
+        color: '黑紅',
+        competitorPrices: {
+          highest: 1780,
+          average: 1550,
+          lowest: 1380,
+          count: 9
+        },
+        soldCount: 24
+      }
+    ];
   }
   
-  if (sheetNames.includes('客戶B_歷史訂單')) {
-    mockData.push(
-      { name: '華泰半罩帽', avgPrice: 890, soldCount: 67, avgProfit: 280, brand: '華泰', customer: '客戶B' },
-      { name: '3/4 安全帽', avgPrice: 1120, soldCount: 28, avgProfit: 360, brand: 'EVO', customer: '客戶B' }
-    );
-  }
-  
-  if (sheetNames.includes('客戶C_歷史訂單')) {
-    mockData.push(
-      { name: '復古安全帽', avgPrice: 1450, soldCount: 19, avgProfit: 520, brand: '華泰', customer: '客戶C' },
-      { name: '運動款安全帽', avgPrice: 1580, soldCount: 24, avgProfit: 490, brand: 'EVO', customer: '客戶C' }
-    );
-  }
+  // 計算基於不同利潤率目標的建議售價
+  mockData.forEach(item => {
+    // 固定成本
+    const packCost = 10;
+    const laborCost = 10;
+    const shipping = 60;
+    const shopeeFee = 0.075;
+    const paymentFee = 0.02;
+    const totalFeeRate = shopeeFee + paymentFee; // 9.5%
+    
+    const totalCost = item.costPrice + packCost + laborCost;
+    
+    // 計算不同利潤率目標下的售價
+    item.totalCost = totalCost;
+    
+    // 反推售價公式：售價 = (成本 + 運費 + 目標利潤) / (1 - 費率)
+    item.pricingOptions = {
+      // 10% 利潤率（最低可接受）
+      profit10: Math.ceil(((totalCost + shipping) / (1 - totalFeeRate - 0.10))),
+      // 15% 利潤率（合理）
+      profit15: Math.ceil(((totalCost + shipping) / (1 - totalFeeRate - 0.15))),
+      // 20% 利潤率（理想）
+      profit20: Math.ceil(((totalCost + shipping) / (1 - totalFeeRate - 0.20))),
+      // 25% 利潤率（優秀）
+      profit25: Math.ceil(((totalCost + shipping) / (1 - totalFeeRate - 0.25)))
+    };
+    
+    // 分析競品價格的競爭力
+    item.competitorAnalysis = analyzeCompetitorPosition(item);
+  });
   
   historicalData = mockData;
   
-  // 更新 AI 建議頁面的連接狀態
+  // 更新連接狀態
   const statusBadge = document.getElementById('connectionStatus');
   if (statusBadge) {
     statusBadge.className = 'status-badge connected';
@@ -951,15 +1052,150 @@ function loadHistoricalDataFromSheets(sheetNames) {
   }
 }
 
+// 分析在競品價格中的位置
+function analyzeCompetitorPosition(item) {
+  const comp = item.competitorPrices;
+  const options = item.pricingOptions;
+  
+  return {
+    // 如果定在平均競品價，能獲得多少利潤率
+    atAverage: calculateProfitRate(comp.average, item.totalCost, 60),
+    // 如果定在最低競品價，能獲得多少利潤率
+    atLowest: calculateProfitRate(comp.lowest, item.totalCost, 60),
+    // 如果定在最高競品價，能獲得多少利潤率
+    atHighest: calculateProfitRate(comp.highest, item.totalCost, 60),
+    // 建議定價策略
+    recommendation: getRecommendation(options, comp)
+  };
+}
+
+// 計算特定售價下的利潤率
+function calculateProfitRate(sellPrice, cost, shipping) {
+  const totalFeeRate = 0.095; // 9.5%
+  const netIncome = (sellPrice * (1 - totalFeeRate)) - shipping;
+  const profit = netIncome - cost;
+  return {
+    profit: profit.toFixed(0),
+    rate: ((profit / sellPrice) * 100).toFixed(1)
+  };
+}
+
+// 獲得定價建議
+function getRecommendation(pricingOptions, competitorPrices) {
+  const { profit15, profit20, profit25 } = pricingOptions;
+  const { average, lowest, highest } = competitorPrices;
+  
+  // 判斷各利潤率目標與競品價格的關係
+  let strategy = '';
+  
+  if (profit20 <= average) {
+    strategy = 'aggressive'; // 20%利潤率仍低於市場均價，可積極定價
+  } else if (profit15 <= average) {
+    strategy = 'moderate'; // 15%利潤率低於均價，可適中定價
+  } else if (profit15 <= highest) {
+    strategy = 'conservative'; // 需要保守定價才能保證利潤
+  } else {
+    strategy = 'difficult'; // 難以獲得理想利潤
+  }
+  
+  return strategy;
+}
+
 // 載入歷史數據（示範模式）
 function loadHistoricalDataDemo() {
   const mockData = [
-    { name: '191黑燭帽士帽', avgPrice: 1680, soldCount: 45, avgProfit: 580, brand: 'EVO', customer: '客戶A' },
-    { name: 'EVO 全罩安全帽', avgPrice: 1250, soldCount: 32, avgProfit: 420, brand: 'EVO', customer: '客戶A' },
-    { name: '華泰半罩帽', avgPrice: 890, soldCount: 67, avgProfit: 280, brand: '華泰', customer: '客戶B' },
-    { name: '3/4 安全帽', avgPrice: 1120, soldCount: 28, avgProfit: 360, brand: 'EVO', customer: '客戶B' },
-    { name: '復古安全帽', avgPrice: 1450, soldCount: 19, avgProfit: 520, brand: '華泰', customer: '客戶C' }
+    { 
+      name: '191黑燭帽士帽',
+      brand: 'EVO',
+      costPrice: 880,
+      spec: 'L',
+      color: '黑色',
+      competitorPrices: {
+        highest: 1880,
+        average: 1650,
+        lowest: 1480,
+        count: 15
+      },
+      soldCount: 45
+    },
+    { 
+      name: 'EVO 全罩安全帽',
+      brand: 'EVO',
+      costPrice: 650,
+      spec: 'M',
+      color: '白色',
+      competitorPrices: {
+        highest: 1380,
+        average: 1200,
+        lowest: 1050,
+        count: 23
+      },
+      soldCount: 32
+    },
+    { 
+      name: '華泰半罩帽',
+      brand: '華泰',
+      costPrice: 450,
+      spec: 'M',
+      color: '藍色',
+      competitorPrices: {
+        highest: 990,
+        average: 850,
+        lowest: 720,
+        count: 31
+      },
+      soldCount: 67
+    },
+    { 
+      name: '3/4 安全帽',
+      brand: 'EVO',
+      costPrice: 580,
+      spec: 'L',
+      color: '紅色',
+      competitorPrices: {
+        highest: 1280,
+        average: 1080,
+        lowest: 950,
+        count: 18
+      },
+      soldCount: 28
+    },
+    { 
+      name: '復古安全帽',
+      brand: '華泰',
+      costPrice: 720,
+      spec: 'L',
+      color: '棕色',
+      competitorPrices: {
+        highest: 1650,
+        average: 1420,
+        lowest: 1250,
+        count: 12
+      },
+      soldCount: 19
+    }
   ];
+  
+  // 計算基於利潤率的定價選項
+  mockData.forEach(item => {
+    const packCost = 10;
+    const laborCost = 10;
+    const shipping = 60;
+    const totalFeeRate = 0.095;
+    
+    const totalCost = item.costPrice + packCost + laborCost;
+    item.totalCost = totalCost;
+    
+    // 不同利潤率目標的售價
+    item.pricingOptions = {
+      profit10: Math.ceil(((totalCost + shipping) / (1 - totalFeeRate - 0.10))),
+      profit15: Math.ceil(((totalCost + shipping) / (1 - totalFeeRate - 0.15))),
+      profit20: Math.ceil(((totalCost + shipping) / (1 - totalFeeRate - 0.20))),
+      profit25: Math.ceil(((totalCost + shipping) / (1 - totalFeeRate - 0.25)))
+    };
+    
+    item.competitorAnalysis = analyzeCompetitorPosition(item);
+  });
   
   historicalData = mockData;
   document.getElementById('connectionStatus').className = 'status-badge connected';
@@ -984,8 +1220,11 @@ function displayAIRecommendations() {
     return;
   }
   
-  const avgPrice = calculateAverage(historicalData, 'avgPrice');
-  const avgProfit = calculateAverage(historicalData, 'avgProfit');
+  // 計算各項統計數據
+  const avgCostPrice = calculateAverage(historicalData, 'costPrice');
+  const avgSellPrice = calculateAverage(historicalData, 'avgSellPrice');
+  const avgProfit = Math.round(historicalData.reduce((sum, item) => sum + item.actualProfit, 0) / historicalData.length);
+  const avgProfitRate = (historicalData.reduce((sum, item) => sum + parseFloat(item.profitRate), 0) / historicalData.length).toFixed(1);
   const totalSold = historicalData.reduce((sum, item) => sum + item.soldCount, 0);
   
   // 統計不同客戶和品牌
@@ -1004,25 +1243,25 @@ function displayAIRecommendations() {
       </div>
       
       <div class="result-grid">
+        <div class="metric orange">
+          <div class="metric-label">平均進貨單價</div>
+          <div class="metric-value">${avgCostPrice}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">從產品庫</div>
+        </div>
         <div class="metric blue">
           <div class="metric-label">平均售價</div>
-          <div class="metric-value">$${avgPrice}</div>
-          <div class="metric-label" style="font-size: 0.8rem;">市場行情參考</div>
+          <div class="metric-value">${avgSellPrice}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">市場行情</div>
         </div>
         <div class="metric green">
-          <div class="metric-label">平均利潤</div>
-          <div class="metric-value">$${avgProfit}</div>
-          <div class="metric-label" style="font-size: 0.8rem;">單筆獲利</div>
-        </div>
-        <div class="metric orange">
-          <div class="metric-label">總銷售量</div>
-          <div class="metric-value">${totalSold}</div>
-          <div class="metric-label" style="font-size: 0.8rem;">累計銷售</div>
+          <div class="metric-label">平均實際利潤</div>
+          <div class="metric-value">${avgProfit}</div>
+          <div class="metric-label" style="font-size: 0.8rem;">扣除所有成本</div>
         </div>
         <div class="metric purple">
-          <div class="metric-label">分析樣本</div>
-          <div class="metric-value">${historicalData.length}</div>
-          <div class="metric-label" style="font-size: 0.8rem;">商品品項</div>
+          <div class="metric-label">平均利潤率</div>
+          <div class="metric-value">${avgProfitRate}%</div>
+          <div class="metric-label" style="font-size: 0.8rem;">利潤 ÷ 售價</div>
         </div>
       </div>
       
@@ -1030,12 +1269,15 @@ function displayAIRecommendations() {
         <h4 style="color: #155724;">💰 市場洞察</h4>
         <p><strong>🎯 最佳價格區間：</strong>NT$ ${getOptimalPriceRange(historicalData)}</p>
         <p><strong>📈 熱銷價格帶：</strong>${getHotPriceRange(historicalData)}</p>
-        <p><strong>💡 利潤空間：</strong>平均每件商品可獲利 $${avgProfit}</p>
+        <p><strong>💡 實際利潤空間：</strong>平均每件可獲利 ${avgProfit}（利潤率 ${avgProfitRate}%）</p>
         <p><strong>🏆 最佳客戶：</strong>${getBestCustomer(historicalData)}</p>
       </div>
       
       <div style="margin-top: 20px;">
-        <h4 style="color: #2c3e50; margin-bottom: 15px;">📊 歷史熱銷商品排行</h4>
+        <h4 style="color: #2c3e50; margin-bottom: 15px;">📊 商品定價分析表</h4>
+        <p style="color: #666; margin-bottom: 10px;">
+          💡 <strong>重要說明：</strong>進貨單價來自產品庫，實際利潤已扣除包材、人工、運費和蝦皮費用
+        </p>
         ${generateProductTable(historicalData)}
       </div>
       
@@ -1043,7 +1285,7 @@ function displayAIRecommendations() {
       
       <div class="ai-suggestion" style="margin-top: 20px;">
         <h4>🎯 AI 智能建議</h4>
-        <p>${generateAIAdvice(currentCost, historicalData)}</p>
+        <p>${generateAIAdviceNew(currentCost, historicalData)}</p>
       </div>
     </div>
   `;
@@ -1172,14 +1414,14 @@ function calculateAverage(data, field) {
 }
 
 function getOptimalPriceRange(data) {
-  const prices = data.map(item => item.avgPrice).sort((a, b) => a - b);
+  const prices = data.map(item => item.avgSellPrice).sort((a, b) => a - b);
   return `${prices[0]} - ${prices[prices.length - 1]}`;
 }
 
 function getHotPriceRange(data) {
   const sorted = [...data].sort((a, b) => b.soldCount - a.soldCount);
   const top3 = sorted.slice(0, 3);
-  const prices = top3.map(item => item.avgPrice);
+  const prices = top3.map(item => item.avgSellPrice);
   const min = Math.min(...prices);
   const max = Math.max(...prices);
   return `NT$ ${min} - ${max}（銷量前三名的價格區間）`;
@@ -1212,18 +1454,32 @@ function getBestCustomer(data) {
 function generateProductTable(data) {
   const sorted = [...data].sort((a, b) => b.soldCount - a.soldCount);
   
-  let table = '<table><tr><th>排名</th><th>商品名稱</th><th>品牌</th><th>客戶</th><th>平均售價</th><th>銷量</th><th>平均利潤</th></tr>';
+  let table = '<table><tr><th>排名</th><th>商品名稱</th><th>規格</th><th>進貨單價</th><th>平均售價</th><th>銷量</th><th>實際利潤</th><th>利潤率</th></tr>';
   
   sorted.forEach((item, index) => {
     const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
+    const profitColor = item.profitRate >= 20 ? '#27ae60' : item.profitRate >= 15 ? '#3498db' : item.profitRate >= 10 ? '#f39c12' : '#e74c3c';
+    
     table += `<tr>
       <td style="text-align: center; font-weight: bold;">${rank}</td>
-      <td>${item.name}</td>
-      <td><span style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">${item.brand}</span></td>
-      <td><span style="background: #fff3e0; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">${item.customer}</span></td>
-      <td style="font-weight: bold; color: #667eea;">$${item.avgPrice}</td>
+      <td>
+        <div style="font-weight: bold;">${item.name}</div>
+        <div style="font-size: 0.85rem; color: #666;">${item.brand} - ${item.customer}</div>
+      </td>
+      <td>
+        <span style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">
+          ${item.spec} / ${item.color}
+        </span>
+      </td>
+      <td style="font-weight: bold; color: #e74c3c;">${item.costPrice}</td>
+      <td style="font-weight: bold; color: #667eea;">${item.avgSellPrice}</td>
       <td>${item.soldCount} 件</td>
-      <td style="font-weight: bold; color: #27ae60;">$${item.avgProfit}</td>
+      <td style="font-weight: bold; color: ${profitColor};">${item.actualProfit.toFixed(0)}</td>
+      <td>
+        <span style="background: ${profitColor}; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+          ${item.profitRate}%
+        </span>
+      </td>
     </tr>`;
   });
   
@@ -1297,18 +1553,122 @@ function generateAIAdvice(cost, data) {
   const competitivePrice = Math.round(suggestedPrice * 0.95);
   
   return `
-    <strong>基於您的成本 $${cost.toFixed(0)} 和歷史數據分析：</strong><br><br>
+    <strong>基於您的成本 ${cost.toFixed(0)} 和歷史數據分析：</strong><br><br>
     
     🎯 <strong>標準定價建議：NT$ ${suggestedPrice}</strong><br>
-    這個價格能讓您獲得約 $${avgProfit} 的利潤，與歷史平均接近。<br><br>
+    這個價格能讓您獲得約 ${avgProfit} 的利潤，與歷史平均接近。<br><br>
     
     💰 <strong>競爭性定價：NT$ ${competitivePrice}</strong><br>
     如果想要更有市場競爭力，可以考慮降低 5% 左右。<br><br>
     
     📊 <strong>策略建議：</strong><br>
-    • 如果是熱門款式，可以定在 $${suggestedPrice} 以上<br>
-    • 如果是新品推廣，建議從 $${competitivePrice} 開始測試市場反應<br>
+    • 如果是熱門款式，可以定在 ${suggestedPrice} 以上<br>
+    • 如果是新品推廣，建議從 ${competitivePrice} 開始測試市場反應<br>
     • 建議使用「定價模擬」功能進一步優化價格策略
+  `;
+}
+
+function generateAIAdviceNew(cost, data) {
+  if (cost === 0) {
+    // 沒有輸入成本時，給一般性建議
+    const avgCostPrice = calculateAverage(data, 'costPrice');
+    const avgSellPrice = calculateAverage(data, 'avgSellPrice');
+    const avgProfit = Math.round(data.reduce((sum, item) => sum + item.actualProfit, 0) / data.length);
+    const markup = ((avgSellPrice - avgCostPrice) / avgCostPrice * 100).toFixed(1);
+    
+    return `
+      <strong>基於歷史數據的市場洞察：</strong><br><br>
+      
+      📊 <strong>成本結構分析：</strong><br>
+      • 平均進貨單價：${avgCostPrice}<br>
+      • 平均末端售價：${avgSellPrice}<br>
+      • 平均加成率：${markup}%（售價 = 進貨價 × ${(1 + markup/100).toFixed(2)}）<br>
+      • 平均實際淨利：${avgProfit}/件<br><br>
+      
+      🎯 <strong>定價策略建議：</strong><br>
+      • 如果您的進貨價在 ${Math.round(avgCostPrice * 0.9)}-${Math.round(avgCostPrice * 1.1)} 之間<br>
+      • 建議售價範圍：${Math.round(avgSellPrice * 0.9)}-${Math.round(avgSellPrice * 1.1)}<br>
+      • 可獲得約 ${((avgProfit / avgSellPrice) * 100).toFixed(1)}% 的利潤率<br><br>
+      
+      💡 <strong>下一步：</strong>請前往「經典定價」輸入您的實際進貨成本，系統將給出個性化定價建議。
+    `;
+  }
+  
+  // 有輸入成本時，找出相似商品
+  const similarProducts = data.filter(item => {
+    const costDiff = Math.abs(item.costPrice - cost) / cost;
+    return costDiff < 0.3; // 成本差異在30%以內視為相似商品
+  });
+  
+  if (similarProducts.length === 0) {
+    // 沒有相似商品，用整體數據
+    const avgSellPrice = calculateAverage(data, 'avgSellPrice');
+    const avgCostPrice = calculateAverage(data, 'costPrice');
+    const markup = ((avgSellPrice - avgCostPrice) / avgCostPrice * 100).toFixed(1);
+    const suggestedPrice = Math.round(cost * (1 + markup / 100));
+    
+    return `
+      <strong>基於您的進貨成本 ${cost.toFixed(0)}：</strong><br><br>
+      
+      ⚠️ 數據庫中沒有找到成本相近的商品，以下是基於整體市場數據的建議：<br><br>
+      
+      🎯 <strong>建議售價：NT$ ${suggestedPrice}</strong><br>
+      根據平均加成率 ${markup}% 計算<br><br>
+      
+      📊 <strong>預估表現：</strong><br>
+      • 預估利潤：約 ${(suggestedPrice - cost - 20 - 60).toFixed(0)}/件<br>
+      • 預估利潤率：約 ${(((suggestedPrice - cost - 20 - 60) / suggestedPrice) * 100).toFixed(1)}%<br><br>
+      
+      💡 <strong>建議：</strong>由於沒有直接參考數據，建議使用「定價模擬」功能測試多個價格點。
+    `;
+  }
+  
+  // 有相似商品，給出精準建議
+  const avgSimilarSellPrice = Math.round(
+    similarProducts.reduce((sum, item) => sum + item.avgSellPrice, 0) / similarProducts.length
+  );
+  const avgSimilarProfit = Math.round(
+    similarProducts.reduce((sum, item) => sum + item.actualProfit, 0) / similarProducts.length
+  );
+  const avgSimilarProfitRate = (
+    similarProducts.reduce((sum, item) => sum + parseFloat(item.profitRate), 0) / similarProducts.length
+  ).toFixed(1);
+  
+  const highPrice = Math.round(avgSimilarSellPrice * 1.05);
+  const midPrice = avgSimilarSellPrice;
+  const lowPrice = Math.round(avgSimilarSellPrice * 0.95);
+  
+  return `
+    <strong>基於您的進貨成本 ${cost.toFixed(0)}：</strong><br><br>
+    
+    ✅ 找到 <strong>${similarProducts.length}</strong> 個成本相近的參考商品！<br><br>
+    
+    📊 <strong>相似商品表現：</strong><br>
+    • 平均售價：${avgSimilarSellPrice}<br>
+    • 平均實際利潤：${avgSimilarProfit}/件<br>
+    • 平均利潤率：${avgSimilarProfitRate}%<br><br>
+    
+    🎯 <strong>分級定價建議：</strong><br><br>
+    
+    💎 <strong>高價策略：NT$ ${highPrice}</strong><br>
+    • 適合：獨特款式、熱門商品、品牌效應強<br>
+    • 預估利潤率：約 ${(parseFloat(avgSimilarProfitRate) + 2).toFixed(1)}%<br><br>
+    
+    ✅ <strong>標準定價：NT$ ${midPrice}</strong>（推薦）<br>
+    • 適合：一般商品、市場主流價格<br>
+    • 預估利潤率：約 ${avgSimilarProfitRate}%<br>
+    • 這是相似商品的平均表現<br><br>
+    
+    💰 <strong>競爭定價：NT$ ${lowPrice}</strong><br>
+    • 適合：新品推廣、促銷活動、快速出貨<br>
+    • 預估利潤率：約 ${(parseFloat(avgSimilarProfitRate) - 2).toFixed(1)}%<br><br>
+    
+    📈 <strong>參考商品：</strong><br>
+    ${similarProducts.slice(0, 3).map(item => 
+      `• ${item.name}（${item.spec}/${item.color}）- 售價 ${item.avgSellPrice}，利潤率 ${item.profitRate}%`
+    ).join('<br>')}<br><br>
+    
+    💡 <strong>下一步建議：</strong>使用「定價模擬」功能，測試 ${lowPrice}-${highPrice} 區間的詳細表現。
   `;
 }
 
