@@ -516,7 +516,8 @@ tr:hover {
           <li>點擊「檔案」→「共用」→「發布到網路」</li>
           <li>選擇格式：網頁，點擊「發布」</li>
           <li>複製網址中的試算表 ID（長字串）</li>
-          <li>貼到下方欄位，點擊「測試連接」</li>
+          <li>貼到下方欄位，點擊「載入工作表清單」</li>
+          <li>選擇要分析的客戶工作表</li>
         </ol>
       </div>
 
@@ -525,14 +526,10 @@ tr:hover {
         <input type="text" id="sheetsId" placeholder="試算表 ID（從網址中複製）">
       </div>
 
-      <div class="form-group">
-        <label>📋 工作表名稱</label>
-        <input type="text" id="sheetName" placeholder="例如：歷史訂單" value="歷史訂單">
-      </div>
-
-      <button class="btn" onclick="testConnection()">🧪 測試連接</button>
+      <button class="btn" onclick="loadSheetsList()">📋 載入工作表清單</button>
     </div>
 
+    <div id="sheetsList"></div>
     <div id="connectionResult"></div>
     
     <div class="section" style="margin-top: 20px;">
