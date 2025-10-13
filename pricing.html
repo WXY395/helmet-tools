@@ -375,10 +375,83 @@ tr:hover { background: #f8f9fa; }
       <span class="brand-tag">華泰</span>
     </div>
     <div class="btn-group">
+      <button onclick="toggleQuickInput()" class="warning">⚡ 快速競品輸入</button>
       <button onclick="saveData()" class="success">💾 保存方案</button>
       <button onclick="loadData()" class="warning">📂 載入方案</button>
-      <button onclick="addCompetitor()" class="secondary">🔍 新增競品</button>
+      <button onclick="addCompetitor()" class="secondary">🔍 競品資料庫</button>
       <button onclick="window.print()" class="secondary">🖨️ 列印</button>
+    </div>
+  </div>
+
+  <!-- 快速競品輸入面板 -->
+  <div id="quickInputPanel" style="display: none; margin-bottom: 2em; padding: 1.5em; background: linear-gradient(135deg, #fff9e6, #fff3cc); border-radius: 12px; border-left: 5px solid #f39c12;">
+    <h3 style="margin-top: 0; color: #2c3e50; display: flex; align-items: center; gap: 0.5em;">
+      ⚡ 快速競品輸入模式
+      <span style="font-size: 0.7em; background: #27ae60; color: white; padding: 4px 10px; border-radius: 15px;">超快速！</span>
+    </h3>
+    <div style="background: white; padding: 1.5em; border-radius: 10px; margin-bottom: 1em;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1em; margin-bottom: 1em;">
+        <div>
+          <label style="margin: 0; font-weight: bold; color: #2c3e50;">搜尋關鍵字（蝦皮）</label>
+          <input type="text" id="quickSearchTerm" placeholder="例如：EVO 全罩安全帽" style="width: 100%; padding: 10px; font-size: 1.1em; border: 2px solid #f39c12; border-radius: 8px;">
+          <small style="color: #7f8c8d;">💡 輸入後按 Enter 或點擊右側按鈕開啟蝦皮搜尋</small>
+        </div>
+        <div>
+          <label style="margin: 0; font-weight: bold; color: #2c3e50;">目標商品數</label>
+          <input type="number" id="targetCount" value="10" min="1" max="30" style="width: 100%; padding: 10px; font-size: 1.1em;">
+        </div>
+        <div style="display: flex; align-items: flex-end;">
+          <button onclick="openShopeeSearch()" style="width: 100%; padding: 12px; font-size: 1em; background: #ee4d2d;">
+            🔍 開啟蝦皮搜尋
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5em;">
+      <!-- 左側：輸入區 -->
+      <div style="background: white; padding: 1.5em; border-radius: 10px; border: 2px solid #3498db;">
+        <h4 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 0.5em;">
+          📝 競品價格記錄
+        </h4>
+        <div id="quickPriceInputs">
+          <div style="display: flex; gap: 0.5em; margin-bottom: 0.8em; align-items: center;">
+            <input type="number" class="quick-price-input" placeholder="價格" style="flex: 1; padding: 8px; font-size: 1em; border: 2px solid #ddd; border-radius: 6px;">
+            <button onclick="addQuickPrice()" class="success" style="padding: 8px 15px; font-size: 0.9em;">➕</button>
+          </div>
+        </div>
+        <div style="margin-top: 1em; padding: 1em; background: #e8f4f8; border-radius: 8px;">
+          <strong style="color: #2c3e50;">💡 使用技巧：</strong>
+          <ol style="margin: 0.5em 0; padding-left: 1.5em; font-size: 0.9em; color: #34495e;">
+            <li>在蝦皮找到商品價格後，直接輸入</li>
+            <li>按 Enter 或點 ➕ 快速新增下一筆</li>
+            <li>重複動作，記錄 5-10 個競品</li>
+            <li>系統自動計算平均、最高、最低價</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- 右側：分析結果 -->
+      <div style="background: white; padding: 1.5em; border-radius: 10px; border: 2px solid #27ae60;">
+        <h4 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #27ae60; padding-bottom: 0.5em;">
+          📊 即時市場分析
+        </h4>
+        <div id="quickAnalysis">
+          <div style="text-align: center; color: #7f8c8d; padding: 2em;">
+            <div style="font-size: 3em; margin-bottom: 0.3em;">📈</div>
+            輸入競品價格後<br>即時顯示市場分析
+          </div>
+        </div>
+        <button onclick="applyQuickAverage()" class="success" style="width: 100%; padding: 12px; font-size: 1.1em; margin-top: 1em;" id="applyBtn" disabled>
+          ✅ 套用平均價到商品表格
+        </button>
+      </div>
+    </div>
+
+    <div style="margin-top: 1em; display: flex; gap: 1em;">
+      <button onclick="clearQuickInput()" class="secondary" style="flex: 1;">🗑️ 清空記錄</button>
+      <button onclick="saveQuickData()" class="warning" style="flex: 1;">💾 保存此次調查</button>
+      <button onclick="toggleQuickInput()" class="secondary" style="flex: 1;">✖️ 關閉面板</button>
     </div>
   </div>
 
@@ -655,4 +728,820 @@ function addRow() {
     <td><input type="number" name="price[]" value="0" min="0" step="0.1"></td>
     <td><input type="number" name="qty[]" value="1" min="1"></td>
     <td><input type="number" name="pack[]" value="65" min="0" step="0.1"></td>
-    <td><input type="
+    <td><input type="number" name="labor[]" value="5" min="0" step="0.1"></td>
+    <td><input type="number" name="competitor[]" value="0" min="0" placeholder="選填"></td>
+    <td class="subtotal"></td>
+    <td><input type="checkbox" name="combo[]" title="勾選表示為組合商品"></td>
+    <td>
+      <button type="button" onclick="copyRow(this)" class="secondary" style="padding: 6px 8px; font-size: 11px;">📋</button>
+      <button type="button" onclick="removeRow(this)" class="danger" style="padding: 6px 8px; font-size: 11px;">🗑️</button>
+    </td>
+  </tr>`;
+  document.getElementById("goodsBody").insertAdjacentHTML('beforeend', row);
+  attachEvents();
+  calcAll();
+}
+
+function removeRow(btn) {
+  if (document.querySelectorAll("#goodsBody tr").length > 1) {
+    btn.closest('tr').remove();
+    calcAll();
+  } else {
+    alert('至少需要保留一個商品！');
+  }
+}
+
+function copyRow(btn) {
+  let row = btn.closest('tr');
+  let clone = row.cloneNode(true);
+  row.parentNode.insertBefore(clone, row.nextSibling);
+  attachEvents();
+  calcAll();
+}
+
+// ========== 核心計算 ==========
+function shopeeNet(price, shipping, options) {
+  let feeRate = options.promotion ? 0.075 : 0.055;
+  let flowRate = 0.02;
+  let freeShipRate = options.freeShipping ? 0.07 : 0;
+  let preorderRate = options.preorder ? 0.03 : 0;
+  let coinRate = options.coin ? 0.03 : 0;
+  let taxRate = options.tax ? 0.05 : 0.01;
+  
+  let fee = price * feeRate;
+  let flow = (price + shipping) * flowRate;
+  let freeShip = price * freeShipRate;
+  let preorder = price * preorderRate;
+  let coin = price * coinRate;
+  let tax = price * taxRate;
+  
+  let totalFees = fee + flow + freeShip + preorder + coin + tax;
+  let net = price - totalFees;
+  return net < 0 ? 0 : net;
+}
+
+function reversePrice(targetNet, shipping, options) {
+  let price = targetNet;
+  let net = 0;
+  for(let i = 0; i < 5000; i++) {
+    net = shopeeNet(price, shipping, options);
+    if(net >= targetNet) return Math.ceil(price);
+    price += 1;
+  }
+  return 0;
+}
+
+function calcAll() {
+  let laborWage = parseFloat(document.getElementById("laborWage").value) || 200;
+  let adCost = parseFloat(document.getElementById("adCost").value) || 0;
+  
+  let names = Array.from(document.getElementsByName("name[]")).map(el => el.value || "未命名");
+  let brands = Array.from(document.getElementsByName("brand[]")).map(el => el.value);
+  let prices = Array.from(document.getElementsByName("price[]")).map(el => parseFloat(el.value) || 0);
+  let qtys = Array.from(document.getElementsByName("qty[]")).map(el => parseInt(el.value) || 0);
+  let packCosts = Array.from(document.getElementsByName("pack[]")).map(el => parseFloat(el.value) || 0);
+  let laborMins = Array.from(document.getElementsByName("labor[]")).map(el => parseFloat(el.value) || 0);
+  let competitors = Array.from(document.getElementsByName("competitor[]")).map(el => parseFloat(el.value) || 0);
+  let combos = Array.from(document.getElementsByName("combo[]")).map(el => el.checked);
+  
+  let subtotals = prices.map((p, i) => 
+    (p + packCosts[i] + (laborWage * laborMins[i] / 60)) * qtys[i]
+  );
+  
+  let rows = document.querySelectorAll("#goodsBody tr");
+  subtotals.forEach((val, i) => { 
+    rows[i].querySelector(".subtotal").innerText = val.toFixed(2) + " 元"; 
+  });
+  
+  let totalCost = subtotals.reduce((a, b) => a + b, 0) + adCost;
+  
+  let shipping = parseFloat(document.getElementById("shipping").value) || 0;
+  let options = {
+    promotion: document.getElementById("promotion").checked,
+    freeShipping: document.getElementById("freeShipping").checked,
+    preorder: document.getElementById("preorder").checked,
+    coin: document.getElementById("coin").checked,
+    tax: document.getElementById("tax").checked
+  };
+  
+  let profitRate = (parseFloat(document.getElementById("targetProfit").value) || 15) / 100;
+  let targetNet = totalCost * (1 + profitRate);
+  
+  let suggestedPrice = reversePrice(targetNet, shipping, options);
+  let estimateNet = shopeeNet(suggestedPrice, shipping, options);
+  let profit = estimateNet - totalCost;
+  let actualProfitRate = totalCost > 0 ? (profit / totalCost * 100) : 0;
+  
+  // 主要結果
+  let profitClass = actualProfitRate >= 20 ? 'profit-good' : (actualProfitRate >= 10 ? 'profit-fair' : 'profit-poor');
+  document.getElementById("calcNet").innerHTML = `
+    總成本：<strong>${totalCost.toFixed(2)}</strong> 元｜
+    估算毛利：<strong>${profit.toFixed(2)}</strong> 元｜
+    <span class="profit-indicator ${profitClass}">利潤率 ${actualProfitRate.toFixed(1)}%</span>
+  `;
+  
+  document.getElementById("calcSuggest").innerHTML = `
+    💰 建議最低售價：<strong style="font-size: 1.2em; color: #f39c12;">${suggestedPrice}</strong> 元
+    <small style="font-size: 0.7em; color: #7f8c8d;">（預估淨收 ${estimateNet.toFixed(2)} 元）</small>
+  `;
+  
+  // 警告訊息
+  let warnings = [];
+  if (actualProfitRate < 10) {
+    warnings.push('⚠️ 警告：利潤率過低（&lt;10%），建議調整售價或降低成本！');
+  }
+  if (actualProfitRate < 15 && actualProfitRate >= 10) {
+    warnings.push('💡 提示：利潤率略低於業界平均（15%），可考慮微調。');
+  }
+  if (suggestedPrice < totalCost) {
+    warnings.push('🚨 嚴重警告：建議售價低於總成本，將會虧損！');
+  }
+  document.getElementById("warningText").innerHTML = warnings.length > 0 
+    ? `<div class="warning-text">${warnings.join('<br>')}</div>` 
+    : '';
+  
+  // 競品比較分析
+  updateCompetitorAnalysis(names, brands, competitors, suggestedPrice);
+}
+
+// ========== 競品分析 ==========
+function updateCompetitorAnalysis(names, brands, competitors, yourPrice) {
+  let hasCompetitor = competitors.some(c => c > 0);
+  if (!hasCompetitor) {
+    document.getElementById('competitorSection').style.display = 'none';
+    return;
+  }
+  
+  document.getElementById('competitorSection').style.display = 'block';
+  let html = '';
+  
+  competitors.forEach((comp, i) => {
+    if (comp > 0) {
+      let diff = yourPrice - comp;
+      let diffPercent = ((diff / comp) * 100).toFixed(1);
+      let status = '';
+      let priceClass = '';
+      
+      if (Math.abs(diff) <= comp * 0.05) {
+        status = '價格相當';
+        priceClass = 'yours';
+      } else if (diff < 0) {
+        status = `便宜 ${Math.abs(diffPercent)}%`;
+        priceClass = 'yours';
+      } else if (diff > 0 && diff <= comp * 0.15) {
+        status = `略貴 ${diffPercent}%`;
+        priceClass = 'competitor';
+      } else {
+        status = `偏貴 ${diffPercent}%`;
+        priceClass = 'expensive';
+      }
+      
+      html += `
+        <div class="competitor-item">
+          <div>
+            <strong>${names[i]}</strong> <span style="color: #7f8c8d;">[${brands[i]}]</span>
+          </div>
+          <div class="price-comparison">
+            <div>競品均價：<span style="font-weight: bold;">${comp}</span> 元</div>
+            <div>→</div>
+            <div>您的售價：<span class="price-tag ${priceClass}">${yourPrice} 元</span></div>
+            <div style="font-weight: bold; color: ${priceClass === 'expensive' ? '#e74c3c' : '#27ae60'};">${status}</div>
+          </div>
+        </div>
+      `;
+    }
+  });
+  
+  document.getElementById('competitorList').innerHTML = html;
+}
+
+// ========== 組合優惠計算 ==========
+function calculateCombo() {
+  let names = Array.from(document.getElementsByName("name[]")).map(el => el.value || "未命名");
+  let prices = Array.from(document.getElementsByName("price[]")).map(el => parseFloat(el.value) || 0);
+  let combos = Array.from(document.getElementsByName("combo[]")).map(el => el.checked);
+  let packCosts = Array.from(document.getElementsByName("pack[]")).map(el => parseFloat(el.value) || 0);
+  let laborMins = Array.from(document.getElementsByName("labor[]")).map(el => parseFloat(el.value) || 0);
+  let laborWage = parseFloat(document.getElementById("laborWage").value) || 200;
+  
+  let comboItems = [];
+  combos.forEach((isCombo, i) => {
+    if (isCombo) {
+      comboItems.push({
+        name: names[i],
+        cost: prices[i] + packCosts[i] + (laborWage * laborMins[i] / 60)
+      });
+    }
+  });
+  
+  if (comboItems.length < 2) {
+    alert('請至少勾選 2 個商品作為組合！');
+    return;
+  }
+  
+  document.getElementById('comboSection').style.display = 'block';
+  
+  let shipping = parseFloat(document.getElementById("shipping").value) || 0;
+  let options = {
+    promotion: document.getElementById("promotion").checked,
+    freeShipping: document.getElementById("freeShipping").checked,
+    preorder: document.getElementById("preorder").checked,
+    coin: document.getElementById("coin").checked,
+    tax: document.getElementById("tax").checked
+  };
+  let profitRate = (parseFloat(document.getElementById("targetProfit").value) || 15) / 100;
+  
+  let html = '';
+  
+  // 方案1：標準組合（原價 15% 利潤）
+  let combo1Cost = comboItems.reduce((sum, item) => sum + item.cost, 0);
+  let combo1Target = combo1Cost * (1 + profitRate);
+  let combo1Price = reversePrice(combo1Target, shipping, options);
+  let combo1Profit = shopeeNet(combo1Price, shipping, options) - combo1Cost;
+  
+  html += `
+    <div class="combo-card">
+      <h4>
+        標準組合
+        <span class="combo-savings">利潤 ${profitRate * 100}%</span>
+      </h4>
+      <div style="color: #7f8c8d; margin-bottom: 0.5em;">
+        ${comboItems.map(item => item.name).join(' + ')}
+      </div>
+      <div style="font-size: 1.2em; font-weight: bold; color: #2c3e50;">
+        建議售價：${combo1Price} 元
+      </div>
+      <div style="font-size: 0.9em; color: #7f8c8d; margin-top: 0.3em;">
+        成本 ${combo1Cost.toFixed(0)} 元 → 毛利 ${combo1Profit.toFixed(0)} 元
+      </div>
+    </div>
+  `;
+  
+  // 方案2：促銷組合（降低利潤換取競爭力）
+  let combo2Target = combo1Cost * (1 + profitRate * 0.7);
+  let combo2Price = reversePrice(combo2Target, shipping, options);
+  let combo2Profit = shopeeNet(combo2Price, shipping, options) - combo1Cost;
+  let combo2Savings = combo1Price - combo2Price;
+  
+  html += `
+    <div class="combo-card">
+      <h4>
+        促銷組合
+        <span class="combo-savings" style="background: #e74c3c;">省 ${combo2Savings} 元</span>
+      </h4>
+      <div style="color: #7f8c8d; margin-bottom: 0.5em;">
+        ${comboItems.map(item => item.name).join(' + ')}
+      </div>
+      <div style="font-size: 1.2em; font-weight: bold; color: #e74c3c;">
+        優惠價：${combo2Price} 元
+      </div>
+      <div style="font-size: 0.9em; color: #7f8c8d; margin-top: 0.3em;">
+        成本 ${combo1Cost.toFixed(0)} 元 → 毛利 ${combo2Profit.toFixed(0)} 元（利潤率 ${((combo2Profit / combo1Cost) * 100).toFixed(1)}%）
+      </div>
+    </div>
+  `;
+  
+  // 方案3：加價購（主商品+配件）
+  if (comboItems.length >= 2) {
+    let mainItem = comboItems[0];
+    let accessories = comboItems.slice(1);
+    let accTotal = accessories.reduce((sum, item) => sum + item.cost, 0);
+    let combo3Price = Math.round(accTotal * 1.3); // 配件加價購只賺 30%
+    
+    html += `
+      <div class="combo-card">
+        <h4>
+          加價購方案
+          <span class="combo-savings" style="background: #9b59b6;">超值</span>
+        </h4>
+        <div style="color: #7f8c8d; margin-bottom: 0.5em;">
+          主商品：${mainItem.name}<br>
+          加購：${accessories.map(item => item.name).join(' + ')}
+        </div>
+        <div style="font-size: 1.2em; font-weight: bold; color: #9b59b6;">
+          加價 ${combo3Price} 元即可購得配件
+        </div>
+        <div style="font-size: 0.9em; color: #7f8c8d; margin-top: 0.3em;">
+          配件成本 ${accTotal.toFixed(0)} 元 → 毛利 ${(combo3Price - accTotal).toFixed(0)} 元
+        </div>
+      </div>
+    `;
+  }
+  
+  document.getElementById('comboGrid').innerHTML = html;
+  
+  // 滾動到組合區域
+  document.getElementById('comboSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ========== 快速競品輸入功能 ==========
+let quickPrices = [];
+
+function toggleQuickInput() {
+  let panel = document.getElementById('quickInputPanel');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('quickSearchTerm').focus();
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function openShopeeSearch() {
+  let term = document.getElementById('quickSearchTerm').value.trim();
+  if (!term) {
+    alert('請輸入搜尋關鍵字！');
+    return;
+  }
+  let url = 'https://shopee.tw/search?keyword=' + encodeURIComponent(term);
+  window.open(url, '_blank', 'width=1200,height=800');
+  alert('✅ 已開啟蝦皮搜尋頁面！\n\n📝 請在新視窗查看商品價格，然後回到本頁面輸入價格。\n\n💡 建議：將兩個視窗並排顯示，方便快速輸入。');
+}
+
+function addQuickPrice() {
+  let inputs = document.querySelectorAll('.quick-price-input');
+  let lastInput = inputs[inputs.length - 1];
+  let price = parseFloat(lastInput.value);
+  
+  if (!price || price <= 0) {
+    alert('請輸入有效的價格！');
+    return;
+  }
+  
+  quickPrices.push(price);
+  lastInput.value = '';
+  lastInput.style.borderColor = '#27ae60';
+  
+  setTimeout(() => {
+    lastInput.style.borderColor = '#ddd';
+  }, 500);
+  
+  updateQuickAnalysis();
+  lastInput.focus();
+}
+
+// 支援 Enter 鍵快速新增
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('quickInputPanel').addEventListener('keypress', function(e) {
+    if (e.target.classList.contains('quick-price-input') && e.key === 'Enter') {
+      e.preventDefault();
+      addQuickPrice();
+    }
+  });
+  
+  document.getElementById('quickSearchTerm').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      openShopeeSearch();
+    }
+  });
+});
+
+function updateQuickAnalysis() {
+  if (quickPrices.length === 0) {
+    document.getElementById('applyBtn').disabled = true;
+    return;
+  }
+  
+  document.getElementById('applyBtn').disabled = false;
+  
+  let avg = quickPrices.reduce((a, b) => a + b, 0) / quickPrices.length;
+  let max = Math.max(...quickPrices);
+  let min = Math.min(...quickPrices);
+  let sorted = [...quickPrices].sort((a, b) => a - b);
+  let median = sorted.length % 2 === 0 
+    ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2 
+    : sorted[Math.floor(sorted.length / 2)];
+  
+  let priceList = quickPrices.map((p, i) => 
+    `<span style="display: inline-block; padding: 4px 10px; background: #ecf0f1; border-radius: 15px; margin: 3px;">${i + 1}. ${p}</span>`
+  ).join('');
+  
+  let html = `
+    <div style="margin-bottom: 1em;">
+      <strong style="color: #2c3e50;">已記錄 ${quickPrices.length} 筆競品價格：</strong>
+      <div style="margin-top: 0.5em;">${priceList}</div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin-top: 1em;">
+      <div style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1em; border-radius: 10px; text-align: center;">
+        <div style="font-size: 0.9em; opacity: 0.9;">平均價格</div>
+        <div style="font-size: 2em; font-weight: bold; margin: 0.2em 0;">${Math.round(avg)}</div>
+        <div style="font-size: 0.85em; opacity: 0.8;">建議參考此價格</div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #27ae60, #229954); color: white; padding: 1em; border-radius: 10px; text-align: center;">
+        <div style="font-size: 0.9em; opacity: 0.9;">中位數</div>
+        <div style="font-size: 2em; font-weight: bold; margin: 0.2em 0;">${Math.round(median)}</div>
+        <div style="font-size: 0.85em; opacity: 0.8;">排除極端值</div>
+      </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin-top: 1em;">
+      <div style="padding: 0.8em; background: #fff3cd; border-radius: 8px; text-align: center;">
+        <strong style="color: #856404;">最高價：</strong>
+        <span style="font-size: 1.3em; font-weight: bold; color: #856404;">${max}</span>
+      </div>
+      <div style="padding: 0.8em; background: #d4edda; border-radius: 8px; text-align: center;">
+        <strong style="color: #155724;">最低價：</strong>
+        <span style="font-size: 1.3em; font-weight: bold; color: #155724;">${min}</span>
+      </div>
+    </div>
+    
+    <div style="margin-top: 1em; padding: 1em; background: #e8f4f8; border-radius: 8px; border-left: 4px solid #3498db;">
+      <strong style="color: #2c3e50;">💡 定價建議：</strong>
+      <ul style="margin: 0.5em 0; padding-left: 1.5em; color: #34495e;">
+        <li><strong>保守策略：</strong>定在平均價 ${Math.round(avg)} 左右</li>
+        <li><strong>競爭策略：</strong>定在 ${Math.round(avg * 0.95)} - ${Math.round(avg * 0.98)} 間</li>
+        <li><strong>價值策略：</strong>若品質更好，可定 ${Math.round(avg * 1.05)} - ${Math.round(max)}</li>
+      </ul>
+    </div>
+  `;
+  
+  document.getElementById('quickAnalysis').innerHTML = html;
+}
+
+function applyQuickAverage() {
+  if (quickPrices.length === 0) return;
+  
+  let avg = Math.round(quickPrices.reduce((a, b) => a + b, 0) / quickPrices.length);
+  
+  // 找到第一個空的競品價格欄位或最後一行
+  let competitorInputs = document.getElementsByName("competitor[]");
+  let applied = false;
+  
+  for (let i = 0; i < competitorInputs.length; i++) {
+    if (!competitorInputs[i].value || competitorInputs[i].value == 0) {
+      competitorInputs[i].value = avg;
+      competitorInputs[i].style.background = '#d4edda';
+      setTimeout(() => {
+        competitorInputs[i].style.background = '';
+      }, 2000);
+      applied = true;
+      break;
+    }
+  }
+  
+  if (!applied && competitorInputs.length > 0) {
+    competitorInputs[competitorInputs.length - 1].value = avg;
+  }
+  
+  calcAll();
+  alert(`✅ 已將競品平均價 ${avg} 套用到商品表格！\n\n記錄的 ${quickPrices.length} 筆價格已保存，可繼續輸入其他商品的競品價格。`);
+}
+
+function clearQuickInput() {
+  if (quickPrices.length > 0 && !confirm('確定要清空目前記錄的 ' + quickPrices.length + ' 筆價格嗎？')) {
+    return;
+  }
+  quickPrices = [];
+  document.querySelector('.quick-price-input').value = '';
+  document.getElementById('quickAnalysis').innerHTML = `
+    <div style="text-align: center; color: #7f8c8d; padding: 2em;">
+      <div style="font-size: 3em; margin-bottom: 0.3em;">📈</div>
+      輸入競品價格後<br>即時顯示市場分析
+    </div>
+  `;
+  document.getElementById('applyBtn').disabled = true;
+}
+
+function saveQuickData() {
+  if (quickPrices.length === 0) {
+    alert('目前沒有記錄任何價格！');
+    return;
+  }
+  
+  let keyword = document.getElementById('quickSearchTerm').value.trim() || '未命名商品';
+  let avg = Math.round(quickPrices.reduce((a, b) => a + b, 0) / quickPrices.length);
+  let date = new Date().toLocaleDateString('zh-TW');
+  
+  let record = {
+    keyword: keyword,
+    prices: [...quickPrices],
+    average: avg,
+    date: date,
+    count: quickPrices.length
+  };
+  
+  if (!window.priceRecords) {
+    window.priceRecords = [];
+  }
+  window.priceRecords.push(record);
+  
+  alert(`✅ 已保存調查記錄！\n\n商品：${keyword}\n記錄筆數：${quickPrices.length}\n平均價格：${avg}\n日期：${date}\n\n此記錄會保留在瀏覽器中，可隨時查看歷史紀錄。`);
+}
+
+// ========== 競品管理 ==========
+function addCompetitor() {
+  document.getElementById('competitorModal').style.display = 'flex';
+  document.getElementById('compSellerName').value = '';
+  document.getElementById('compProductName').value = '';
+  document.getElementById('compPrice').value = '';
+  document.getElementById('compSales').value = '';
+  document.getElementById('compNotes').value = '';
+}
+
+function saveCompetitor() {
+  let data = {
+    seller: document.getElementById('compSellerName').value.trim(),
+    product: document.getElementById('compProductName').value.trim(),
+    price: parseFloat(document.getElementById('compPrice').value) || 0,
+    sales: parseInt(document.getElementById('compSales').value) || 0,
+    notes: document.getElementById('compNotes').value.trim(),
+    date: new Date().toLocaleDateString('zh-TW')
+  };
+  
+  if (!data.seller || !data.product || data.price <= 0) {
+    alert('請填寫完整資料！');
+    return;
+  }
+  
+  competitors.push(data);
+  saveCompetitors();
+  closeModal('competitorModal');
+  alert('✅ 競品資料已保存！\n\n提示：您可以在商品表格的「競品均價」欄位輸入 ' + data.price + ' 元進行比較。');
+}
+
+function saveCompetitors() {
+  try {
+    window.competitorsData = competitors;
+  } catch(e) {
+    console.log('無法保存競品資料');
+  }
+}
+
+function loadCompetitors() {
+  try {
+    if (window.competitorsData) {
+      competitors = window.competitorsData;
+    }
+  } catch(e) {
+    console.log('無法載入競品資料');
+  }
+}
+
+// ========== 供應商管理 ==========
+function addSupplier() {
+  document.getElementById('supplierModal').style.display = 'flex';
+  document.getElementById('suppName').value = '';
+  document.getElementById('suppProduct').value = '';
+  document.getElementById('suppPrice').value = '';
+  document.getElementById('suppMOQ').value = '';
+  document.getElementById('suppPayment').value = '';
+}
+
+function saveSupplier() {
+  let data = {
+    name: document.getElementById('suppName').value.trim(),
+    product: document.getElementById('suppProduct').value.trim(),
+    price: parseFloat(document.getElementById('suppPrice').value) || 0,
+    moq: parseInt(document.getElementById('suppMOQ').value) || 0,
+    payment: document.getElementById('suppPayment').value.trim(),
+    date: new Date().toLocaleDateString('zh-TW')
+  };
+  
+  if (!data.name || !data.product || data.price <= 0) {
+    alert('請填寫完整資料！');
+    return;
+  }
+  
+  suppliers.push(data);
+  saveSuppliers();
+  displaySuppliers();
+  closeModal('supplierModal');
+  alert('✅ 供應商資料已保存！');
+}
+
+function displaySuppliers() {
+  if (suppliers.length === 0) {
+    document.getElementById('supplierList').innerHTML = '<p style="color: #7f8c8d;">點擊「新增供應商比較」開始記錄不同供應商的報價</p>';
+    return;
+  }
+  
+  // 按商品分組
+  let grouped = {};
+  suppliers.forEach(supp => {
+    if (!grouped[supp.product]) {
+      grouped[supp.product] = [];
+    }
+    grouped[supp.product].push(supp);
+  });
+  
+  let html = '';
+  for (let product in grouped) {
+    let suppList = grouped[product];
+    suppList.sort((a, b) => a.price - b.price);
+    let cheapest = suppList[0];
+    
+    html += `<div class="supplier-card">
+      <h4 style="margin-top: 0; color: #2c3e50;">${product}</h4>`;
+    
+    suppList.forEach((supp, idx) => {
+      let badge = idx === 0 ? '<span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 0.5em;">最便宜</span>' : '';
+      html += `
+        <div style="padding: 0.5em; background: ${idx === 0 ? '#d4edda' : '#fff'}; margin: 0.3em 0; border-radius: 5px;">
+          <strong>${supp.name}</strong> ${badge}<br>
+          <span style="font-size: 1.1em; color: #2c3e50; font-weight: bold;">${supp.price} 元</span>
+          ${supp.moq > 0 ? `<span style="color: #7f8c8d;"> / 最低訂購 ${supp.moq} 件</span>` : ''}
+          ${supp.payment ? `<br><small style="color: #7f8c8d;">${supp.payment}</small>` : ''}
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+  }
+  
+  document.getElementById('supplierList').innerHTML = html;
+}
+
+function saveSuppliers() {
+  try {
+    window.suppliersData = suppliers;
+    displaySuppliers();
+  } catch(e) {
+    console.log('無法保存供應商資料');
+  }
+}
+
+function loadSuppliers() {
+  try {
+    if (window.suppliersData) {
+      suppliers = window.suppliersData;
+      displaySuppliers();
+    }
+  } catch(e) {
+    console.log('無法載入供應商資料');
+  }
+}
+
+// ========== 數據持久化 ==========
+function saveToMemory() {
+  try {
+    let data = {
+      names: Array.from(document.getElementsByName("name[]")).map(el => el.value),
+      brands: Array.from(document.getElementsByName("brand[]")).map(el => el.value),
+      prices: Array.from(document.getElementsByName("price[]")).map(el => el.value),
+      qtys: Array.from(document.getElementsByName("qty[]")).map(el => el.value),
+      packs: Array.from(document.getElementsByName("pack[]")).map(el => el.value),
+      labors: Array.from(document.getElementsByName("labor[]")).map(el => el.value),
+      competitors: Array.from(document.getElementsByName("competitor[]")).map(el => el.value),
+      combos: Array.from(document.getElementsByName("combo[]")).map(el => el.checked),
+      shipping: document.getElementById("shipping").value,
+      laborWage: document.getElementById("laborWage").value,
+      adCost: document.getElementById("adCost").value,
+      targetProfit: document.getElementById("targetProfit").value,
+      promotion: document.getElementById("promotion").checked,
+      freeShipping: document.getElementById("freeShipping").checked,
+      preorder: document.getElementById("preorder").checked,
+      coin: document.getElementById("coin").checked,
+      tax: document.getElementById("tax").checked
+    };
+    window.currentData = data;
+  } catch(e) {
+    console.log('無法保存數據');
+  }
+}
+
+function loadFromMemory() {
+  try {
+    if (!window.currentData) return;
+    let data = window.currentData;
+    
+    document.getElementById("goodsBody").innerHTML = '';
+    
+    for (let i = 0; i < data.names.length; i++) {
+      addRow();
+    }
+    
+    let nameInputs = document.getElementsByName("name[]");
+    let brandSelects = document.getElementsByName("brand[]");
+    let priceInputs = document.getElementsByName("price[]");
+    let qtyInputs = document.getElementsByName("qty[]");
+    let packInputs = document.getElementsByName("pack[]");
+    let laborInputs = document.getElementsByName("labor[]");
+    let competitorInputs = document.getElementsByName("competitor[]");
+    let comboCheckboxes = document.getElementsByName("combo[]");
+    
+    for (let i = 0; i < data.names.length; i++) {
+      if (nameInputs[i]) nameInputs[i].value = data.names[i];
+      if (brandSelects[i]) brandSelects[i].value = data.brands[i];
+      if (priceInputs[i]) priceInputs[i].value = data.prices[i];
+      if (qtyInputs[i]) qtyInputs[i].value = data.qtys[i];
+      if (packInputs[i]) packInputs[i].value = data.packs[i];
+      if (laborInputs[i]) laborInputs[i].value = data.labors[i];
+      if (competitorInputs[i]) competitorInputs[i].value = data.competitors[i];
+      if (comboCheckboxes[i]) comboCheckboxes[i].checked = data.combos[i];
+    }
+    
+    document.getElementById("shipping").value = data.shipping;
+    document.getElementById("laborWage").value = data.laborWage;
+    document.getElementById("adCost").value = data.adCost;
+    document.getElementById("targetProfit").value = data.targetProfit;
+    document.getElementById("promotion").checked = data.promotion;
+    document.getElementById("freeShipping").checked = data.freeShipping;
+    document.getElementById("preorder").checked = data.preorder;
+    document.getElementById("coin").checked = data.coin;
+    document.getElementById("tax").checked = data.tax;
+  } catch(e) {
+    console.log('無法載入數據');
+  }
+}
+
+// ========== 方案保存/載入 ==========
+function saveData() {
+  document.getElementById('saveModal').style.display = 'flex';
+  document.getElementById('saveName').value = '';
+  document.getElementById('saveName').focus();
+}
+
+function confirmSave() {
+  let name = document.getElementById('saveName').value.trim();
+  if (!name) {
+    alert('請輸入方案名稱！');
+    return;
+  }
+  
+  saveToMemory();
+  if (window.currentData) {
+    if (!savedSchemes) savedSchemes = {};
+    savedSchemes[name] = {
+      data: window.currentData,
+      time: new Date().toLocaleString('zh-TW')
+    };
+    window.savedSchemes = savedSchemes;
+    alert('✅ 方案「' + name + '」已保存！');
+    closeModal('saveModal');
+  }
+}
+
+function loadData() {
+  loadSchemes();
+  document.getElementById('loadModal').style.display = 'flex';
+  displaySchemes();
+}
+
+function loadSchemes() {
+  try {
+    if (window.savedSchemes) {
+      savedSchemes = window.savedSchemes;
+    }
+  } catch(e) {
+    console.log('無法載入方案');
+  }
+}
+
+function displaySchemes() {
+  let html = '';
+  let count = 0;
+  for (let name in savedSchemes) {
+    count++;
+    html += `
+      <div style="padding: 1em; background: #f8f9fa; margin: 0.5em 0; border-radius: 8px; border-left: 4px solid #3498db; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong>${name}</strong><br>
+          <small style="color: #7f8c8d;">${savedSchemes[name].time}</small>
+        </div>
+        <div>
+          <button onclick="loadScheme('${name}')" class="success" style="padding: 6px 12px; margin-right: 0.5em;">載入</button>
+          <button onclick="deleteScheme('${name}')" class="danger" style="padding: 6px 12px;">刪除</button>
+        </div>
+      </div>
+    `;
+  }
+  document.getElementById('savedSchemes').innerHTML = html || '<p style="color: #7f8c8d;">尚無保存的方案</p>';
+}
+
+function loadScheme(name) {
+  if (!savedSchemes[name]) return;
+  window.currentData = savedSchemes[name].data;
+  loadFromMemory();
+  calcAll();
+  closeModal('loadModal');
+  alert('✅ 已載入方案：' + name);
+}
+
+function deleteScheme(name) {
+  if (confirm('確定要刪除方案「' + name + '」嗎？')) {
+    delete savedSchemes[name];
+    window.savedSchemes = savedSchemes;
+    displaySchemes();
+    alert('✅ 已刪除方案');
+  }
+}
+
+// ========== 模態框控制 ==========
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+    }
+  });
+});
+</script>
+</body>
+</html>
