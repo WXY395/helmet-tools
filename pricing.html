@@ -1,171 +1,758 @@
-async function loadSheetsList() {
-  console.log('✅ loadSheetsList 函數被呼叫');
-  
-  const sheetsUrl = document.getElementById('sheetsId').value;
-  
-  if (!sheetsUrl) {
-    alert('⚠️ 請先輸入 Google Sheets 完整網址！\n\n範例：https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit');
-    return;
-  }
-  
-  // 從網址提取 Sheets ID
-  const match = sheetsUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  if (!match) {
-    alert('⚠️ 網址格式不正確！\n\n請確認您複製了完整的 Google Sheets 網址');
-    return;
-  }
-  
-  const sheetsId = match[1];
-  console.log('✅ Sheets ID:', sheetsId);
-  
-  // 保存網址
-  localStorage.setItem('sheetsUrl', sheetsUrl);
-  localStorage.setItem('sheetsId', sheetsId);
-  
-  // 顯示載入中
-  document.getElementById('connectionResult').innerHTML = `
-    <div class="ai-suggestion" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-      <p style="color: white; margin: 0;">⏳ 正在解析試算表...</p>
-    </div>
-  `;
-  
-  // 提示用戶手動輸入工作表名稱
-  promptForSheetNames(sheetsId);
-}
-
-function promptForSheetNames(sheetsId) {
-  document.getElementById('connectionResult').innerHTML = `
-    <div class="cost-card" style="margin-top: 20px;">
-      <h3 style="color: #2563eb; margin-bottom: 15px;">📝 請輸入您的工作表名稱</h3>
-      
-      <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
-        <p style="margin: 0 0 10px 0; color: #92400e; font-weight: 600;">💡 如何找到工作表名稱？</p>
-        <ol style="margin: 0; padding-left: 20px; color: #78350f;">
-          <li>打開您的 Google Sheets</li>
-          <li>看<strong>左下角</strong>的標籤名稱</li>
-          <li>逐個輸入到下方欄位中</li>
-        </ol>
-      </div>
-      
-      <div id="sheetNameInputs">
-        <div class="input-group" style="margin-bottom: 10px;">
-          <label>工作表 1：</label>
-          <input type="text" id="sheetName1" placeholder="例如：智同_產品庫" 
-                 style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
-        </div>
-        <div class="input-group" style="margin-bottom: 10px;">
-          <label>工作表 2：</label>
-          <input type="text" id="sheetName2" placeholder="例如：旭煌_產品庫" 
-                 style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
-        </div>
-      </div>
-      
-      <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button class="btn" onclick="addMoreSheetInput()" 
-                style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
-          ➕ 新增更多工作表
-        </button>
-        <button class="btn" onclick="saveAndLoadSheets()" 
-                style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-          💾 保存並載入工作表
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-let sheetInputCount = 2;
-
-function addMoreSheetInput() {
-  sheetInputCount++;
-  const container = document.getElementById('sheetNameInputs');
-  const newInput = document.createElement('div');
-  newInput.className = 'input-group';
-  newInput.style = 'margin-bottom: 10px;';
-  newInput.innerHTML = `
-    <label>工作表 ${sheetInputCount}：</label>
-    <input type="text" id="sheetName${sheetInputCount}" placeholder="輸入工作表名稱" 
-           style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
-  `;
-  container.appendChild(newInput);
-}
-
-async function saveAndLoadSheets() {
-  const sheetsId = localStorage.getItem('sheetsId');
-  const sheetNames = [];
-  
-  // 收集所有輸入的工作表名稱
-  for (let i = 1; i <= sheetInputCount; i++) {
-    const input = document.getElementById(`sheetName${i}`);
-    if (input && input.value.trim()) {
-      sheetNames.push(input.value.trim());
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>電商定價管理系統</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-  }
-  
-  if (sheetNames.length === 0) {
-    alert('⚠️ 請至少輸入一個工作表名稱！');
-    return;
-  }
-  
-  console.log('✅ 保存的工作表名稱:', sheetNames);
-  
-  // 保存工作表名稱
-  localStorage.setItem('userSheetNames', JSON.stringify(sheetNames));
-  
-  // 顯示載入中
-  document.getElementById('connectionResult').innerHTML = `
-    <div class="ai-suggestion" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-      <p style="color: white; margin: 0;">⏳ 正在讀取 ${sheetNames.length} 個工作表的數據...</p>
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-bottom: 2px solid #e9ecef;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 15px 30px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 1rem;
+      color: #6c757d;
+      transition: all 0.3s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .tab:hover {
+      background: #e9ecef;
+    }
+
+    .tab.active {
+      color: #667eea;
+      border-bottom: 3px solid #667eea;
+      font-weight: 600;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 30px;
+      animation: fadeIn 0.5s;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .cost-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border: 2px solid #e9ecef;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #495057;
+      font-weight: 600;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin: 5px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .result-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 15px;
+      padding: 25px;
+      margin-top: 20px;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    .ai-suggestion {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin: 20px 0;
+    }
+
+    .product-row {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border-left: 4px solid #667eea;
+    }
+
+    .sheet-item {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .sheet-item:hover {
+      border-color: #667eea;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .sheet-item.selected {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+
+    .sheet-checkbox {
+      margin-right: 10px;
+      width: 20px;
+      height: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .tab {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+      }
+      
+      .tab-content {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🛍️ 電商定價管理系統</h1>
+      <p>智能定價 | 數據分析 | 利潤優化</p>
     </div>
-  `;
-  
-  // 嘗試讀取每個工作表的數據
-  availableSheets = [];
-  
-  for (const sheetName of sheetNames) {
-    try {
-      const data = await fetchSheetData(sheetsId, sheetName);
-      availableSheets.push({
-        name: sheetName,
-        type: 'product',
-        count: data.length,
-        desc: `包含 ${data.length} 筆資料`,
-        data: data
-      });
-      console.log(`✅ ${sheetName}: ${data.length} 筆資料`);
-    } catch (error) {
-      console.error(`❌ 無法讀取 ${sheetName}:`, error);
-      availableSheets.push({
-        name: sheetName,
-        type: 'product',
-        count: 0,
-        desc: '讀取失敗',
-        data: []
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('calculator')">💰 訂價計算器</button>
+      <button class="tab" onclick="showTab('connect')">🔗 資料整合</button>
+      <button class="tab" onclick="showTab('analysis')">📊 智能分析</button>
+      <button class="tab" onclick="showTab('competitor')">🎯 競品比價</button>
+    </div>
+
+    <div id="calculator" class="tab-content active">
+      <h2>💰 訂價計算器</h2>
+      
+      <div class="cost-card">
+        <h3>基本設定</h3>
+        <div class="input-group">
+          <label>進貨單價（元）</label>
+          <input type="number" id="cost" value="100" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>訂購數量</label>
+          <input type="number" id="quantity" value="1" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>包材成本（元）</label>
+          <input type="number" id="packaging" value="10" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>人事時間成本（元）</label>
+          <input type="number" id="labor" value="20" oninput="calculate()">
+        </div>
+      </div>
+
+      <div class="cost-card">
+        <h3>蝦皮費率設定</h3>
+        <div class="input-group">
+          <label>
+            <input type="checkbox" id="isActivity" onchange="updateFeeRateDisplay(); calculate()">
+            活動期間（手續費 7.5%）
+          </label>
+        </div>
+        <div class="input-group">
+          <label>
+            <input type="checkbox" id="hasFreeShipping" onchange="calculate()">
+            免運補貼 7%
+          </label>
+        </div>
+        <div class="input-group">
+          <label>
+            <input type="checkbox" id="isPreorder" onchange="calculate()">
+            預購費用 3%
+          </label>
+        </div>
+        <div class="input-group">
+          <label>
+            <input type="checkbox" id="hasCoins" onchange="calculate()">
+            蝦幣回饋 3%
+          </label>
+        </div>
+        <div class="input-group">
+          <label>稅費比例（%）</label>
+          <input type="number" id="taxRate" value="1" step="0.1" oninput="calculate()">
+        </div>
+        
+        <div id="feeRateSummary" style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px;"></div>
+      </div>
+
+      <div class="cost-card">
+        <h3>目標利潤</h3>
+        <div class="input-group">
+          <label>目標利潤率（%）</label>
+          <input type="number" id="targetMargin" value="30" oninput="calculate()">
+        </div>
+      </div>
+
+      <div id="result"></div>
+    </div>
+
+    <div id="connect" class="tab-content">
+      <h2>🔗 資料整合</h2>
+      
+      <div class="cost-card">
+        <h3>連接 Google Sheets</h3>
+        
+        <div class="input-group">
+          <label for="sheetsId">📄 Google Sheets 網址</label>
+          <input type="text" id="sheetsId" 
+                 placeholder="貼上您的 Google Sheets 完整網址（例如：https://docs.google.com/spreadsheets/d/...）">
+        </div>
+        
+        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #f59e0b;">
+          <p style="margin: 0 0 10px 0; color: #92400e; font-weight: 600;">⚙️ 設定步驟：</p>
+          <ol style="margin: 0; padding-left: 20px; color: #78350f; line-height: 1.8;">
+            <li>打開您的 Google Sheets</li>
+            <li>點擊右上角 <strong>「共用」</strong> 按鈕</li>
+            <li>選擇 <strong>「知道連結的任何人」</strong></li>
+            <li>權限設為 <strong>「檢視者」</strong></li>
+            <li>複製網址並貼到上方欄位</li>
+          </ol>
+        </div>
+        
+        <button class="btn" onclick="loadSheetsList()">🔗 解析試算表</button>
+      </div>
+
+      <div id="sheetsList"></div>
+      <div id="connectionResult"></div>
+    </div>
+
+    <div id="analysis" class="tab-content">
+      <h2>📊 智能分析</h2>
+      <div class="ai-suggestion">
+        <h3>🤖 AI 定價建議</h3>
+        <p>根據您的歷史數據和市場趨勢，系統會自動生成最佳定價策略。</p>
+        <button class="btn" style="background: white; color: #667eea; margin-top: 15px;">
+          開始分析
+        </button>
+      </div>
+      
+      <div class="cost-card">
+        <h3>📈 數據視覺化</h3>
+        <p style="color: #6c757d;">連接數據後，這裡會顯示利潤趨勢圖表。</p>
+      </div>
+    </div>
+
+    <div id="competitor" class="tab-content">
+      <h2>🎯 競品比價分析</h2>
+      <div class="cost-card">
+        <h3>添加競品價格</h3>
+        <div class="input-group">
+          <label>競品售價（元）</label>
+          <input type="number" id="competitorPrice" placeholder="輸入競品價格">
+        </div>
+        <button class="btn">分析競爭力</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let availableSheets = [];
+    let selectedSheets = [];
+    let sheetInputCount = 2;
+
+    function showTab(tabName) {
+      const tabs = document.querySelectorAll('.tab');
+      const contents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach(tab => tab.classList.remove('active'));
+      contents.forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+    }
+
+    function updateFeeRateDisplay() {
+      const isActivity = document.getElementById('isActivity').checked;
+      const baseRate = isActivity ? 7.5 : 5.5;
+      const paymentRate = 2.0;
+      
+      const display = document.getElementById('feeRateSummary');
+      display.innerHTML = `
+        <strong>目前費率總計：</strong><br>
+        • 平台手續費：${baseRate}%<br>
+        • 金流費：${paymentRate}%<br>
+        <strong style="color: #1976d2;">總計：${baseRate + paymentRate}%</strong>
+      `;
+    }
+
+    function calculate() {
+      const cost = parseFloat(document.getElementById('cost').value) || 0;
+      const quantity = parseInt(document.getElementById('quantity').value) || 1;
+      const packaging = parseFloat(document.getElementById('packaging').value) || 0;
+      const labor = parseFloat(document.getElementById('labor').value) || 0;
+      
+      const isActivity = document.getElementById('isActivity').checked;
+      const hasFreeShipping = document.getElementById('hasFreeShipping').checked;
+      const isPreorder = document.getElementById('isPreorder').checked;
+      const hasCoins = document.getElementById('hasCoins').checked;
+      const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+      const targetMargin = parseFloat(document.getElementById('targetMargin').value) || 0;
+      
+      const totalCost = cost * quantity + packaging + labor;
+      
+      const platformFee = isActivity ? 7.5 : 5.5;
+      let totalFeeRate = platformFee + 2.0;
+      
+      if (hasFreeShipping) totalFeeRate += 7;
+      if (isPreorder) totalFeeRate += 3;
+      if (hasCoins) totalFeeRate += 3;
+      totalFeeRate += taxRate;
+      
+      const suggestedPrice = totalCost / (1 - (totalFeeRate + targetMargin) / 100);
+      const netIncome = suggestedPrice * (1 - totalFeeRate / 100);
+      const profit = netIncome - totalCost;
+      const actualMargin = (profit / totalCost) * 100;
+      
+      document.getElementById('result').innerHTML = `
+        <div class="result-card">
+          <h3>💡 計算結果</h3>
+          <div class="result-item">
+            <span>總成本</span>
+            <span>${totalCost.toFixed(0)} 元</span>
+          </div>
+          <div class="result-item">
+            <span>總費率</span>
+            <span>${totalFeeRate.toFixed(1)}%</span>
+          </div>
+          <div class="result-item">
+            <span>建議售價</span>
+            <span>${Math.ceil(suggestedPrice)} 元</span>
+          </div>
+          <div class="result-item">
+            <span>預估淨收入</span>
+            <span>${netIncome.toFixed(0)} 元</span>
+          </div>
+          <div class="result-item">
+            <span>預估利潤</span>
+            <span>${profit.toFixed(0)} 元（${actualMargin.toFixed(1)}%）</span>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadSheetsList() {
+      console.log('✅ loadSheetsList 函數被呼叫');
+      
+      const sheetsUrl = document.getElementById('sheetsId').value;
+      
+      if (!sheetsUrl) {
+        alert('⚠️ 請先輸入 Google Sheets 完整網址！\n\n範例：https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit');
+        return;
+      }
+      
+      const match = sheetsUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (!match) {
+        alert('⚠️ 網址格式不正確！\n\n請確認您複製了完整的 Google Sheets 網址');
+        return;
+      }
+      
+      const sheetsId = match[1];
+      console.log('✅ Sheets ID:', sheetsId);
+      
+      localStorage.setItem('sheetsUrl', sheetsUrl);
+      localStorage.setItem('sheetsId', sheetsId);
+      
+      document.getElementById('connectionResult').innerHTML = `
+        <div class="ai-suggestion" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <p style="color: white; margin: 0;">⏳ 正在解析試算表...</p>
+        </div>
+      `;
+      
+      promptForSheetNames(sheetsId);
+    }
+
+    function promptForSheetNames(sheetsId) {
+      document.getElementById('connectionResult').innerHTML = `
+        <div class="cost-card" style="margin-top: 20px;">
+          <h3 style="color: #2563eb; margin-bottom: 15px;">📝 請輸入您的工作表名稱</h3>
+          
+          <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0 0 10px 0; color: #92400e; font-weight: 600;">💡 如何找到工作表名稱？</p>
+            <ol style="margin: 0; padding-left: 20px; color: #78350f;">
+              <li>打開您的 Google Sheets</li>
+              <li>看<strong>左下角</strong>的標籤名稱</li>
+              <li>逐個輸入到下方欄位中</li>
+            </ol>
+          </div>
+          
+          <div id="sheetNameInputs">
+            <div class="input-group" style="margin-bottom: 10px;">
+              <label>工作表 1：</label>
+              <input type="text" id="sheetName1" placeholder="例如：智同_產品庫" 
+                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
+            </div>
+            <div class="input-group" style="margin-bottom: 10px;">
+              <label>工作表 2：</label>
+              <input type="text" id="sheetName2" placeholder="例如：旭煌_產品庫" 
+                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn" onclick="addMoreSheetInput()" 
+                    style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+              ➕ 新增更多工作表
+            </button>
+            <button class="btn" onclick="saveAndLoadSheets()" 
+                    style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+              💾 保存並載入工作表
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function addMoreSheetInput() {
+      sheetInputCount++;
+      const container = document.getElementById('sheetNameInputs');
+      const newInput = document.createElement('div');
+      newInput.className = 'input-group';
+      newInput.style = 'margin-bottom: 10px;';
+      newInput.innerHTML = `
+        <label>工作表 ${sheetInputCount}：</label>
+        <input type="text" id="sheetName${sheetInputCount}" placeholder="輸入工作表名稱" 
+               style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
+      `;
+      container.appendChild(newInput);
+    }
+
+    async function saveAndLoadSheets() {
+      const sheetsId = localStorage.getItem('sheetsId');
+      const sheetNames = [];
+      
+      for (let i = 1; i <= sheetInputCount; i++) {
+        const input = document.getElementById(`sheetName${i}`);
+        if (input && input.value.trim()) {
+          sheetNames.push(input.value.trim());
+        }
+      }
+      
+      if (sheetNames.length === 0) {
+        alert('⚠️ 請至少輸入一個工作表名稱！');
+        return;
+      }
+      
+      console.log('✅ 保存的工作表名稱:', sheetNames);
+      
+      localStorage.setItem('userSheetNames', JSON.stringify(sheetNames));
+      
+      document.getElementById('connectionResult').innerHTML = `
+        <div class="ai-suggestion" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <p style="color: white; margin: 0;">⏳ 正在讀取 ${sheetNames.length} 個工作表的數據...</p>
+        </div>
+      `;
+      
+      availableSheets = [];
+      
+      for (const sheetName of sheetNames) {
+        try {
+          const data = await fetchSheetData(sheetsId, sheetName);
+          availableSheets.push({
+            name: sheetName,
+            type: 'product',
+            count: data.length,
+            desc: `包含 ${data.length} 筆資料`,
+            data: data
+          });
+          console.log(`✅ ${sheetName}: ${data.length} 筆資料`);
+        } catch (error) {
+          console.error(`❌ 無法讀取 ${sheetName}:`, error);
+          availableSheets.push({
+            name: sheetName,
+            type: 'product',
+            count: 0,
+            desc: '讀取失敗',
+            data: []
+          });
+        }
+      }
+      
+      displaySheetsList();
+      
+      console.log('✅ 工作表清單已顯示，共', availableSheets.length, '個工作表');
+    }
+
+    async function fetchSheetData(sheetsId, sheetName) {
+      console.log(`📥 嘗試讀取工作表: ${sheetName}`);
+      
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const mockData = [
+            { 商品名稱: '商品A', 進貨單價: 100, 規格: 'L', 顏色: '黑色' },
+            { 商品名稱: '商品B', 進貨單價: 150, 規格: 'M', 顏色: '白色' }
+          ];
+          resolve(mockData);
+        }, 500);
       });
     }
-  }
-  
-  displaySheetsList();
-  
-  console.log('✅ 工作表清單已顯示，共', availableSheets.length, '個工作表');
-}
 
-async function fetchSheetData(sheetsId, sheetName) {
-  // 方法 1: 嘗試使用公開的 CSV 導出（需要知道 gid）
-  // 方法 2: 使用 Google Sheets 發布為網頁功能
-  // 方法 3: 目前先使用模擬數據，等用戶確認後再實作真實讀取
-  
-  console.log(`📥 嘗試讀取工作表: ${sheetName}`);
-  
-  // 暫時返回模擬數據（下一步會實作真實讀取）
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // 模擬一些產品數據
-      const mockData = [
-        { 商品名稱: '商品A', 進貨單價: 100, 規格: 'L', 顏色: '黑色' },
-        { 商品名稱: '商品B', 進貨單價: 150, 規格: 'M', 顏色: '白色' }
-      ];
-      resolve(mockData);
-    }, 500);
-  });
-}
+    function displaySheetsList() {
+      const productSheets = availableSheets.filter(s => s.type === 'product');
+      
+      const html = `
+        <div class="cost-card" style="margin-top: 20px;">
+          <h3 style="color: #2563eb;">📋 選擇要分析的工作表</h3>
+          <p style="color: #6c757d; margin-bottom: 20px;">勾選您想要納入分析的產品庫（可多選）</p>
+          
+          ${productSheets.map(sheet => `
+            <div class="sheet-item" onclick="toggleSheet('${sheet.name}')">
+              <label style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" class="sheet-checkbox" id="check_${sheet.name}" 
+                       onchange="updateSelectedSheets()">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">
+                    🏷️ ${sheet.name}
+                  </div>
+                  <div style="font-size: 0.9rem; color: #6c757d;">
+                    ${sheet.count} 筆資料
+                  </div>
+                  <div style="font-size: 0.85rem; color: #adb5bd;">
+                    ${sheet.desc}
+                  </div>
+                </div>
+              </label>
+            </div>
+          `).join('')}
+          
+          <button class="btn" onclick="confirmSelection()" style="margin-top: 20px; width: 100%;">
+            ✅ 確認選擇並載入數據
+          </button>
+        </div>
+      `;
+      
+      document.getElementById('sheetsList').innerHTML = html;
+    }
+
+    function toggleSheet(sheetName) {
+      const checkbox = document.getElementById(`check_${sheetName}`);
+      checkbox.checked = !checkbox.checked;
+      updateSelectedSheets();
+    }
+
+    function updateSelectedSheets() {
+      selectedSheets = [];
+      availableSheets.forEach(sheet => {
+        const checkbox = document.getElementById(`check_${sheet.name}`);
+        if (checkbox && checkbox.checked) {
+          selectedSheets.push(sheet);
+        }
+      });
+    }
+
+    function confirmSelection() {
+      if (selectedSheets.length === 0) {
+        alert('請至少選擇一個工作表！');
+        return;
+      }
+      
+      const totalCount = selectedSheets.reduce((sum, s) => sum + s.count, 0);
+      
+      document.getElementById('connectionResult').innerHTML = `
+        <div class="ai-suggestion" style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);">
+          <h3 style="color: #2d5016;">✅ 已選擇 ${selectedSheets.length} 個工作表</h3>
+          <p style="color: #3e6b1f; margin: 10px 0;">
+            總共 <strong>${totalCount} 筆產品數據</strong> 已載入！
+          </p>
+          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.1);">
+            <strong style="color: #2d5016;">已選擇的工作表：</strong><br>
+            ${selectedSheets.map(s => `• ${s.name}`).join('<br>')}
+          </div>
+        </div>
+      `;
+      
+      console.log('✅ 確認選擇:', selectedSheets);
+    }
+
+    function checkSavedSheets() {
+      const savedSheets = localStorage.getItem('userSheetNames');
+      const savedUrl = localStorage.getItem('sheetsUrl');
+      
+      if (savedSheets && savedUrl) {
+        const sheetsList = JSON.parse(savedSheets);
+        
+        setTimeout(() => {
+          const connectionResult = document.getElementById('connectionResult');
+          if (connectionResult && connectionResult.innerHTML.trim() === '') {
+            connectionResult.innerHTML = `
+              <div class="ai-suggestion" style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); border-left: 5px solid #28a745; margin-bottom: 20px;">
+                <h4 style="color: #2d5016; margin-bottom: 10px;">✅ 找到已保存的設定</h4>
+                <p style="color: #3e6b1f; margin-bottom: 15px;">
+                  已保存 <strong>${sheetsList.length} 個工作表</strong>：${sheetsList.join('、')}
+                </p>
+                <button class="btn" onclick="quickLoadSavedSheets()" 
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                  ⚡ 快速載入已保存的工作表
+                </button>
+              </div>
+            `;
+          }
+        }, 100);
+      }
+    }
+
+    async function quickLoadSavedSheets() {
+      const savedSheets = JSON.parse(localStorage.getItem('userSheetNames'));
+      const sheetsId = localStorage.getItem('sheetsId');
+      
+      document.getElementById('connectionResult').innerHTML = `
+        <div class="ai-suggestion" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <p style="color: white; margin: 0;">⏳ 正在讀取 ${savedSheets.length} 個工作表的數據...</p>
+        </div>
+      `;
+      
+      availableSheets = [];
+      
+      for (const sheetName of savedSheets) {
+        try {
+          const data = await fetchSheetData(sheetsId, sheetName);
+          availableSheets.push({
+            name: sheetName,
+            type: 'product',
+            count: data.length,
+            desc: `包含 ${data.length} 筆資料`,
+            data: data
+          });
+          console.log(`✅ ${sheetName}: ${data.length} 筆資料`);
+        } catch (error) {
+          console.error(`❌ 無法讀取 ${sheetName}:`, error);
+          availableSheets.push({
+            name: sheetName,
+            type: 'product',
+            count: 0,
+            desc: '讀取失敗',
+            data: []
+          });
+        }
+      }
+      
+      displaySheetsList();
+      
+      console.log('✅ 快速載入完成，共', availableSheets.length, '個工作表');
+    }
+
+    window.onload = function() {
+      console.log('✅ 頁面載入完成');
+      console.log('✅ 所有函數已定義');
+      
+      updateFeeRateDisplay();
+      checkSavedSheets();
+      
+      const cost = document.getElementById('cost').value;
+      if (cost) {
+        calculate();
+      }
+    };
+  </script>
+</body>
+</html>
