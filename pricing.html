@@ -586,15 +586,97 @@
     async function fetchSheetData(sheetsId, sheetName) {
       console.log(`📥 嘗試讀取工作表: ${sheetName}`);
       
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const mockData = [
-            { 商品名稱: '商品A', 進貨單價: 100, 規格: 'L', 顏色: '黑色' },
-            { 商品名稱: '商品B', 進貨單價: 150, 規格: 'M', 顏色: '白色' }
-          ];
-          resolve(mockData);
-        }, 500);
-      });
+      try {
+        // 使用 Google Sheets 的公開 API（不需要認證）
+        const encodedSheetName = encodeURIComponent(sheetName);
+        const url = `https://docs.google.com/spreadsheets/d/${sheetsId}/gviz/tq?tqx=out:json&sheet=${encodedSheetName}`;
+        
+        console.log(`🌐 請求 URL: ${url}`);
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        
+        // Google 返回的是 JSONP 格式，需要提取 JSON 部分
+        const jsonString = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);?/)[1];
+        const data = JSON.parse(jsonString);
+        
+        console.log(`✅ 原始數據結構:`, data);
+        console.log(`📊 欄位數量: ${data.table.cols.length}`);
+        console.log(`📊 原始列數: ${data.table.rows.length}`);
+        
+        if (!data.table || !data.table.rows || data.table.rows.length === 0) {
+          console.warn(`⚠️ 工作表 ${sheetName} 沒有數據`);
+          return [];
+        }
+        
+        // 解析表格數據
+        const cols = data.table.cols;
+        const rows = data.table.rows;
+        
+        console.log(`📋 表頭資訊:`, cols.map(c => c.label));
+        
+        // 轉換成易用的物件陣列（包含所有列，不跳過空值）
+        const parsedData = [];
+        
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const obj = {};
+          let hasData = false;
+          
+          cols.forEach((col, index) => {
+            const cell = row.c[index];
+            const colLabel = col.label || `欄位${index + 1}`;
+            
+            // 取得儲存格的值
+            let value = '';
+            if (cell) {
+              if (cell.v !== null && cell.v !== undefined) {
+                value = cell.v;
+                hasData = true;
+              } else if (cell.f) {
+                value = cell.f;
+                hasData = true;
+              }
+            }
+            
+            obj[colLabel] = value;
+          });
+          
+          // 即使某列全是空值，也包含進來（除非完全沒有資料）
+          parsedData.push(obj);
+        }
+        
+        console.log(`✅ ${sheetName} 解析完成: ${parsedData.length} 筆資料`);
+        console.log(`📊 前 3 筆範例資料:`, parsedData.slice(0, 3));
+        
+        // 過濾掉完全空白的列
+        const filteredData = parsedData.filter(row => {
+          return Object.values(row).some(val => val !== '' && val !== null && val !== undefined);
+        });
+        
+        console.log(`✅ 過濾後: ${filteredData.length} 筆有效資料`);
+        
+        return filteredData;
+        
+      } catch (error) {
+        console.error(`❌ 讀取 ${sheetName} 失敗:`, error);
+        console.error(`❌ 完整錯誤:`, error.stack);
+        
+        // 如果失敗，提供詳細的錯誤訊息
+        if (error.message.includes('HTTP error')) {
+          console.error('可能原因：工作表名稱不正確，或 Google Sheets 未設為公開');
+        } else if (error.message.includes('match')) {
+          console.error('可能原因：無法解析 Google 返回的數據格式');
+        }
+        
+        // 返回空陣列而不是拋出錯誤，讓程式繼續運行
+        return [];
+      }
     }
 
     function displaySheetsList() {
