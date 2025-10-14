@@ -328,18 +328,103 @@
     </div>
 
     <div id="analysis" class="tab-content">
-      <h2>📊 智能分析</h2>
-      <div class="ai-suggestion">
-        <h3>🤖 AI 定價建議</h3>
-        <p>根據您的歷史數據和市場趨勢，系統會自動生成最佳定價策略。</p>
-        <button class="btn" style="background: white; color: #667eea; margin-top: 15px;">
-          開始分析
-        </button>
-      </div>
+      <h2>📊 產品資料分析</h2>
       
-      <div class="cost-card">
-        <h3>📈 數據視覺化</h3>
-        <p style="color: #6c757d;">連接數據後，這裡會顯示利潤趨勢圖表。</p>
+      <div id="productDataSection">
+        <div class="ai-suggestion" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);">
+          <h3>💡 提示</h3>
+          <p>請先前往「🔗 資料整合」頁面載入產品資料，然後回到此頁面查看分析結果。</p>
+        </div>
+      </div>
+
+      <div id="analysisContent" style="display: none;">
+        <!-- 數據概覽 -->
+        <div class="cost-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); margin-bottom: 20px;">
+          <h3 style="color: #2d3748;">📈 數據概覽</h3>
+          <div id="dataOverview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;"></div>
+        </div>
+
+        <!-- 搜尋和篩選 -->
+        <div class="cost-card">
+          <h3>🔍 搜尋產品</h3>
+          <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <input type="text" id="searchInput" placeholder="搜尋產品名稱、編號..." 
+                   style="flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px;"
+                   oninput="filterProducts()">
+            <select id="sourceFilter" onchange="filterProducts()" 
+                    style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px;">
+              <option value="">全部來源</option>
+            </select>
+            <button class="btn" onclick="resetFilters()">重置</button>
+          </div>
+        </div>
+
+        <!-- 批量定價工具 -->
+        <div class="cost-card">
+          <h3>💰 批量定價計算</h3>
+          <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">包材成本（元）</label>
+                <input type="number" id="batchPackaging" value="10" 
+                       style="width: 100%; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">人事成本（元）</label>
+                <input type="number" id="batchLabor" value="20" 
+                       style="width: 100%; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">目標利潤率（%）</label>
+                <input type="number" id="batchMargin" value="30" 
+                       style="width: 100%; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
+              </div>
+            </div>
+            <div style="margin-top: 15px;">
+              <label style="display: block; margin-bottom: 10px; font-weight: 600;">費率設定：</label>
+              <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <label><input type="checkbox" id="batchActivity"> 活動期間 (7.5%)</label>
+                <label><input type="checkbox" id="batchFreeShip"> 免運補貼 (7%)</label>
+                <label><input type="checkbox" id="batchPreorder"> 預購費用 (3%)</label>
+                <label><input type="checkbox" id="batchCoins"> 蝦幣回饋 (3%)</label>
+              </div>
+            </div>
+            <button class="btn" onclick="calculateBatchPricing()" style="margin-top: 15px; width: 100%;">
+              🧮 計算所有產品建議售價
+            </button>
+          </div>
+        </div>
+
+        <!-- 產品資料表格 -->
+        <div class="cost-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>📋 產品清單</h3>
+            <div>
+              <button class="btn" onclick="exportToCSV()" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+                📥 匯出 CSV
+              </button>
+              <button class="btn" onclick="selectAllProducts()">✓ 全選</button>
+              <button class="btn" onclick="deselectAllProducts()">✗ 取消全選</button>
+            </div>
+          </div>
+          
+          <div style="overflow-x: auto;">
+            <table id="productTable" style="width: 100%; border-collapse: collapse;">
+              <thead style="background: #f8f9fa; position: sticky; top: 0;">
+                <tr id="tableHeader"></tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          
+          <div id="tablePagination" style="margin-top: 15px; text-align: center;"></div>
+        </div>
+
+        <!-- 數據分析圖表 -->
+        <div class="cost-card">
+          <h3>📊 價格分析</h3>
+          <div id="priceAnalysis" style="min-height: 200px;"></div>
+        </div>
       </div>
     </div>
 
