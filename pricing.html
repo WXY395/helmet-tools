@@ -232,6 +232,13 @@
     <div id="calculator" class="tab-content active">
       <h2>💰 訂價計算器</h2>
       
+      <div class="cost-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border: none;">
+        <h3 style="color: #2d3748;">🎯 快速選擇產品</h3>
+        <div id="quickSelectProduct">
+          <p style="color: #4a5568;">請先前往「🔗 資料整合」載入產品資料</p>
+        </div>
+      </div>
+      
       <div class="cost-card">
         <h3>基本設定</h3>
         <div class="input-group">
@@ -445,6 +452,11 @@
     let availableSheets = [];
     let selectedSheets = [];
     let sheetInputCount = 2;
+    let allProducts = [];
+    let filteredProducts = [];
+    let currentPage = 1;
+    let itemsPerPage = 20;
+    let selectedProducts = new Set();
 
     function showTab(tabName) {
       const tabs = document.querySelectorAll('.tab');
@@ -453,8 +465,32 @@
       tabs.forEach(tab => tab.classList.remove('active'));
       contents.forEach(content => content.classList.remove('active'));
       
-      event.target.classList.add('active');
+      // 找到對應的標籤並啟用
+      const targetTab = Array.from(tabs).find(tab => 
+        tab.getAttribute('onclick')?.includes(`'${tabName}'`)
+      );
+      if (targetTab) {
+        targetTab.classList.add('active');
+      }
+      
       document.getElementById(tabName).classList.add('active');
+      
+      // 如果切換到分析頁面，檢查是否有產品資料
+      if (tabName === 'analysis') {
+        console.log('📊 切換到分析頁面，產品數量:', allProducts.length);
+        if (allProducts.length > 0) {
+          displayAnalysisPage();
+        } else {
+          // 確保顯示提示訊息
+          document.getElementById('productDataSection').style.display = 'block';
+          document.getElementById('analysisContent').style.display = 'none';
+        }
+      }
+      
+      // 如果切換到計算器頁面，更新快速選擇
+      if (tabName === 'calculator') {
+        updateQuickSelect();
+      }
     }
 
     function updateFeeRateDisplay() {
@@ -825,6 +861,26 @@
       
       const totalCount = selectedSheets.reduce((sum, s) => sum + s.count, 0);
       
+      // 合併所有選中工作表的產品數據
+      allProducts = [];
+      selectedSheets.forEach(sheet => {
+        if (sheet.data && sheet.data.length > 0) {
+          sheet.data.forEach(product => {
+            allProducts.push({
+              ...product,
+              來源: sheet.name,
+              建議售價: null,
+              預估利潤: null
+            });
+          });
+        }
+      });
+      
+      console.log('✅ 已載入產品數據:', allProducts.length, '筆');
+      
+      // 更新快速選擇器
+      updateQuickSelect();
+      
       document.getElementById('connectionResult').innerHTML = `
         <div class="ai-suggestion" style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);">
           <h3 style="color: #2d5016;">✅ 已選擇 ${selectedSheets.length} 個工作表</h3>
@@ -833,7 +889,17 @@
           </p>
           <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.1);">
             <strong style="color: #2d5016;">已選擇的工作表：</strong><br>
-            ${selectedSheets.map(s => `• ${s.name}`).join('<br>')}
+            ${selectedSheets.map(s => `• ${s.name} (${s.count} 筆)`).join('<br>')}
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn" onclick="navigateToAnalysis()" 
+                    style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              📊 產品分析
+            </button>
+            <button class="btn" onclick="navigateToCalculator()" 
+                    style="flex: 1; background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+              💰 開始定價
+            </button>
           </div>
         </div>
       `;
@@ -908,18 +974,472 @@
       console.log('✅ 快速載入完成，共', availableSheets.length, '個工作表');
     }
 
+    function displayAnalysisPage() {
+      if (allProducts.length === 0) {
+        return;
+      }
+      
+      document.getElementById('productDataSection').style.display = 'none';
+      document.getElementById('analysisContent').style.display = 'block';
+      
+      // 顯示數據概覽
+      displayDataOverview();
+      
+      // 設置來源篩選器
+      const sources = [...new Set(allProducts.map(p => p.來源))];
+      const sourceFilter = document.getElementById('sourceFilter');
+      sourceFilter.innerHTML = '<option value="">全部來源</option>' + 
+        sources.map(s => `<option value="${s}">${s}</option>`).join('');
+      
+      // 顯示產品表格
+      filteredProducts = [...allProducts];
+      displayProductTable();
+      
+      // 顯示價格分析
+      displayPriceAnalysis();
+    }
+
+    function displayDataOverview() {
+      const overview = document.getElementById('dataOverview');
+      const totalProducts = allProducts.length;
+      const sources = [...new Set(allProducts.map(p => p.來源))];
+      
+      // 計算平均成本（假設欄位名稱可能是「單價」或「進貨單價」）
+      const costs = allProducts.map(p => {
+        const price = p['單價'] || p['進貨單價'] || p['成本'] || 0;
+        return typeof price === 'number' ? price : parseFloat(price) || 0;
+      }).filter(c => c > 0);
+      
+      const avgCost = costs.length > 0 ? (costs.reduce((a, b) => a + b, 0) / costs.length).toFixed(0) : 0;
+      const maxCost = costs.length > 0 ? Math.max(...costs) : 0;
+      const minCost = costs.length > 0 ? Math.min(...costs) : 0;
+      
+      overview.innerHTML = `
+        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #667eea;">${totalProducts}</div>
+          <div style="color: #6c757d;">總產品數</div>
+        </div>
+        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #f093fb;">${sources.length}</div>
+          <div style="color: #6c757d;">產品庫數量</div>
+        </div>
+        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #84fab0;">${avgCost} 元</div>
+          <div style="color: #6c757d;">平均成本</div>
+        </div>
+        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
+          <div style="font-size: 1.2rem; font-weight: bold; color: #fbc2eb;">${minCost} - ${maxCost} 元</div>
+          <div style="color: #6c757d;">成本範圍</div>
+        </div>
+      `;
+    }
+
+    function displayProductTable() {
+      const table = document.getElementById('productTable');
+      const thead = document.getElementById('tableHeader');
+      const tbody = document.getElementById('tableBody');
+      
+      if (filteredProducts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 30px; color: #6c757d;">沒有符合條件的產品</td></tr>';
+        return;
+      }
+      
+      // 取得所有欄位
+      const allKeys = new Set();
+      filteredProducts.forEach(product => {
+        Object.keys(product).forEach(key => allKeys.add(key));
+      });
+      
+      const keys = Array.from(allKeys);
+      
+      // 建立表頭
+      thead.innerHTML = `
+        <th style="padding: 12px; border: 1px solid #e5e7eb; background: #f8f9fa;">
+          <input type="checkbox" onchange="toggleAllProducts(this)" style="width: 18px; height: 18px;">
+        </th>
+        ${keys.map(key => `
+          <th style="padding: 12px; border: 1px solid #e5e7eb; white-space: nowrap; cursor: pointer;" 
+              onclick="sortTable('${key}')">
+            ${key} ↕️
+          </th>
+        `).join('')}
+      `;
+      
+      // 分頁
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageProducts = filteredProducts.slice(startIndex, endIndex);
+      
+      // 建立表格內容
+      tbody.innerHTML = pageProducts.map((product, index) => {
+        const globalIndex = startIndex + index;
+        const isSelected = selectedProducts.has(globalIndex);
+        
+        return `
+          <tr style="background: ${isSelected ? '#f0f4ff' : 'white'};">
+            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} 
+                     onchange="toggleProduct(${globalIndex}, this)" 
+                     style="width: 18px; height: 18px;">
+            </td>
+            ${keys.map(key => {
+              let value = product[key] || '';
+              
+              // 如果是數字類型的欄位，右對齊
+              const isNumber = typeof value === 'number' || !isNaN(parseFloat(value));
+              
+              // 特殊顯示：建議售價和預估利潤
+              if (key === '建議售價' && value) {
+                value = `<strong style="color: #667eea;">${Math.ceil(value)} 元</strong>`;
+              } else if (key === '預估利潤' && value) {
+                const color = value > 0 ? '#28a745' : '#dc3545';
+                value = `<strong style="color: ${color};">${value.toFixed(0)} 元</strong>`;
+              }
+              
+              return `
+                <td style="padding: 12px; border: 1px solid #e5e7eb; ${isNumber ? 'text-align: right;' : ''} white-space: nowrap;">
+                  ${value}
+                </td>
+              `;
+            }).join('')}
+          </tr>
+        `;
+      }).join('');
+      
+      // 分頁控制
+      displayPagination();
+    }
+
+    function displayPagination() {
+      const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+      const pagination = document.getElementById('tablePagination');
+      
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+      
+      let html = `
+        <button class="btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+          ← 上一頁
+        </button>
+        <span style="margin: 0 15px;">第 ${currentPage} / ${totalPages} 頁（共 ${filteredProducts.length} 筆）</span>
+        <button class="btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+          下一頁 →
+        </button>
+      `;
+      
+      pagination.innerHTML = html;
+    }
+
+    function changePage(page) {
+      const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      displayProductTable();
+    }
+
+    function filterProducts() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const sourceFilter = document.getElementById('sourceFilter').value;
+      
+      filteredProducts = allProducts.filter(product => {
+        // 搜尋條件
+        const matchSearch = !searchTerm || Object.values(product).some(val => 
+          String(val).toLowerCase().includes(searchTerm)
+        );
+        
+        // 來源條件
+        const matchSource = !sourceFilter || product.來源 === sourceFilter;
+        
+        return matchSearch && matchSource;
+      });
+      
+      currentPage = 1;
+      displayProductTable();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('sourceFilter').value = '';
+      filterProducts();
+    }
+
+    function toggleProduct(index, checkbox) {
+      if (checkbox.checked) {
+        selectedProducts.add(index);
+      } else {
+        selectedProducts.delete(index);
+      }
+      displayProductTable();
+    }
+
+    function toggleAllProducts(checkbox) {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      
+      for (let i = startIndex; i < endIndex && i < filteredProducts.length; i++) {
+        if (checkbox.checked) {
+          selectedProducts.add(i);
+        } else {
+          selectedProducts.delete(i);
+        }
+      }
+      displayProductTable();
+    }
+
+    function selectAllProducts() {
+      for (let i = 0; i < filteredProducts.length; i++) {
+        selectedProducts.add(i);
+      }
+      displayProductTable();
+    }
+
+    function deselectAllProducts() {
+      selectedProducts.clear();
+      displayProductTable();
+    }
+
+    function calculateBatchPricing() {
+      const packaging = parseFloat(document.getElementById('batchPackaging').value) || 0;
+      const labor = parseFloat(document.getElementById('batchLabor').value) || 0;
+      const targetMargin = parseFloat(document.getElementById('batchMargin').value) || 0;
+      
+      const isActivity = document.getElementById('batchActivity').checked;
+      const hasFreeShipping = document.getElementById('batchFreeShip').checked;
+      const isPreorder = document.getElementById('batchPreorder').checked;
+      const hasCoins = document.getElementById('batchCoins').checked;
+      
+      let totalFeeRate = isActivity ? 7.5 : 5.5;
+      totalFeeRate += 2.0; // 金流費
+      if (hasFreeShipping) totalFeeRate += 7;
+      if (isPreorder) totalFeeRate += 3;
+      if (hasCoins) totalFeeRate += 3;
+      
+      let calculated = 0;
+      
+      filteredProducts.forEach((product, index) => {
+        // 取得成本（嘗試不同的欄位名稱）
+        const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
+        
+        if (cost > 0) {
+          const totalCost = cost + packaging + labor;
+          const suggestedPrice = totalCost / (1 - (totalFeeRate + targetMargin) / 100);
+          const netIncome = suggestedPrice * (1 - totalFeeRate / 100);
+          const profit = netIncome - totalCost;
+          
+          product.建議售價 = suggestedPrice;
+          product.預估利潤 = profit;
+          calculated++;
+        }
+      });
+      
+      alert(`✅ 已計算 ${calculated} 個產品的建議售價！`);
+      displayProductTable();
+      displayPriceAnalysis();
+    }
+
+    function displayPriceAnalysis() {
+      const analysisDiv = document.getElementById('priceAnalysis');
+      
+      // 取得有成本的產品
+      const productsWithCost = filteredProducts.filter(p => {
+        const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
+        return cost > 0;
+      });
+      
+      if (productsWithCost.length === 0) {
+        analysisDiv.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 30px;">暫無價格數據</p>';
+        return;
+      }
+      
+      // 價格分佈統計
+      const priceRanges = {
+        '0-100': 0,
+        '101-200': 0,
+        '201-300': 0,
+        '301-500': 0,
+        '500+': 0
+      };
+      
+      productsWithCost.forEach(p => {
+        const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
+        if (cost <= 100) priceRanges['0-100']++;
+        else if (cost <= 200) priceRanges['101-200']++;
+        else if (cost <= 300) priceRanges['201-300']++;
+        else if (cost <= 500) priceRanges['301-500']++;
+        else priceRanges['500+']++;
+      });
+      
+      const maxCount = Math.max(...Object.values(priceRanges));
+      
+      analysisDiv.innerHTML = `
+        <div style="margin-bottom: 15px;">
+          <strong>成本價格分佈：</strong>
+        </div>
+        ${Object.entries(priceRanges).map(([range, count]) => {
+          const percentage = maxCount > 0 ? (count / maxCount * 100) : 0;
+          return `
+            <div style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>${range} 元</span>
+                <span><strong>${count}</strong> 個產品</span>
+              </div>
+              <div style="background: #e5e7eb; border-radius: 10px; height: 25px; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                            width: ${percentage}%; height: 100%; 
+                            transition: width 0.5s; border-radius: 10px;"></div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      `;
+    }
+
+    function sortTable(key) {
+      const isAscending = filteredProducts[0] && filteredProducts[0]._sortKey === key && filteredProducts[0]._sortAsc;
+      
+      filteredProducts.sort((a, b) => {
+        let valA = a[key] || '';
+        let valB = b[key] || '';
+        
+        // 嘗試轉換為數字
+        const numA = parseFloat(valA);
+        const numB = parseFloat(valB);
+        
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return isAscending ? numB - numA : numA - numB;
+        }
+        
+        // 字串比較
+        valA = String(valA).toLowerCase();
+        valB = String(valB).toLowerCase();
+        
+        if (isAscending) {
+          return valB.localeCompare(valA);
+        } else {
+          return valA.localeCompare(valB);
+        }
+      });
+      
+      // 記錄排序狀態
+      filteredProducts.forEach(p => {
+        p._sortKey = key;
+        p._sortAsc = !isAscending;
+      });
+      
+      displayProductTable();
+    }
+
+    function exportToCSV() {
+      if (filteredProducts.length === 0) {
+        alert('沒有資料可以匯出！');
+        return;
+      }
+      
+      // 取得所有欄位
+      const keys = Object.keys(filteredProducts[0]);
+      
+      // 建立 CSV 內容
+      let csv = keys.join(',') + '\n';
+      
+      filteredProducts.forEach(product => {
+        const row = keys.map(key => {
+          let value = product[key] || '';
+          // 如果包含逗號，用引號包起來
+          if (String(value).includes(',')) {
+            value = `"${value}"`;
+          }
+          return value;
+        });
+        csv += row.join(',') + '\n';
+      });
+      
+      // 下載檔案
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `產品資料_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+
     window.onload = function() {
       console.log('✅ 頁面載入完成');
       console.log('✅ 所有函數已定義');
       
       updateFeeRateDisplay();
       checkSavedSheets();
+      updateQuickSelect();
       
       const cost = document.getElementById('cost').value;
       if (cost) {
         calculate();
       }
     };
+
+    function updateQuickSelect() {
+      const quickSelectDiv = document.getElementById('quickSelectProduct');
+      
+      if (allProducts.length === 0) {
+        quickSelectDiv.innerHTML = '<p style="color: #4a5568;">請先前往「🔗 資料整合」載入產品資料</p>';
+        return;
+      }
+      
+      // 建立產品選擇器
+      const productsWithCost = allProducts.filter(p => {
+        const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
+        return cost > 0;
+      });
+      
+      if (productsWithCost.length === 0) {
+        quickSelectDiv.innerHTML = '<p style="color: #4a5568;">產品資料中沒有找到成本資訊</p>';
+        return;
+      }
+      
+      quickSelectDiv.innerHTML = `
+        <div class="input-group" style="margin: 0;">
+          <label style="color: #2d3748; font-weight: 600;">從產品庫選擇：</label>
+          <select id="productSelector" onchange="loadProductData()" 
+                  style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: white;">
+            <option value="">-- 請選擇產品 --</option>
+            ${productsWithCost.map((product, index) => {
+              const name = product['商品名稱'] || product['產品名稱'] || `產品 ${index + 1}`;
+              const code = product['產品編號'] || product['商品編號'] || '';
+              const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
+              const source = product['來源'] || '';
+              
+              return `<option value="${index}">[${source}] ${code} ${name} - ${cost} 元</option>`;
+            }).join('')}
+          </select>
+        </div>
+      `;
+    }
+
+    function loadProductData() {
+      const selector = document.getElementById('productSelector');
+      const selectedIndex = parseInt(selector.value);
+      
+      if (isNaN(selectedIndex)) return;
+      
+      const productsWithCost = allProducts.filter(p => {
+        const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
+        return cost > 0;
+      });
+      
+      const product = productsWithCost[selectedIndex];
+      if (!product) return;
+      
+      // 載入產品成本到計算器
+      const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
+      document.getElementById('cost').value = cost;
+      document.getElementById('quantity').value = 1;
+      
+      // 自動計算
+      calculate();
+      
+      // 顯示提示
+      alert(`✅ 已載入產品：${product['商品名稱'] || product['產品名稱']}\n成本：${cost} 元`);
+    }
   </script>
 </body>
 </html>
