@@ -333,8 +333,7 @@
       <div id="sheetsList"></div>
       <div id="connectionResult"></div>
     </div>
-
-    <div id="analysis" class="tab-content">
+<div id="analysis" class="tab-content">
       <h2>📊 產品資料分析</h2>
       
       <div id="productDataSection">
@@ -434,21 +433,144 @@
         </div>
       </div>
     </div>
-
-    <div id="competitor" class="tab-content">
-      <h2>🎯 競品比價分析</h2>
-      <div class="cost-card">
-        <h3>添加競品價格</h3>
-        <div class="input-group">
-          <label>競品售價（元）</label>
-          <input type="number" id="competitorPrice" placeholder="輸入競品價格">
+<div id="competitor" class="tab-content">
+      <h2>🎯 競品監控</h2>
+      
+      <!-- 競品數據概覽 -->
+      <div class="cost-card" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); margin-bottom: 20px;">
+        <h3 style="color: #2d3748;">📊 競品監控概覽</h3>
+        <div id="competitorOverview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+          <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2rem; font-weight: bold; color: #667eea;" id="competitorCount">0</div>
+            <div style="color: #6c757d;">監控產品數</div>
+          </div>
+          <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2rem; font-weight: bold; color: #28a745;" id="advantageCount">0</div>
+            <div style="color: #6c757d;">價格優勢</div>
+          </div>
+          <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2rem; font-weight: bold; color: #dc3545;" id="disadvantageCount">0</div>
+            <div style="color: #6c757d;">價格劣勢</div>
+          </div>
+          <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: #f093fb;" id="avgDifference">0%</div>
+            <div style="color: #6c757d;">平均價差</div>
+          </div>
         </div>
-        <button class="btn">分析競爭力</button>
+      </div>
+
+      <!-- 添加競品 -->
+      <div class="cost-card">
+        <h3>➕ 添加競品資料</h3>
+        
+        <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">選擇我方產品</label>
+              <select id="myProductSelect" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                <option value="">-- 請選擇 --</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">我方售價（元）</label>
+              <input type="number" id="myPrice" readonly 
+                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; background: #f9fafb;">
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">競品名稱</label>
+              <input type="text" id="compName" placeholder="例如：XX品牌 安全帽" 
+                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px;">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">競品價格（元）</label>
+              <input type="number" id="compPrice" placeholder="輸入競品售價" 
+                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px;">
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">競品網址（選填）</label>
+              <input type="text" id="compUrl" placeholder="https://..." 
+                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px;">
+            </div>
+          </div>
+          
+          <button class="btn" onclick="addCompetitor()" style="margin-top: 15px; width: 100%;">
+            ➕ 添加競品
+          </button>
+        </div>
+      </div>
+
+      <!-- 或從 Google Sheets 載入 -->
+      <div class="cost-card">
+        <h3>📥 從 Google Sheets 載入競品資料</h3>
+        <p style="color: #6c757d; margin-bottom: 15px;">
+          如果您在 Google Sheets 中有「競品價格」工作表，可以直接載入。
+        </p>
+        <button class="btn" onclick="loadCompetitorSheet()" 
+                style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+          📥 載入競品工作表
+        </button>
+      </div>
+
+      <!-- 競品比價表 -->
+      <div class="cost-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h3>📋 競品比價表</h3>
+          <div>
+            <select id="filterAdvantage" onchange="filterCompetitorTable()" 
+                    style="padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px; margin-right: 10px;">
+              <option value="">全部</option>
+              <option value="advantage">僅價格優勢</option>
+              <option value="disadvantage">僅價格劣勢</option>
+              <option value="warning">需要關注</option>
+            </select>
+            <button class="btn" onclick="exportCompetitorData()">📥 匯出</button>
+          </div>
+        </div>
+        
+        <div style="overflow-x: auto;">
+          <table id="competitorTable" style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f8f9fa;">
+              <tr>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">我方產品</th>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">我方價格</th>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">競品名稱</th>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">競品價格</th>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">價差</th>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">價差%</th>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">競爭力</th>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">競品連結</th>
+                <th style="padding: 12px; border: 1px solid #e5e7eb;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="competitorTableBody">
+              <tr>
+                <td colspan="9" style="text-align: center; padding: 30px; color: #6c757d;">
+                  尚未添加競品資料
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 競爭力分析 -->
+      <div class="cost-card">
+        <h3>📊 競爭力分析</h3>
+        <div id="competitiveAnalysis"></div>
+      </div>
+
+      <!-- 價格警示 -->
+      <div class="cost-card">
+        <h3>⚠️ 價格警示</h3>
+        <div id="priceAlerts"></div>
       </div>
     </div>
-  </div>
 
-  <script>
+  </div>
+<script>
     let availableSheets = [];
     let selectedSheets = [];
     let sheetInputCount = 2;
@@ -457,6 +579,7 @@
     let currentPage = 1;
     let itemsPerPage = 20;
     let selectedProducts = new Set();
+    let competitorData = [];
 
     function showTab(tabName) {
       const tabs = document.querySelectorAll('.tab');
@@ -481,7 +604,6 @@
         if (allProducts.length > 0) {
           displayAnalysisPage();
         } else {
-          // 確保顯示提示訊息
           document.getElementById('productDataSection').style.display = 'block';
           document.getElementById('analysisContent').style.display = 'none';
         }
@@ -490,6 +612,11 @@
       // 如果切換到計算器頁面，更新快速選擇
       if (tabName === 'calculator') {
         updateQuickSelect();
+      }
+      
+      // 如果切換到競品監控頁面
+      if (tabName === 'competitor') {
+        updateCompetitorPage();
       }
     }
 
@@ -647,8 +774,7 @@
       `;
       container.appendChild(newInput);
     }
-
-    async function saveAndLoadSheets() {
+async function saveAndLoadSheets() {
       const sheetsId = localStorage.getItem('sheetsId');
       const sheetNames = [];
       
@@ -708,7 +834,6 @@
       console.log(`📥 嘗試讀取工作表: ${sheetName}`);
       
       try {
-        // 使用 Google Sheets 的公開 API（不需要認證）
         const encodedSheetName = encodeURIComponent(sheetName);
         const url = `https://docs.google.com/spreadsheets/d/${sheetsId}/gviz/tq?tqx=out:json&sheet=${encodedSheetName}`;
         
@@ -722,7 +847,6 @@
         
         const text = await response.text();
         
-        // Google 返回的是 JSONP 格式，需要提取 JSON 部分
         const jsonString = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);?/)[1];
         const data = JSON.parse(jsonString);
         
@@ -735,13 +859,11 @@
           return [];
         }
         
-        // 解析表格數據
         const cols = data.table.cols;
         const rows = data.table.rows;
         
         console.log(`📋 表頭資訊:`, cols.map(c => c.label));
         
-        // 轉換成易用的物件陣列（包含所有列，不跳過空值）
         const parsedData = [];
         
         for (let i = 0; i < rows.length; i++) {
@@ -753,7 +875,6 @@
             const cell = row.c[index];
             const colLabel = col.label || `欄位${index + 1}`;
             
-            // 取得儲存格的值
             let value = '';
             if (cell) {
               if (cell.v !== null && cell.v !== undefined) {
@@ -768,14 +889,12 @@
             obj[colLabel] = value;
           });
           
-          // 即使某列全是空值，也包含進來（除非完全沒有資料）
           parsedData.push(obj);
         }
         
         console.log(`✅ ${sheetName} 解析完成: ${parsedData.length} 筆資料`);
         console.log(`📊 前 3 筆範例資料:`, parsedData.slice(0, 3));
         
-        // 過濾掉完全空白的列
         const filteredData = parsedData.filter(row => {
           return Object.values(row).some(val => val !== '' && val !== null && val !== undefined);
         });
@@ -788,14 +907,12 @@
         console.error(`❌ 讀取 ${sheetName} 失敗:`, error);
         console.error(`❌ 完整錯誤:`, error.stack);
         
-        // 如果失敗，提供詳細的錯誤訊息
         if (error.message.includes('HTTP error')) {
           console.error('可能原因：工作表名稱不正確，或 Google Sheets 未設為公開');
         } else if (error.message.includes('match')) {
           console.error('可能原因：無法解析 Google 返回的數據格式');
         }
         
-        // 返回空陣列而不是拋出錯誤，讓程式繼續運行
         return [];
       }
     }
@@ -861,7 +978,6 @@
       
       const totalCount = selectedSheets.reduce((sum, s) => sum + s.count, 0);
       
-      // 合併所有選中工作表的產品數據
       allProducts = [];
       selectedSheets.forEach(sheet => {
         if (sheet.data && sheet.data.length > 0) {
@@ -878,7 +994,6 @@
       
       console.log('✅ 已載入產品數據:', allProducts.length, '筆');
       
-      // 更新快速選擇器
       updateQuickSelect();
       
       document.getElementById('connectionResult').innerHTML = `
@@ -974,7 +1089,13 @@
       console.log('✅ 快速載入完成，共', availableSheets.length, '個工作表');
     }
 
-    function displayAnalysisPage() {
+    function navigateToAnalysis() {
+      showTab('analysis');
+    }
+
+    function navigateToCalculator() {
+      showTab('calculator');
+    }function displayAnalysisPage() {
       if (allProducts.length === 0) {
         return;
       }
@@ -982,20 +1103,15 @@
       document.getElementById('productDataSection').style.display = 'none';
       document.getElementById('analysisContent').style.display = 'block';
       
-      // 顯示數據概覽
       displayDataOverview();
       
-      // 設置來源篩選器
       const sources = [...new Set(allProducts.map(p => p.來源))];
       const sourceFilter = document.getElementById('sourceFilter');
       sourceFilter.innerHTML = '<option value="">全部來源</option>' + 
         sources.map(s => `<option value="${s}">${s}</option>`).join('');
       
-      // 顯示產品表格
       filteredProducts = [...allProducts];
       displayProductTable();
-      
-      // 顯示價格分析
       displayPriceAnalysis();
     }
 
@@ -1004,7 +1120,6 @@
       const totalProducts = allProducts.length;
       const sources = [...new Set(allProducts.map(p => p.來源))];
       
-      // 計算平均成本（假設欄位名稱可能是「單價」或「進貨單價」）
       const costs = allProducts.map(p => {
         const price = p['單價'] || p['進貨單價'] || p['成本'] || 0;
         return typeof price === 'number' ? price : parseFloat(price) || 0;
@@ -1044,7 +1159,6 @@
         return;
       }
       
-      // 取得所有欄位
       const allKeys = new Set();
       filteredProducts.forEach(product => {
         Object.keys(product).forEach(key => allKeys.add(key));
@@ -1052,7 +1166,6 @@
       
       const keys = Array.from(allKeys);
       
-      // 建立表頭
       thead.innerHTML = `
         <th style="padding: 12px; border: 1px solid #e5e7eb; background: #f8f9fa;">
           <input type="checkbox" onchange="toggleAllProducts(this)" style="width: 18px; height: 18px;">
@@ -1065,12 +1178,10 @@
         `).join('')}
       `;
       
-      // 分頁
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const pageProducts = filteredProducts.slice(startIndex, endIndex);
       
-      // 建立表格內容
       tbody.innerHTML = pageProducts.map((product, index) => {
         const globalIndex = startIndex + index;
         const isSelected = selectedProducts.has(globalIndex);
@@ -1085,10 +1196,8 @@
             ${keys.map(key => {
               let value = product[key] || '';
               
-              // 如果是數字類型的欄位，右對齊
               const isNumber = typeof value === 'number' || !isNaN(parseFloat(value));
               
-              // 特殊顯示：建議售價和預估利潤
               if (key === '建議售價' && value) {
                 value = `<strong style="color: #667eea;">${Math.ceil(value)} 元</strong>`;
               } else if (key === '預估利潤' && value) {
@@ -1106,7 +1215,6 @@
         `;
       }).join('');
       
-      // 分頁控制
       displayPagination();
     }
 
@@ -1144,12 +1252,10 @@
       const sourceFilter = document.getElementById('sourceFilter').value;
       
       filteredProducts = allProducts.filter(product => {
-        // 搜尋條件
         const matchSearch = !searchTerm || Object.values(product).some(val => 
           String(val).toLowerCase().includes(searchTerm)
         );
         
-        // 來源條件
         const matchSource = !sourceFilter || product.來源 === sourceFilter;
         
         return matchSearch && matchSource;
@@ -1211,7 +1317,7 @@
       const hasCoins = document.getElementById('batchCoins').checked;
       
       let totalFeeRate = isActivity ? 7.5 : 5.5;
-      totalFeeRate += 2.0; // 金流費
+      totalFeeRate += 2.0;
       if (hasFreeShipping) totalFeeRate += 7;
       if (isPreorder) totalFeeRate += 3;
       if (hasCoins) totalFeeRate += 3;
@@ -1219,7 +1325,6 @@
       let calculated = 0;
       
       filteredProducts.forEach((product, index) => {
-        // 取得成本（嘗試不同的欄位名稱）
         const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
         
         if (cost > 0) {
@@ -1242,7 +1347,6 @@
     function displayPriceAnalysis() {
       const analysisDiv = document.getElementById('priceAnalysis');
       
-      // 取得有成本的產品
       const productsWithCost = filteredProducts.filter(p => {
         const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
         return cost > 0;
@@ -1253,7 +1357,6 @@
         return;
       }
       
-      // 價格分佈統計
       const priceRanges = {
         '0-100': 0,
         '101-200': 0,
@@ -1303,7 +1406,6 @@
         let valA = a[key] || '';
         let valB = b[key] || '';
         
-        // 嘗試轉換為數字
         const numA = parseFloat(valA);
         const numB = parseFloat(valB);
         
@@ -1311,7 +1413,6 @@
           return isAscending ? numB - numA : numA - numB;
         }
         
-        // 字串比較
         valA = String(valA).toLowerCase();
         valB = String(valB).toLowerCase();
         
@@ -1322,7 +1423,6 @@
         }
       });
       
-      // 記錄排序狀態
       filteredProducts.forEach(p => {
         p._sortKey = key;
         p._sortAsc = !isAscending;
@@ -1337,16 +1437,13 @@
         return;
       }
       
-      // 取得所有欄位
       const keys = Object.keys(filteredProducts[0]);
       
-      // 建立 CSV 內容
       let csv = keys.join(',') + '\n';
       
       filteredProducts.forEach(product => {
         const row = keys.map(key => {
           let value = product[key] || '';
-          // 如果包含逗號，用引號包起來
           if (String(value).includes(',')) {
             value = `"${value}"`;
           }
@@ -1355,29 +1452,13 @@
         csv += row.join(',') + '\n';
       });
       
-      // 下載檔案
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `產品資料_${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
     }
-
-    window.onload = function() {
-      console.log('✅ 頁面載入完成');
-      console.log('✅ 所有函數已定義');
-      
-      updateFeeRateDisplay();
-      checkSavedSheets();
-      updateQuickSelect();
-      
-      const cost = document.getElementById('cost').value;
-      if (cost) {
-        calculate();
-      }
-    };
-
-    function updateQuickSelect() {
+function updateQuickSelect() {
       const quickSelectDiv = document.getElementById('quickSelectProduct');
       
       if (allProducts.length === 0) {
@@ -1385,7 +1466,6 @@
         return;
       }
       
-      // 建立產品選擇器
       const productsWithCost = allProducts.filter(p => {
         const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
         return cost > 0;
@@ -1429,17 +1509,464 @@
       const product = productsWithCost[selectedIndex];
       if (!product) return;
       
-      // 載入產品成本到計算器
       const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
       document.getElementById('cost').value = cost;
       document.getElementById('quantity').value = 1;
       
-      // 自動計算
       calculate();
       
-      // 顯示提示
       alert(`✅ 已載入產品：${product['商品名稱'] || product['產品名稱']}\n成本：${cost} 元`);
     }
+
+    function updateCompetitorPage() {
+      console.log('🎯 更新競品監控頁面');
+      
+      updateMyProductSelector();
+      displayCompetitorTable();
+      updateCompetitorOverview();
+      updateCompetitiveAnalysis();
+      updatePriceAlerts();
+    }
+
+    function updateMyProductSelector() {
+      const selector = document.getElementById('myProductSelect');
+      
+      if (!selector) return;
+      
+      if (allProducts.length === 0) {
+        selector.innerHTML = '<option value="">請先載入產品資料</option>';
+        return;
+      }
+      
+      const productsWithPrice = allProducts.map((product, index) => {
+        const name = product['商品名稱'] || product['產品名稱'] || `產品 ${index + 1}`;
+        const code = product['產品編號'] || product['商品編號'] || '';
+        const price = product['建議售價'] || calculateQuickPrice(product);
+        
+        return {
+          index,
+          name,
+          code,
+          price: Math.ceil(price),
+          source: product['來源'] || ''
+        };
+      });
+      
+      selector.innerHTML = '<option value="">-- 請選擇產品 --</option>' +
+        productsWithPrice.map(p => 
+          `<option value="${p.index}" data-price="${p.price}">[${p.source}] ${p.code} ${p.name} - ${p.price} 元</option>`
+        ).join('');
+      
+      selector.onchange = function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const price = selectedOption.getAttribute('data-price');
+        document.getElementById('myPrice').value = price || '';
+      };
+    }
+
+    function calculateQuickPrice(product) {
+      const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
+      if (cost === 0) return 0;
+      
+      const packaging = 10;
+      const labor = 20;
+      const totalCost = cost + packaging + labor;
+      const targetMargin = 30;
+      const totalFeeRate = 5.5 + 2.0;
+      
+      return totalCost / (1 - (totalFeeRate + targetMargin) / 100);
+    }
+
+    function addCompetitor() {
+      const myProductIndex = document.getElementById('myProductSelect').value;
+      const myPrice = parseFloat(document.getElementById('myPrice').value);
+      const compName = document.getElementById('compName').value.trim();
+      const compPrice = parseFloat(document.getElementById('compPrice').value);
+      const compUrl = document.getElementById('compUrl').value.trim();
+      
+      if (!myProductIndex) {
+        alert('❌ 請選擇我方產品！');
+        return;
+      }
+      
+      if (!compName) {
+        alert('❌ 請輸入競品名稱！');
+        return;
+      }
+      
+      if (!compPrice || compPrice <= 0) {
+        alert('❌ 請輸入有效的競品價格！');
+        return;
+      }
+      
+      const myProduct = allProducts[parseInt(myProductIndex)];
+      const myProductName = myProduct['商品名稱'] || myProduct['產品名稱'] || '未命名產品';
+      const myProductCode = myProduct['產品編號'] || myProduct['商品編號'] || '';
+      
+      const priceDiff = myPrice - compPrice;
+      const priceDiffPercent = ((priceDiff / compPrice) * 100).toFixed(1);
+      
+      competitorData.push({
+        myProductIndex: parseInt(myProductIndex),
+        myProductName,
+        myProductCode,
+        myPrice,
+        compName,
+        compPrice,
+        compUrl,
+        priceDiff,
+        priceDiffPercent,
+        addedDate: new Date().toISOString()
+      });
+      
+      console.log('✅ 添加競品:', competitorData[competitorData.length - 1]);
+      
+      document.getElementById('compName').value = '';
+      document.getElementById('compPrice').value = '';
+      document.getElementById('compUrl').value = '';
+      
+      displayCompetitorTable();
+      updateCompetitorOverview();
+      updateCompetitiveAnalysis();
+      updatePriceAlerts();
+      
+      alert('✅ 競品添加成功！');
+    }
+
+    function displayCompetitorTable() {
+      const tbody = document.getElementById('competitorTableBody');
+      
+      if (!tbody) return;
+      
+      if (competitorData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 30px; color: #6c757d;">
+              尚未添加競品資料
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      const filter = document.getElementById('filterAdvantage')?.value || '';
+      let filteredData = [...competitorData];
+      
+      if (filter === 'advantage') {
+        filteredData = filteredData.filter(c => c.priceDiff < 0);
+      } else if (filter === 'disadvantage') {
+        filteredData = filteredData.filter(c => c.priceDiff > 0);
+      } else if (filter === 'warning') {
+        filteredData = filteredData.filter(c => c.priceDiff > c.compPrice * 0.1);
+      }
+      
+      tbody.innerHTML = filteredData.map((comp, index) => {
+        const isAdvantage = comp.priceDiff < 0;
+        const isWarning = comp.priceDiff > comp.compPrice * 0.1;
+        
+        let competitiveStatus = '';
+        let competitiveColor = '';
+        
+        if (isWarning) {
+          competitiveStatus = '⚠️ 需關注';
+          competitiveColor = '#fbbf24';
+        } else if (isAdvantage) {
+          competitiveStatus = '✅ 有優勢';
+          competitiveColor = '#28a745';
+        } else {
+          competitiveStatus = '❌ 較貴';
+          competitiveColor = '#dc3545';
+        }
+        
+        return `
+          <tr style="background: ${isWarning ? '#fef3c7' : 'white'};">
+            <td style="padding: 12px; border: 1px solid #e5e7eb;">
+              ${comp.myProductCode} ${comp.myProductName}
+            </td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: right;">
+              <strong>${comp.myPrice} 元</strong>
+            </td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb;">
+              ${comp.compName}
+            </td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: right;">
+              <strong>${comp.compPrice} 元</strong>
+            </td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: right; color: ${isAdvantage ? '#28a745' : '#dc3545'};">
+              <strong>${isAdvantage ? '' : '+'}${comp.priceDiff.toFixed(0)} 元</strong>
+            </td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: right; color: ${isAdvantage ? '#28a745' : '#dc3545'};">
+              <strong>${isAdvantage ? '' : '+'}${comp.priceDiffPercent}%</strong>
+            </td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
+              <span style="background: ${competitiveColor}; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85rem;">
+                ${competitiveStatus}
+              </span>
+            </td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
+              ${comp.compUrl ? `<a href="${comp.compUrl}" target="_blank" style="color: #667eea;">🔗 查看</a>` : '-'}
+            </td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
+              <button onclick="deleteCompetitor(${competitorData.indexOf(comp)})" 
+                      style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+                🗑️ 刪除
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function deleteCompetitor(index) {
+      if (confirm('確定要刪除這筆競品資料嗎？')) {
+        competitorData.splice(index, 1);
+        displayCompetitorTable();
+        updateCompetitorOverview();
+        updateCompetitiveAnalysis();
+        updatePriceAlerts();
+      }
+    }
+
+    function filterCompetitorTable() {
+      displayCompetitorTable();
+    }
+
+    function updateCompetitorOverview() {
+      const total = competitorData.length;
+      const advantage = competitorData.filter(c => c.priceDiff < 0).length;
+      const disadvantage = competitorData.filter(c => c.priceDiff > 0).length;
+      
+      const avgDiff = total > 0 
+        ? (competitorData.reduce((sum, c) => sum + parseFloat(c.priceDiffPercent), 0) / total).toFixed(1)
+        : 0;
+      
+      document.getElementById('competitorCount').textContent = total;
+      document.getElementById('advantageCount').textContent = advantage;
+      document.getElementById('disadvantageCount').textContent = disadvantage;
+      document.getElementById('avgDifference').textContent = avgDiff + '%';
+    }
+function updateCompetitiveAnalysis() {
+      const analysisDiv = document.getElementById('competitiveAnalysis');
+      
+      if (!analysisDiv) return;
+      
+      if (competitorData.length === 0) {
+        analysisDiv.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 30px;">添加競品後即可查看分析</p>';
+        return;
+      }
+      
+      const productGroups = {};
+      competitorData.forEach(comp => {
+        const key = comp.myProductName;
+        if (!productGroups[key]) {
+          productGroups[key] = [];
+        }
+        productGroups[key].push(comp);
+      });
+      
+      let html = '<div style="display: grid; gap: 15px;">';
+      
+      Object.entries(productGroups).forEach(([productName, comps]) => {
+        const avgPrice = comps.reduce((sum, c) => sum + c.compPrice, 0) / comps.length;
+        const myPrice = comps[0].myPrice;
+        const diff = myPrice - avgPrice;
+        const diffPercent = ((diff / avgPrice) * 100).toFixed(1);
+        
+        html += `
+          <div style="background: white; padding: 15px; border-radius: 10px; border: 2px solid ${diff < 0 ? '#28a745' : '#dc3545'};">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="font-size: 1.1rem;">${productName}</strong><br>
+                <span style="color: #6c757d;">監控 ${comps.length} 個競品</span>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.9rem; color: #6c757d;">我方: ${myPrice} 元</div>
+                <div style="font-size: 0.9rem; color: #6c757d;">競品均價: ${avgPrice.toFixed(0)} 元</div>
+                <div style="font-size: 1.2rem; font-weight: bold; color: ${diff < 0 ? '#28a745' : '#dc3545'};">
+                  ${diff < 0 ? '✅' : '❌'} ${diff < 0 ? '' : '+'}${diffPercent}%
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      analysisDiv.innerHTML = html;
+    }
+
+    function updatePriceAlerts() {
+      const alertsDiv = document.getElementById('priceAlerts');
+      
+      if (!alertsDiv) return;
+      
+      const warnings = competitorData.filter(c => c.priceDiff > c.compPrice * 0.1);
+      
+      if (warnings.length === 0) {
+        alertsDiv.innerHTML = `
+          <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+            ✅ 目前沒有需要關注的價格警示
+          </div>
+        `;
+        return;
+      }
+      
+      let html = `
+        <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 15px;">
+          <strong>⚠️ 發現 ${warnings.length} 個需要關注的競品價格</strong>
+        </div>
+      `;
+      
+      warnings.forEach(w => {
+        html += `
+          <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ffc107;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>${w.myProductName}</strong><br>
+                <span style="color: #6c757d;">競品：${w.compName}</span>
+              </div>
+              <div style="text-align: right;">
+                <div style="color: #6c757d;">我方: ${w.myPrice} 元</div>
+                <div style="color: #6c757d;">競品: ${w.compPrice} 元</div>
+                <div style="font-weight: bold; color: #dc3545;">
+                  貴了 ${w.priceDiff.toFixed(0)} 元 (+${w.priceDiffPercent}%)
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      alertsDiv.innerHTML = html;
+    }
+
+    function loadCompetitorSheet() {
+      const sheetsId = localStorage.getItem('sheetsId');
+      
+      if (!sheetsId) {
+        alert('⚠️ 請先在「資料整合」頁面設定 Google Sheets！');
+        return;
+      }
+      
+      const sheetName = prompt('請輸入競品工作表名稱：\n（例如：蝦皮競品價格）', '蝦皮競品價格');
+      
+      if (!sheetName) return;
+      
+      fetchSheetData(sheetsId, sheetName).then(data => {
+        if (data.length === 0) {
+          alert('❌ 未找到競品資料，請確認工作表名稱是否正確！');
+          return;
+        }
+        
+        console.log('📥 載入競品資料:', data);
+        
+        let successCount = 0;
+        
+        data.forEach(row => {
+          const myProductKey = row['我方產品'] || row['產品名稱'] || row['產品編號'] || '';
+          const matchedIndex = allProducts.findIndex(p => 
+            (p['商品名稱'] || '').includes(myProductKey) || 
+            (p['產品編號'] || '').includes(myProductKey)
+          );
+          
+          if (matchedIndex === -1) {
+            console.warn('⚠️ 找不到匹配的產品:', myProductKey);
+            return;
+          }
+          
+          const myProduct = allProducts[matchedIndex];
+          const myPrice = myProduct['建議售價'] || calculateQuickPrice(myProduct);
+          const compName = row['競品名稱'] || row['競品'] || '';
+          const compPrice = parseFloat(row['競品價格'] || row['價格'] || 0);
+          const compUrl = row['競品網址'] || row['網址'] || '';
+          
+          if (!compName || compPrice <= 0) {
+            console.warn('⚠️ 競品資料不完整:', row);
+            return;
+          }
+          
+          const priceDiff = myPrice - compPrice;
+          const priceDiffPercent = ((priceDiff / compPrice) * 100).toFixed(1);
+          
+          competitorData.push({
+            myProductIndex: matchedIndex,
+            myProductName: myProduct['商品名稱'] || myProduct['產品名稱'] || '',
+            myProductCode: myProduct['產品編號'] || myProduct['商品編號'] || '',
+            myPrice: Math.ceil(myPrice),
+            compName,
+            compPrice,
+            compUrl,
+            priceDiff,
+            priceDiffPercent,
+            addedDate: new Date().toISOString()
+          });
+          
+          successCount++;
+        });
+        
+        if (successCount > 0) {
+          alert(`✅ 成功載入 ${successCount} 筆競品資料！`);
+          displayCompetitorTable();
+          updateCompetitorOverview();
+          updateCompetitiveAnalysis();
+          updatePriceAlerts();
+        } else {
+          alert('❌ 沒有成功載入任何競品資料，請檢查資料格式！');
+        }
+      }).catch(error => {
+        console.error('❌ 載入競品工作表失敗:', error);
+        alert('❌ 載入失敗，請確認工作表名稱和格式是否正確！');
+      });
+    }
+
+    function exportCompetitorData() {
+      if (competitorData.length === 0) {
+        alert('沒有競品資料可以匯出！');
+        return;
+      }
+      
+      const headers = ['我方產品編號', '我方產品名稱', '我方價格', '競品名稱', '競品價格', '價差', '價差%', '競爭力', '競品網址'];
+      let csv = headers.join(',') + '\n';
+      
+      competitorData.forEach(comp => {
+        const competitive = comp.priceDiff < 0 ? '有優勢' : 
+                          comp.priceDiff > comp.compPrice * 0.1 ? '需關注' : '較貴';
+        
+        const row = [
+          comp.myProductCode,
+          comp.myProductName,
+          comp.myPrice,
+          comp.compName,
+          comp.compPrice,
+          comp.priceDiff.toFixed(0),
+          comp.priceDiffPercent + '%',
+          competitive,
+          comp.compUrl || ''
+        ].map(val => `"${val}"`);
+        
+        csv += row.join(',') + '\n';
+      });
+      
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `競品比價_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+
+    window.onload = function() {
+      console.log('✅ 頁面載入完成');
+      console.log('✅ 所有函數已定義');
+      
+      updateFeeRateDisplay();
+      checkSavedSheets();
+      updateQuickSelect();
+      
+      const cost = document.getElementById('cost').value;
+      if (cost) {
+        calculate();
+      }
+    };
   </script>
 </body>
 </html>
