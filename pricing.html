@@ -228,8 +228,7 @@
       <button class="tab" onclick="showTab('analysis')">📊 智能分析</button>
       <button class="tab" onclick="showTab('competitor')">🎯 競品比價</button>
     </div>
-
-    <div id="calculator" class="tab-content active">
+<div id="calculator" class="tab-content active">
       <h2>💰 訂價計算器</h2>
       
       <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid #e17055;">
@@ -373,368 +372,60 @@
       <div id="sheetsList"></div>
       <div id="connectionResult"></div>
     </div>
+<script>
+    // ===== 全域變數 =====
+    let allSheets = [];
+    let sheetsData = {};
+    let currentSpreadsheetId = '';
 
-    <div id="analysis" class="tab-content">
-      <h2>📊 產品資料分析</h2>
-      
-      <div id="productDataSection">
-        <div class="ai-suggestion" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);">
-          <h3>💡 提示</h3>
-          <p>請先前往「🔗 資料整合」頁面載入產品資料，然後回到此頁面查看分析結果。</p>
-        </div>
-      </div>
-
-      <div id="analysisContent" style="display: none;">
-        <!-- 數據概覽 -->
-        <div class="cost-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); margin-bottom: 20px;">
-          <h3 style="color: #2d3748;">📈 數據概覽</h3>
-          <div id="dataOverview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;"></div>
-        </div>
-
-        <!-- 搜尋和篩選 -->
-        <div class="cost-card">
-          <h3>🔍 搜尋產品</h3>
-          <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <input type="text" id="searchInput" placeholder="搜尋產品名稱、編號..." 
-                   style="flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px;"
-                   oninput="filterProducts()">
-            <select id="sourceFilter" onchange="filterProducts()" 
-                    style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px;">
-              <option value="">全部來源</option>
-            </select>
-            <button class="btn" onclick="resetFilters()">重置</button>
-          </div>
-        </div>
-
-        <!-- 批量定價工具 -->
-        <div class="cost-card">
-          <h3>💰 批量定價計算</h3>
-          <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-              <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 600;">包材成本（元）</label>
-                <input type="number" id="batchPackaging" value="10" 
-                       style="width: 100%; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
-              </div>
-              <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 600;">人事成本（元）</label>
-                <input type="number" id="batchLabor" value="20" 
-                       style="width: 100%; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
-              </div>
-              <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 600;">目標利潤率（%）</label>
-                <input type="number" id="batchMargin" value="30" 
-                       style="width: 100%; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
-              </div>
-            </div>
-            
-            <div style="margin-top: 15px;">
-              <label style="display: block; margin-bottom: 10px; font-weight: 600;">成交手續費：</label>
-              <div style="display: flex; gap: 15px; margin-left: 10px; margin-bottom: 15px;">
-                <label>
-                  <input type="radio" name="batchFeeType" id="batchNormalFee" value="5.5" checked>
-                  一般期間 5.5%
-                </label>
-                <label>
-                  <input type="radio" name="batchFeeType" id="batchEventFee" value="7.5">
-                  促銷檔期 7.5%
-                </label>
-              </div>
-              
-              <label style="display: block; margin-bottom: 10px; font-weight: 600;">活動費用：</label>
-              <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-left: 10px;">
-                <label><input type="checkbox" id="batchFreeShip"> 免運補貼 (7%)</label>
-                <label><input type="checkbox" id="batchPreorder"> 較長備貨 (3%)</label>
-                <label><input type="checkbox" id="batchCoins"> 蝦幣回饋 (3%)</label>
-                <label><input type="checkbox" id="batchTax"> 營業稅 (5%)</label>
-              </div>
-            </div>
-            <button class="btn" onclick="calculateBatchPricing()" style="margin-top: 15px; width: 100%;">
-              🧮 計算所有產品建議售價
-            </button>
-          </div>
-        </div>
-
-        <!-- 產品資料表格 -->
-        <div class="cost-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3>📋 產品清單</h3>
-            <div>
-              <button class="btn" onclick="exportToCSV()" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
-                📥 匯出 CSV
-              </button>
-              <button class="btn" onclick="selectAllProducts()">✓ 全選</button>
-              <button class="btn" onclick="deselectAllProducts()">✗ 取消全選</button>
-            </div>
-          </div>
-          
-          <div style="overflow-x: auto;">
-            <table id="productTable" style="width: 100%; border-collapse: collapse;">
-              <thead style="background: #f8f9fa; position: sticky; top: 0;">
-                <tr id="tableHeader"></tr>
-              </thead>
-              <tbody id="tableBody"></tbody>
-            </table>
-          </div>
-          
-          <div id="tablePagination" style="margin-top: 15px; text-align: center;"></div>
-        </div>
-
-        <!-- 數據分析圖表 -->
-        <div class="cost-card">
-          <h3>📊 價格分析</h3>
-          <div id="priceAnalysis" style="min-height: 200px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="competitor" class="tab-content">
-      <h2>🎯 競品監控</h2>
-      
-      <!-- 競品數據概覽 -->
-      <div class="cost-card" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); margin-bottom: 20px;">
-        <h3 style="color: #2d3748;">📊 競品監控概覽</h3>
-        <div id="competitorOverview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
-          <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold; color: #667eea;" id="competitorCount">0</div>
-            <div style="color: #6c757d;">監控產品數</div>
-          </div>
-          <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold; color: #28a745;" id="advantageCount">0</div>
-            <div style="color: #6c757d;">價格優勢</div>
-          </div>
-          <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold; color: #dc3545;" id="disadvantageCount">0</div>
-            <div style="color: #6c757d;">價格劣勢</div>
-          </div>
-          <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 1.5rem; font-weight: bold; color: #f093fb;" id="avgDifference">0%</div>
-            <div style="color: #6c757d;">平均價差</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 添加競品 -->
-      <div class="cost-card">
-        <h3>➕ 添加競品資料</h3>
-        
-        <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div>
-              <label style="display: block; margin-bottom: 5px; font-weight: 600;">選擇我方產品</label>
-              <select id="myProductSelect" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px;">
-                <option value="">-- 請選擇 --</option>
-              </select>
-            </div>
-            <div>
-              <label style="display: block; margin-bottom: 5px; font-weight: 600;">我方售價（元）</label>
-              <input type="number" id="myPrice" readonly 
-                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; background: #f9fafb;">
-            </div>
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
-            <div>
-              <label style="display: block; margin-bottom: 5px; font-weight: 600;">競品名稱</label>
-              <input type="text" id="compName" placeholder="例如：XX品牌 安全帽" 
-                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px;">
-            </div>
-            <div>
-              <label style="display: block; margin-bottom: 5px; font-weight: 600;">競品價格（元）</label>
-              <input type="number" id="compPrice" placeholder="輸入競品售價" 
-                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px;">
-            </div>
-            <div>
-              <label style="display: block; margin-bottom: 5px; font-weight: 600;">競品網址（選填）</label>
-              <input type="text" id="compUrl" placeholder="https://..." 
-                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px;">
-            </div>
-          </div>
-          
-          <button class="btn" onclick="addCompetitor()" style="margin-top: 15px; width: 100%;">
-            ➕ 添加競品
-          </button>
-        </div>
-      </div>
-
-      <!-- 或從 Google Sheets 載入 -->
-      <div class="cost-card">
-        <h3>📥 從 Google Sheets 載入競品資料</h3>
-        <p style="color: #6c757d; margin-bottom: 15px;">
-          如果您在 Google Sheets 中有「競品價格」工作表，可以直接載入。
-        </p>
-        <button class="btn" onclick="loadCompetitorSheet()" 
-                style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
-          📥 載入競品工作表
-        </button>
-      </div>
-
-      <!-- 競品比價表 -->
-      <div class="cost-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h3>📋 競品比價表</h3>
-          <div>
-            <select id="filterAdvantage" onchange="filterCompetitorTable()" 
-                    style="padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px; margin-right: 10px;">
-              <option value="">全部</option>
-              <option value="advantage">僅價格優勢</option>
-              <option value="disadvantage">僅價格劣勢</option>
-              <option value="warning">需要關注</option>
-            </select>
-            <button class="btn" onclick="exportCompetitorData()">📥 匯出</button>
-          </div>
-        </div>
-        
-        <div style="overflow-x: auto;">
-          <table id="competitorTable" style="width: 100%; border-collapse: collapse;">
-            <thead style="background: #f8f9fa;">
-              <tr>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">我方產品</th>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">我方價格</th>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">競品名稱</th>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">競品價格</th>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">價差</th>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">價差%</th>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">競爭力</th>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">競品連結</th>
-                <th style="padding: 12px; border: 1px solid #e5e7eb;">操作</th>
-              </tr>
-            </thead>
-            <tbody id="competitorTableBody">
-              <tr>
-                <td colspan="9" style="text-align: center; padding: 30px; color: #6c757d;">
-                  尚未添加競品資料
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 競爭力分析 -->
-      <div class="cost-card">
-        <h3>📊 競爭力分析</h3>
-        <div id="competitiveAnalysis"></div>
-      </div>
-
-      <!-- 價格警示 -->
-      <div class="cost-card">
-        <h3>⚠️ 價格警示</h3>
-        <div id="priceAlerts"></div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    let availableSheets = [];
-    let selectedSheets = [];
-    let sheetInputCount = 2;
-    let allProducts = [];
-    let filteredProducts = [];
-    let currentPage = 1;
-    let itemsPerPage = 20;
-    let selectedProducts = new Set();
-    let competitorData = [];
-
-    function showTab(tabName) {
-      const tabs = document.querySelectorAll('.tab');
-      const contents = document.querySelectorAll('.tab-content');
-      
-      tabs.forEach(tab => tab.classList.remove('active'));
-      contents.forEach(content => content.classList.remove('active'));
-      
-      // 找到對應的標籤並啟用
-      const targetTab = Array.from(tabs).find(tab => 
-        tab.getAttribute('onclick')?.includes(`'${tabName}'`)
-      );
-      if (targetTab) {
-        targetTab.classList.add('active');
-      }
-      
-      document.getElementById(tabName).classList.add('active');
-      
-      // 如果切換到分析頁面，檢查是否有產品資料
-      if (tabName === 'analysis') {
-        console.log('📊 切換到分析頁面，產品數量:', allProducts.length);
-        if (allProducts.length > 0) {
-          displayAnalysisPage();
-        } else {
-          // 確保顯示提示訊息
-          document.getElementById('productDataSection').style.display = 'block';
-          document.getElementById('analysisContent').style.display = 'none';
-        }
-      }
-      
-      // 如果切換到計算器頁面，更新快速選擇
-      if (tabName === 'calculator') {
-        updateQuickSelect();
-      }
-      
-      // 如果切換到競品監控頁面
-      if (tabName === 'competitor') {
-        updateCompetitorPage();
-      }
-    }
-
+    // ===== 費率更新與計算 =====
     function updateFeeRateDisplay() {
-      // 取得成交手續費（單選）
-      const normalFee = document.getElementById('normalFee');
-      const eventFee = document.getElementById('eventFee');
-      const platformFee = normalFee.checked ? 5.5 : 7.5;
-      
-      // 固定金流費
-      const paymentRate = 2.0;
-      
-      // 活動費用（可選）
+      const isActivity = document.getElementById('isActivity').checked;
       const hasFreeShipping = document.getElementById('hasFreeShipping').checked;
       const isPreorder = document.getElementById('isPreorder').checked;
       const hasCoins = document.getElementById('hasCoins').checked;
       const hasTax = document.getElementById('hasTax').checked;
-      
-      let totalRate = platformFee + paymentRate;
-      
-      let breakdown = `
-        <div style="font-size: 0.95rem;">
-          <strong style="color: #2d3748;">📊 費率明細：</strong><br>
-          <div style="margin: 10px 0; padding-left: 10px; border-left: 3px solid #667eea;">
-            • 成交手續費：<strong>${platformFee}%</strong> ${eventFee.checked ? '（促銷檔期）' : '（一般期間）'}<br>
-            • 金流服務費：<strong>${paymentRate}%</strong> <span style="color: #6c757d;">（固定）</span><br>
-      `;
-      
+
+      let totalFee = 0;
+      let feeDetails = [];
+
+      // 基本手續費
+      const baseFee = isActivity ? 7.5 : 5.5;
+      totalFee += baseFee;
+      feeDetails.push(`手續費: ${baseFee}%`);
+
+      // 金流費
+      totalFee += 2;
+      feeDetails.push('金流費: 2%');
+
+      // 可選費用
       if (hasFreeShipping) {
-        breakdown += `    • 免運補貼：<strong>7%</strong><br>`;
-        totalRate += 7;
+        totalFee += 7;
+        feeDetails.push('免運補貼: 7%');
       }
-      
       if (isPreorder) {
-        breakdown += `    • 較長備貨（預購）：<strong>3%</strong><br>`;
-        totalRate += 3;
+        totalFee += 3;
+        feeDetails.push('預購費用: 3%');
       }
-      
       if (hasCoins) {
-        breakdown += `    • 蝦幣回饋：<strong>3%</strong><br>`;
-        totalRate += 3;
+        totalFee += 3;
+        feeDetails.push('蝦幣回饋: 3%');
       }
-      
       if (hasTax) {
-        breakdown += `    • 營業稅：<strong>5%</strong><br>`;
-        totalRate += 5;
+        totalFee += 5;
+        feeDetails.push('營業稅: 5%');
       }
-      
-      breakdown += `
-          </div>
-          <div style="margin-top: 15px; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; text-align: center;">
-            <span style="color: white; font-size: 1.1rem;">
-              💰 <strong>總費率：${totalRate.toFixed(1)}%</strong>
-            </span>
-          </div>
+
+      document.getElementById('feeRateSummary').innerHTML = `
+        <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">
+          📊 總費率: ${totalFee.toFixed(1)}%
+        </div>
+        <div style="font-size: 0.9rem; color: #6c757d; line-height: 1.6;">
+          ${feeDetails.join(' + ')}
         </div>
       `;
-      
-      const display = document.getElementById('feeRateSummary');
-      if (display) {
-        display.innerHTML = breakdown;
-      }
+
+      calculate();
     }
 
     function calculate() {
@@ -742,1411 +433,288 @@
       const quantity = parseInt(document.getElementById('quantity').value) || 1;
       const packaging = parseFloat(document.getElementById('packaging').value) || 0;
       const labor = parseFloat(document.getElementById('labor').value) || 0;
-      
-      // 取得成交手續費
-      const normalFee = document.getElementById('normalFee');
-      const platformFee = normalFee.checked ? 5.5 : 7.5;
-      
-      // 活動費用
+      const targetMargin = parseFloat(document.getElementById('targetMargin').value) || 30;
+
+      // 計算總成本
+      const productCost = cost * quantity;
+      const totalCost = productCost + packaging + labor;
+
+      // 獲取費率
+      const isActivity = document.getElementById('isActivity').checked;
       const hasFreeShipping = document.getElementById('hasFreeShipping').checked;
       const isPreorder = document.getElementById('isPreorder').checked;
       const hasCoins = document.getElementById('hasCoins').checked;
       const hasTax = document.getElementById('hasTax').checked;
-      const targetMargin = parseFloat(document.getElementById('targetMargin').value) || 0;
-      
-      const totalCost = cost * quantity + packaging + labor;
-      
-      let totalFeeRate = platformFee + 2.0; // 平台手續費 + 金流費
-      
+
+      let totalFeeRate = isActivity ? 7.5 : 5.5;
+      totalFeeRate += 2; // 金流費
       if (hasFreeShipping) totalFeeRate += 7;
       if (isPreorder) totalFeeRate += 3;
       if (hasCoins) totalFeeRate += 3;
       if (hasTax) totalFeeRate += 5;
-      
+
+      // 反推售價公式: 售價 = 成本 / (1 - 總費率% - 目標利潤率%)
       const suggestedPrice = totalCost / (1 - (totalFeeRate + targetMargin) / 100);
+      
+      // 預估收入
       const netIncome = suggestedPrice * (1 - totalFeeRate / 100);
-      const profit = netIncome - totalCost;
-      const actualMargin = (profit / totalCost) * 100;
-      
+      const grossProfit = netIncome - totalCost;
+
+      // 顯示結果
       document.getElementById('result').innerHTML = `
-        <div class="result-card">
-          <h3>💡 計算結果</h3>
-          <div class="result-item">
-            <span>總成本</span>
-            <span>${totalCost.toFixed(0)} 元</span>
+        <div class="cost-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+          <h3 style="color: white; margin-bottom: 20px;">💰 計算結果</h3>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
+              <div style="font-size: 0.9rem; opacity: 0.9;">總成本</div>
+              <div style="font-size: 1.8rem; font-weight: bold; margin-top: 5px;">$${totalCost.toFixed(0)}</div>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
+              <div style="font-size: 0.9rem; opacity: 0.9;">建議售價</div>
+              <div style="font-size: 1.8rem; font-weight: bold; margin-top: 5px;">$${suggestedPrice.toFixed(0)}</div>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
+              <div style="font-size: 0.9rem; opacity: 0.9;">預估淨收</div>
+              <div style="font-size: 1.8rem; font-weight: bold; margin-top: 5px;">$${netIncome.toFixed(0)}</div>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
+              <div style="font-size: 0.9rem; opacity: 0.9;">毛利潤</div>
+              <div style="font-size: 1.8rem; font-weight: bold; margin-top: 5px;">$${grossProfit.toFixed(0)}</div>
+            </div>
           </div>
-          <div class="result-item">
-            <span>總費率</span>
-            <span>${totalFeeRate.toFixed(1)}%</span>
-          </div>
-          <div class="result-item">
-            <span>建議售價</span>
-            <span>${Math.ceil(suggestedPrice)} 元</span>
-          </div>
-          <div class="result-item">
-            <span>預估淨收入</span>
-            <span>${netIncome.toFixed(0)} 元</span>
-          </div>
-          <div class="result-item">
-            <span>預估利潤</span>
-            <span>${profit.toFixed(0)} 元（${actualMargin.toFixed(1)}%）</span>
+
+          <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; font-size: 0.95rem; line-height: 1.8;">
+            <strong>💡 計算說明:</strong><br>
+            • 商品成本: $${cost} × ${quantity} = $${productCost.toFixed(0)}<br>
+            • 總成本: $${productCost.toFixed(0)} + $${packaging} + $${labor} = $${totalCost.toFixed(0)}<br>
+            • 總費率: ${totalFeeRate.toFixed(1)}%<br>
+            • 目標利潤率: ${targetMargin}%<br>
+            • 淨收 = 售價 × (1 - ${totalFeeRate.toFixed(1)}%) = $${netIncome.toFixed(0)}<br>
+            • 毛利 = 淨收 - 成本 = $${grossProfit.toFixed(0)}
           </div>
         </div>
       `;
     }
 
-    async function loadSheetsList() {
-      console.log('✅ loadSheetsList 函數被呼叫');
+    // ===== Google Sheets 整合 =====
+    function loadSheetsList() {
+      const input = document.getElementById('sheetsId').value.trim();
       
-      const sheetsUrl = document.getElementById('sheetsId').value;
-      
-      if (!sheetsUrl) {
-        alert('⚠️ 請先輸入 Google Sheets 完整網址！\n\n範例：https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit');
+      if (!input) {
+        alert('⚠️ 請輸入 Google Sheets 網址');
         return;
       }
-      
-      const match = sheetsUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+
+      // 解析 Sheets ID
+      const match = input.match(/\/d\/([a-zA-Z0-9-_]+)/);
       if (!match) {
-        alert('⚠️ 網址格式不正確！\n\n請確認您複製了完整的 Google Sheets 網址');
+        alert('❌ 無效的 Google Sheets 網址格式');
         return;
       }
-      
-      const sheetsId = match[1];
-      console.log('✅ Sheets ID:', sheetsId);
-      
-      localStorage.setItem('sheetsUrl', sheetsUrl);
-      localStorage.setItem('sheetsId', sheetsId);
-      
-      document.getElementById('connectionResult').innerHTML = `
-        <div class="ai-suggestion" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-          <p style="color: white; margin: 0;">⏳ 正在解析試算表...</p>
-        </div>
-      `;
-      
-      promptForSheetNames(sheetsId);
-    }
 
-    function promptForSheetNames(sheetsId) {
-      document.getElementById('connectionResult').innerHTML = `
-        <div class="cost-card" style="margin-top: 20px;">
-          <h3 style="color: #2563eb; margin-bottom: 15px;">📝 請輸入您的工作表名稱</h3>
-          
-          <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
-            <p style="margin: 0 0 10px 0; color: #92400e; font-weight: 600;">💡 如何找到工作表名稱？</p>
-            <ol style="margin: 0; padding-left: 20px; color: #78350f;">
-              <li>打開您的 Google Sheets</li>
-              <li>看<strong>左下角</strong>的標籤名稱</li>
-              <li>逐個輸入到下方欄位中</li>
-            </ol>
-          </div>
-          
-          <div id="sheetNameInputs">
-            <div class="input-group" style="margin-bottom: 10px;">
-              <label>工作表 1：</label>
-              <input type="text" id="sheetName1" placeholder="例如：智同_產品庫" 
-                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
-            </div>
-            <div class="input-group" style="margin-bottom: 10px;">
-              <label>工作表 2：</label>
-              <input type="text" id="sheetName2" placeholder="例如：旭煌_產品庫" 
-                     style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
-            </div>
-          </div>
-          
-          <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button class="btn" onclick="addMoreSheetInput()" 
-                    style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
-              ➕ 新增更多工作表
+      currentSpreadsheetId = match[1];
+      console.log('✅ 解析成功 Sheets ID:', currentSpreadsheetId);
+
+      // 檢查是否有已保存的工作表設定
+      const saved = localStorage.getItem(`sheets_config_${currentSpreadsheetId}`);
+      
+      if (saved) {
+        const config = JSON.parse(saved);
+        allSheets = config.sheets || [];
+        
+        document.getElementById('sheetsList').innerHTML = `
+          <div class="cost-card" style="background: #e8f5e9;">
+            <h3 style="color: #2e7d32;">✅ 找到已保存的設定</h3>
+            <p>試算表: <strong>${currentSpreadsheetId}</strong></p>
+            <p>工作表數量: <strong>${allSheets.length}</strong> 個</p>
+            <button class="btn" onclick="quickLoadSheets()" style="background: #4caf50;">
+              ⚡ 快速載入已保存的工作表
             </button>
-            <button class="btn" onclick="saveAndLoadSheets()" 
-                    style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-              💾 保存並載入工作表
+            <button class="btn" onclick="showSheetNameInputs()" style="background: #2196f3; margin-left: 10px;">
+              ✏️ 重新輸入工作表名稱
             </button>
           </div>
-        </div>
-      `;
-    }
-
-    function addMoreSheetInput() {
-      sheetInputCount++;
-      const container = document.getElementById('sheetNameInputs');
-      const newInput = document.createElement('div');
-      newInput.className = 'input-group';
-      newInput.style = 'margin-bottom: 10px;';
-      newInput.innerHTML = `
-        <label>工作表 ${sheetInputCount}：</label>
-        <input type="text" id="sheetName${sheetInputCount}" placeholder="輸入工作表名稱" 
-               style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
-      `;
-      container.appendChild(newInput);
-    }
-
-    async function saveAndLoadSheets() {
-      const sheetsId = localStorage.getItem('sheetsId');
-      const sheetNames = [];
-      
-      for (let i = 1; i <= sheetInputCount; i++) {
-        const input = document.getElementById(`sheetName${i}`);
-        if (input && input.value.trim()) {
-          sheetNames.push(input.value.trim());
-        }
-      }
-      
-      if (sheetNames.length === 0) {
-        alert('⚠️ 請至少輸入一個工作表名稱！');
-        return;
-      }
-      
-      console.log('✅ 保存的工作表名稱:', sheetNames);
-      
-      localStorage.setItem('userSheetNames', JSON.stringify(sheetNames));
-      
-      document.getElementById('connectionResult').innerHTML = `
-        <div class="ai-suggestion" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-          <p style="color: white; margin: 0;">⏳ 正在讀取 ${sheetNames.length} 個工作表的數據...</p>
-        </div>
-      `;
-      
-      availableSheets = [];
-      
-      for (const sheetName of sheetNames) {
-        try {
-          const data = await fetchSheetData(sheetsId, sheetName);
-          availableSheets.push({
-            name: sheetName,
-            type: 'product',
-            count: data.length,
-            desc: `包含 ${data.length} 筆資料`,
-            data: data
-          });
-          console.log(`✅ ${sheetName}: ${data.length} 筆資料`);
-        } catch (error) {
-          console.error(`❌ 無法讀取 ${sheetName}:`, error);
-          availableSheets.push({
-            name: sheetName,
-            type: 'product',
-            count: 0,
-            desc: '讀取失敗',
-            data: []
-          });
-        }
-      }
-      
-      displaySheetsList();
-      
-      console.log('✅ 工作表清單已顯示，共', availableSheets.length, '個工作表');
-    }
-
-    async function fetchSheetData(sheetsId, sheetName) {
-      console.log(`📥 嘗試讀取工作表: ${sheetName}`);
-      
-      try {
-        // 使用 Google Sheets 的公開 API（不需要認證）
-        const encodedSheetName = encodeURIComponent(sheetName);
-        const url = `https://docs.google.com/spreadsheets/d/${sheetsId}/gviz/tq?tqx=out:json&sheet=${encodedSheetName}`;
-        
-        console.log(`🌐 請求 URL: ${url}`);
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        
-        // Google 返回的是 JSONP 格式，需要提取 JSON 部分
-        const jsonString = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);?/)[1];
-        const data = JSON.parse(jsonString);
-        
-        console.log(`✅ 原始數據結構:`, data);
-        console.log(`📊 欄位數量: ${data.table.cols.length}`);
-        console.log(`📊 原始列數: ${data.table.rows.length}`);
-        
-        if (!data.table || !data.table.rows || data.table.rows.length === 0) {
-          console.warn(`⚠️ 工作表 ${sheetName} 沒有數據`);
-          return [];
-        }
-        
-        // 解析表格數據
-        const cols = data.table.cols;
-        const rows = data.table.rows;
-        
-        console.log(`📋 表頭資訊:`, cols.map(c => c.label));
-        
-        // 轉換成易用的物件陣列（包含所有列，不跳過空值）
-        const parsedData = [];
-        
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const obj = {};
-          let hasData = false;
-          
-          cols.forEach((col, index) => {
-            const cell = row.c[index];
-            const colLabel = col.label || `欄位${index + 1}`;
-            
-            // 取得儲存格的值
-            let value = '';
-            if (cell) {
-              if (cell.v !== null && cell.v !== undefined) {
-                value = cell.v;
-                hasData = true;
-              } else if (cell.f) {
-                value = cell.f;
-                hasData = true;
-              }
-            }
-            
-            obj[colLabel] = value;
-          });
-          
-          // 即使某列全是空值，也包含進來（除非完全沒有資料）
-          parsedData.push(obj);
-        }
-        
-        console.log(`✅ ${sheetName} 解析完成: ${parsedData.length} 筆資料`);
-        console.log(`📊 前 3 筆範例資料:`, parsedData.slice(0, 3));
-        
-        // 過濾掉完全空白的列
-        const filteredData = parsedData.filter(row => {
-          return Object.values(row).some(val => val !== '' && val !== null && val !== undefined);
-        });
-        
-        console.log(`✅ 過濾後: ${filteredData.length} 筆有效資料`);
-        
-        return filteredData;
-        
-      } catch (error) {
-        console.error(`❌ 讀取 ${sheetName} 失敗:`, error);
-        console.error(`❌ 完整錯誤:`, error.stack);
-        
-        // 如果失敗，提供詳細的錯誤訊息
-        if (error.message.includes('HTTP error')) {
-          console.error('可能原因：工作表名稱不正確，或 Google Sheets 未設為公開');
-        } else if (error.message.includes('match')) {
-          console.error('可能原因：無法解析 Google 返回的數據格式');
-        }
-        
-        // 返回空陣列而不是拋出錯誤，讓程式繼續運行
-        return [];
+        `;
+      } else {
+        showSheetNameInputs();
       }
     }
 
-    function displaySheetsList() {
-      const productSheets = availableSheets.filter(s => s.type === 'product');
-      
-      const html = `
-        <div class="cost-card" style="margin-top: 20px;">
-          <h3 style="color: #2563eb;">📋 選擇要分析的工作表</h3>
-          <p style="color: #6c757d; margin-bottom: 20px;">勾選您想要納入分析的產品庫（可多選）</p>
-          
-          ${productSheets.map(sheet => `
-            <div class="sheet-item" onclick="toggleSheet('${sheet.name}')">
-              <label style="display: flex; align-items: center; cursor: pointer;">
-                <input type="checkbox" class="sheet-checkbox" id="check_${sheet.name}" 
-                       onchange="updateSelectedSheets()">
-                <div style="flex: 1;">
-                  <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">
-                    🏷️ ${sheet.name}
-                  </div>
-                  <div style="font-size: 0.9rem; color: #6c757d;">
-                    ${sheet.count} 筆資料
-                  </div>
-                  <div style="font-size: 0.85rem; color: #adb5bd;">
-                    ${sheet.desc}
-                  </div>
-                </div>
-              </label>
-            </div>
-          `).join('')}
-          
-          <button class="btn" onclick="confirmSelection()" style="margin-top: 20px; width: 100%;">
-            ✅ 確認選擇並載入數據
+    function showSheetNameInputs() {
+      document.getElementById('sheetsList').innerHTML = `
+        <div class="cost-card">
+          <h3>📝 輸入工作表名稱</h3>
+          <p style="color: #666; margin-bottom: 15px;">
+            請到您的 Google Sheets 左下角查看工作表標籤名稱,並在下方輸入
+          </p>
+          <div id="sheetInputs"></div>
+          <button class="btn" onclick="addSheetInput()" style="background: #4caf50;">
+            ➕ 新增工作表
+          </button>
+          <button class="btn" onclick="saveAndLoadSheets()" style="background: #667eea; margin-left: 10px;">
+            💾 保存並載入工作表
           </button>
         </div>
       `;
       
+      // 預設顯示 3 個輸入框
+      for (let i = 0; i < 3; i++) {
+        addSheetInput();
+      }
+    }
+
+    function addSheetInput() {
+      const container = document.getElementById('sheetInputs');
+      const index = container.children.length + 1;
+      
+      const div = document.createElement('div');
+      div.className = 'input-group';
+      div.innerHTML = `
+        <label>工作表 ${index}</label>
+        <input type="text" class="sheet-name-input" placeholder="例如: EVO_產品庫" />
+      `;
+      container.appendChild(div);
+    }
+
+    function saveAndLoadSheets() {
+      const inputs = document.querySelectorAll('.sheet-name-input');
+      allSheets = Array.from(inputs)
+        .map(input => input.value.trim())
+        .filter(name => name);
+
+      if (allSheets.length === 0) {
+        alert('⚠️ 請至少輸入一個工作表名稱');
+        return;
+      }
+
+      console.log('✅ 已保存工作表名稱:', allSheets);
+
+      // 保存到 localStorage
+      const config = {
+        spreadsheetId: currentSpreadsheetId,
+        sheets: allSheets,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem(`sheets_config_${currentSpreadsheetId}`, JSON.stringify(config));
+
+      // 顯示工作表選擇界面
+      displaySheetSelection();
+    }
+
+    function quickLoadSheets() {
+      displaySheetSelection();
+    }
+
+    function displaySheetSelection() {
+      let html = `
+        <div class="cost-card">
+          <h3>📋 選擇要分析的工作表</h3>
+          <p style="color: #666; margin-bottom: 15px;">
+            勾選您想要用於 AI 分析的工作表
+          </p>
+      `;
+
+      allSheets.forEach((sheetName, index) => {
+        // 判斷工作表類型
+        let icon = '📝';
+        let type = '其他工作表';
+        
+        if (sheetName.includes('產品庫') || sheetName.includes('product')) {
+          icon = '🏷️';
+          type = '產品庫類型';
+        } else if (sheetName.includes('競品') || sheetName.includes('compete')) {
+          icon = '🔍';
+          type = '競品數據';
+        } else if (sheetName.includes('訂單') || sheetName.includes('order')) {
+          icon = '📦';
+          type = '訂單類型';
+        }
+
+        html += `
+          <div style="padding: 15px; margin: 10px 0; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+            <label style="display: flex; align-items: center; cursor: pointer;">
+              <input type="checkbox" class="sheet-checkbox" value="${sheetName}" style="margin-right: 10px;">
+              <div>
+                <div style="font-weight: 600; color: #2c3e50;">
+                  ${icon} ${sheetName}
+                </div>
+                <div style="font-size: 0.85rem; color: #6c757d; margin-top: 3px;">
+                  ${type}
+                </div>
+              </div>
+            </label>
+          </div>
+        `;
+      });
+
+      html += `
+          <button class="btn" onclick="loadSelectedSheets()" style="margin-top: 15px;">
+            ✅ 確認選擇並載入數據
+          </button>
+        </div>
+      `;
+
       document.getElementById('sheetsList').innerHTML = html;
     }
 
-    function toggleSheet(sheetName) {
-      const checkbox = document.getElementById(`check_${sheetName}`);
-      checkbox.checked = !checkbox.checked;
-      updateSelectedSheets();
-    }
+    function loadSelectedSheets() {
+      const checkboxes = document.querySelectorAll('.sheet-checkbox:checked');
+      const selectedSheets = Array.from(checkboxes).map(cb => cb.value);
 
-    function updateSelectedSheets() {
-      selectedSheets = [];
-      availableSheets.forEach(sheet => {
-        const checkbox = document.getElementById(`check_${sheet.name}`);
-        if (checkbox && checkbox.checked) {
-          selectedSheets.push(sheet);
-        }
-      });
-    }
-
-    function confirmSelection() {
       if (selectedSheets.length === 0) {
-        alert('請至少選擇一個工作表！');
+        alert('⚠️ 請至少選擇一個工作表');
         return;
       }
-      
-      const totalCount = selectedSheets.reduce((sum, s) => sum + s.count, 0);
-      
-      // 合併所有選中工作表的產品數據
-      allProducts = [];
-      selectedSheets.forEach(sheet => {
-        if (sheet.data && sheet.data.length > 0) {
-          sheet.data.forEach(product => {
-            allProducts.push({
-              ...product,
-              來源: sheet.name,
-              建議售價: null,
-              預估利潤: null
-            });
-          });
-        }
-      });
-      
-      console.log('✅ 已載入產品數據:', allProducts.length, '筆');
-      
-      // 更新快速選擇器
-      updateQuickSelect();
-      
+
+      // 模擬載入數據(實際應使用 Google Sheets API)
       document.getElementById('connectionResult').innerHTML = `
-        <div class="ai-suggestion" style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);">
-          <h3 style="color: #2d5016;">✅ 已選擇 ${selectedSheets.length} 個工作表</h3>
-          <p style="color: #3e6b1f; margin: 10px 0;">
-            總共 <strong>${totalCount} 筆產品數據</strong> 已載入！
-          </p>
-          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.1);">
-            <strong style="color: #2d5016;">已選擇的工作表：</strong><br>
-            ${selectedSheets.map(s => `• ${s.name} (${s.count} 筆)`).join('<br>')}
-          </div>
-          <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button class="btn" onclick="navigateToAnalysis()" 
-                    style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-              📊 產品分析
-            </button>
-            <button class="btn" onclick="navigateToCalculator()" 
-                    style="flex: 1; background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
-              💰 開始定價
-            </button>
+        <div class="cost-card" style="background: #e3f2fd;">
+          <h3 style="color: #1976d2;">📊 數據載入成功!</h3>
+          <p>已選擇 <strong>${selectedSheets.length}</strong> 個工作表:</p>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+            ${selectedSheets.map(name => `<li>${name}</li>`).join('')}
+          </ul>
+          <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
+            <strong>💡 提示:</strong> 目前為示範模式。要真正讀取 Google Sheets 數據,需要設定 Google Sheets API。
           </div>
         </div>
       `;
-      
-      console.log('✅ 確認選擇:', selectedSheets);
     }
 
-    function checkSavedSheets() {
-      const savedSheets = localStorage.getItem('userSheetNames');
-      const savedUrl = localStorage.getItem('sheetsUrl');
+    // ===== 頁面切換 =====
+    function showTab(tabName) {
+      // 隱藏所有內容
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach(content => content.classList.remove('active'));
+
+      // 移除所有按鈕的 active 狀態
+      const buttons = document.querySelectorAll('.tab-button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      // 顯示選中的內容
+      document.getElementById(tabName).classList.add('active');
       
-      if (savedSheets && savedUrl) {
-        const sheetsList = JSON.parse(savedSheets);
-        
-        setTimeout(() => {
-          const connectionResult = document.getElementById('connectionResult');
-          if (connectionResult && connectionResult.innerHTML.trim() === '') {
-            connectionResult.innerHTML = `
-              <div class="ai-suggestion" style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); border-left: 5px solid #28a745; margin-bottom: 20px;">
-                <h4 style="color: #2d5016; margin-bottom: 10px;">✅ 找到已保存的設定</h4>
-                <p style="color: #3e6b1f; margin-bottom: 15px;">
-                  已保存 <strong>${sheetsList.length} 個工作表</strong>：${sheetsList.join('、')}
-                </p>
-                <button class="btn" onclick="quickLoadSavedSheets()" 
-                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                  ⚡ 快速載入已保存的工作表
-                </button>
-              </div>
-            `;
-          }
-        }, 100);
-      }
+      // 設置按鈕為 active
+      event.target.classList.add('active');
     }
 
-    async function quickLoadSavedSheets() {
-      const savedSheets = JSON.parse(localStorage.getItem('userSheetNames'));
-      const sheetsId = localStorage.getItem('sheetsId');
-      
-      document.getElementById('connectionResult').innerHTML = `
-        <div class="ai-suggestion" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-          <p style="color: white; margin: 0;">⏳ 正在讀取 ${savedSheets.length} 個工作表的數據...</p>
-        </div>
-      `;
-      
-      availableSheets = [];
-      
-      for (const sheetName of savedSheets) {
-        try {
-          const data = await fetchSheetData(sheetsId, sheetName);
-          availableSheets.push({
-            name: sheetName,
-            type: 'product',
-            count: data.length,
-            desc: `包含 ${data.length} 筆資料`,
-            data: data
-          });
-          console.log(`✅ ${sheetName}: ${data.length} 筆資料`);
-        } catch (error) {
-          console.error(`❌ 無法讀取 ${sheetName}:`, error);
-          availableSheets.push({
-            name: sheetName,
-            type: 'product',
-            count: 0,
-            desc: '讀取失敗',
-            data: []
-          });
-        }
-      }
-      
-      displaySheetsList();
-      
-      console.log('✅ 快速載入完成，共', availableSheets.length, '個工作表');
-    }
-
-    function navigateToAnalysis() {
-      showTab('analysis');
-    }
-
-    function navigateToCalculator() {
-      showTab('calculator');
-    }
-
-    function displayAnalysisPage() {
-      if (allProducts.length === 0) {
-        return;
-      }
-      
-      document.getElementById('productDataSection').style.display = 'none';
-      document.getElementById('analysisContent').style.display = 'block';
-      
-      // 顯示數據概覽
-      displayDataOverview();
-      
-      // 設置來源篩選器
-      const sources = [...new Set(allProducts.map(p => p.來源))];
-      const sourceFilter = document.getElementById('sourceFilter');
-      sourceFilter.innerHTML = '<option value="">全部來源</option>' + 
-        sources.map(s => `<option value="${s}">${s}</option>`).join('');
-      
-      // 顯示產品表格
-      filteredProducts = [...allProducts];
-      displayProductTable();
-      
-      // 顯示價格分析
-      displayPriceAnalysis();
-    }
-
-    function displayDataOverview() {
-      const overview = document.getElementById('dataOverview');
-      const totalProducts = allProducts.length;
-      const sources = [...new Set(allProducts.map(p => p.來源))];
-      
-      // 計算平均成本（假設欄位名稱可能是「單價」或「進貨單價」）
-      const costs = allProducts.map(p => {
-        const price = p['單價'] || p['進貨單價'] || p['成本'] || 0;
-        return typeof price === 'number' ? price : parseFloat(price) || 0;
-      }).filter(c => c > 0);
-      
-      const avgCost = costs.length > 0 ? (costs.reduce((a, b) => a + b, 0) / costs.length).toFixed(0) : 0;
-      const maxCost = costs.length > 0 ? Math.max(...costs) : 0;
-      const minCost = costs.length > 0 ? Math.min(...costs) : 0;
-      
-      overview.innerHTML = `
-        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
-          <div style="font-size: 2rem; font-weight: bold; color: #667eea;">${totalProducts}</div>
-          <div style="color: #6c757d;">總產品數</div>
-        </div>
-        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
-          <div style="font-size: 2rem; font-weight: bold; color: #f093fb;">${sources.length}</div>
-          <div style="color: #6c757d;">產品庫數量</div>
-        </div>
-        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: bold; color: #84fab0;">${avgCost} 元</div>
-          <div style="color: #6c757d;">平均成本</div>
-        </div>
-        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center;">
-          <div style="font-size: 1.2rem; font-weight: bold; color: #fbc2eb;">${minCost} - ${maxCost} 元</div>
-          <div style="color: #6c757d;">成本範圍</div>
-        </div>
-      `;
-    }
-
-    function displayProductTable() {
-      const table = document.getElementById('productTable');
-      const thead = document.getElementById('tableHeader');
-      const tbody = document.getElementById('tableBody');
-      
-      if (filteredProducts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 30px; color: #6c757d;">沒有符合條件的產品</td></tr>';
-        return;
-      }
-      
-      // 取得所有欄位
-      const allKeys = new Set();
-      filteredProducts.forEach(product => {
-        Object.keys(product).forEach(key => allKeys.add(key));
-      });
-      
-      const keys = Array.from(allKeys);
-      
-      // 建立表頭
-      thead.innerHTML = `
-        <th style="padding: 12px; border: 1px solid #e5e7eb; background: #f8f9fa;">
-          <input type="checkbox" onchange="toggleAllProducts(this)" style="width: 18px; height: 18px;">
-        </th>
-        ${keys.map(key => `
-          <th style="padding: 12px; border: 1px solid #e5e7eb; white-space: nowrap; cursor: pointer;" 
-              onclick="sortTable('${key}')">
-            ${key} ↕️
-          </th>
-        `).join('')}
-      `;
-      
-      // 分頁
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const pageProducts = filteredProducts.slice(startIndex, endIndex);
-      
-      // 建立表格內容
-      tbody.innerHTML = pageProducts.map((product, index) => {
-        const globalIndex = startIndex + index;
-        const isSelected = selectedProducts.has(globalIndex);
-        
-        return `
-          <tr style="background: ${isSelected ? '#f0f4ff' : 'white'};">
-            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
-              <input type="checkbox" ${isSelected ? 'checked' : ''} 
-                     onchange="toggleProduct(${globalIndex}, this)" 
-                     style="width: 18px; height: 18px;">
-            </td>
-            ${keys.map(key => {
-              let value = product[key] || '';
-              
-              // 如果是數字類型的欄位，右對齊
-              const isNumber = typeof value === 'number' || !isNaN(parseFloat(value));
-              
-              // 特殊顯示：建議售價和預估利潤
-              if (key === '建議售價' && value) {
-                value = `<strong style="color: #667eea;">${Math.ceil(value)} 元</strong>`;
-              } else if (key === '預估利潤' && value) {
-                const color = value > 0 ? '#28a745' : '#dc3545';
-                value = `<strong style="color: ${color};">${value.toFixed(0)} 元</strong>`;
-              }
-              
-              return `
-                <td style="padding: 12px; border: 1px solid #e5e7eb; ${isNumber ? 'text-align: right;' : ''} white-space: nowrap;">
-                  ${value}
-                </td>
-              `;
-            }).join('')}
-          </tr>
-        `;
-      }).join('');
-      
-      // 分頁控制
-      displayPagination();
-    }
-
-    function displayPagination() {
-      const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-      const pagination = document.getElementById('tablePagination');
-      
-      if (totalPages <= 1) {
-        pagination.innerHTML = '';
-        return;
-      }
-      
-      let html = `
-        <button class="btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-          ← 上一頁
-        </button>
-        <span style="margin: 0 15px;">第 ${currentPage} / ${totalPages} 頁（共 ${filteredProducts.length} 筆）</span>
-        <button class="btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-          下一頁 →
-        </button>
-      `;
-      
-      pagination.innerHTML = html;
-    }
-
-    function changePage(page) {
-      const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-      if (page < 1 || page > totalPages) return;
-      currentPage = page;
-      displayProductTable();
-    }
-
-    function filterProducts() {
-      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      const sourceFilter = document.getElementById('sourceFilter').value;
-      
-      filteredProducts = allProducts.filter(product => {
-        // 搜尋條件
-        const matchSearch = !searchTerm || Object.values(product).some(val => 
-          String(val).toLowerCase().includes(searchTerm)
-        );
-        
-        // 來源條件
-        const matchSource = !sourceFilter || product.來源 === sourceFilter;
-        
-        return matchSearch && matchSource;
-      });
-      
-      currentPage = 1;
-      displayProductTable();
-    }
-
-    function resetFilters() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('sourceFilter').value = '';
-      filterProducts();
-    }
-
-    function toggleProduct(index, checkbox) {
-      if (checkbox.checked) {
-        selectedProducts.add(index);
-      } else {
-        selectedProducts.delete(index);
-      }
-      displayProductTable();
-    }
-
-    function toggleAllProducts(checkbox) {
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      
-      for (let i = startIndex; i < endIndex && i < filteredProducts.length; i++) {
-        if (checkbox.checked) {
-          selectedProducts.add(i);
-        } else {
-          selectedProducts.delete(i);
-        }
-      }
-      displayProductTable();
-    }
-
-    function selectAllProducts() {
-      for (let i = 0; i < filteredProducts.length; i++) {
-        selectedProducts.add(i);
-      }
-      displayProductTable();
-    }
-
-    function deselectAllProducts() {
-      selectedProducts.clear();
-      displayProductTable();
-    }
-
-    function calculateBatchPricing() {
-      const packaging = parseFloat(document.getElementById('batchPackaging').value) || 0;
-      const labor = parseFloat(document.getElementById('batchLabor').value) || 0;
-      const targetMargin = parseFloat(document.getElementById('batchMargin').value) || 0;
-      
-      const isActivity = document.getElementById('batchActivity').checked;
-      const hasFreeShipping = document.getElementById('batchFreeShip').checked;
-      const isPreorder = document.getElementById('batchPreorder').checked;
-      const hasCoins = document.getElementById('batchCoins').checked;
-      
-      let totalFeeRate = isActivity ? 7.5 : 5.5;
-      totalFeeRate += 2.0; // 金流費
-      if (hasFreeShipping) totalFeeRate += 7;
-      if (isPreorder) totalFeeRate += 3;
-      if (hasCoins) totalFeeRate += 3;
-      
-      let calculated = 0;
-      
-      filteredProducts.forEach((product, index) => {
-        // 取得成本（嘗試不同的欄位名稱）
-        const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
-        
-        if (cost > 0) {
-          const totalCost = cost + packaging + labor;
-          const suggestedPrice = totalCost / (1 - (totalFeeRate + targetMargin) / 100);
-          const netIncome = suggestedPrice * (1 - totalFeeRate / 100);
-          const profit = netIncome - totalCost;
-          
-          product.建議售價 = suggestedPrice;
-          product.預估利潤 = profit;
-          calculated++;
-        }
-      });
-      
-      alert(`✅ 已計算 ${calculated} 個產品的建議售價！`);
-      displayProductTable();
-      displayPriceAnalysis();
-    }
-
-    function displayPriceAnalysis() {
-      const analysisDiv = document.getElementById('priceAnalysis');
-      
-      // 取得有成本的產品
-      const productsWithCost = filteredProducts.filter(p => {
-        const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
-        return cost > 0;
-      });
-      
-      if (productsWithCost.length === 0) {
-        analysisDiv.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 30px;">暫無價格數據</p>';
-        return;
-      }
-      
-      // 價格分佈統計
-      const priceRanges = {
-        '0-100': 0,
-        '101-200': 0,
-        '201-300': 0,
-        '301-500': 0,
-        '500+': 0
-      };
-      
-      productsWithCost.forEach(p => {
-        const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
-        if (cost <= 100) priceRanges['0-100']++;
-        else if (cost <= 200) priceRanges['101-200']++;
-        else if (cost <= 300) priceRanges['201-300']++;
-        else if (cost <= 500) priceRanges['301-500']++;
-        else priceRanges['500+']++;
-      });
-      
-      const maxCount = Math.max(...Object.values(priceRanges));
-      
-      analysisDiv.innerHTML = `
-        <div style="margin-bottom: 15px;">
-          <strong>成本價格分佈：</strong>
-        </div>
-        ${Object.entries(priceRanges).map(([range, count]) => {
-          const percentage = maxCount > 0 ? (count / maxCount * 100) : 0;
-          return `
-            <div style="margin-bottom: 10px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                <span>${range} 元</span>
-                <span><strong>${count}</strong> 個產品</span>
-              </div>
-              <div style="background: #e5e7eb; border-radius: 10px; height: 25px; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                            width: ${percentage}%; height: 100%; 
-                            transition: width 0.5s; border-radius: 10px;"></div>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      `;
-    }
-
-    function sortTable(key) {
-      const isAscending = filteredProducts[0] && filteredProducts[0]._sortKey === key && filteredProducts[0]._sortAsc;
-      
-      filteredProducts.sort((a, b) => {
-        let valA = a[key] || '';
-        let valB = b[key] || '';
-        
-        // 嘗試轉換為數字
-        const numA = parseFloat(valA);
-        const numB = parseFloat(valB);
-        
-        if (!isNaN(numA) && !isNaN(numB)) {
-          return isAscending ? numB - numA : numA - numB;
-        }
-        
-        // 字串比較
-        valA = String(valA).toLowerCase();
-        valB = String(valB).toLowerCase();
-        
-        if (isAscending) {
-          return valB.localeCompare(valA);
-        } else {
-          return valA.localeCompare(valB);
-        }
-      });
-      
-      // 記錄排序狀態
-      filteredProducts.forEach(p => {
-        p._sortKey = key;
-        p._sortAsc = !isAscending;
-      });
-      
-      displayProductTable();
-    }
-
-    function exportToCSV() {
-      if (filteredProducts.length === 0) {
-        alert('沒有資料可以匯出！');
-        return;
-      }
-      
-      // 取得所有欄位
-      const keys = Object.keys(filteredProducts[0]);
-      
-      // 建立 CSV 內容
-      let csv = keys.join(',') + '\n';
-      
-      filteredProducts.forEach(product => {
-        const row = keys.map(key => {
-          let value = product[key] || '';
-          // 如果包含逗號，用引號包起來
-          if (String(value).includes(',')) {
-            value = `"${value}"`;
-          }
-          return value;
-        });
-        csv += row.join(',') + '\n';
-      });
-      
-      // 下載檔案
-      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `產品資料_${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
-    }
-
+    // ===== 初始化 =====
     window.onload = function() {
       console.log('✅ 頁面載入完成');
       console.log('✅ 所有函數已定義');
       
       updateFeeRateDisplay();
-      checkSavedSheets();
-      updateQuickSelect();
       
       const cost = document.getElementById('cost').value;
       if (cost) {
         calculate();
       }
     };
-
-    function updateQuickSelect() {
-      const quickSelectDiv = document.getElementById('quickSelectProduct');
-      
-      if (allProducts.length === 0) {
-        quickSelectDiv.innerHTML = '<p style="color: #4a5568;">請先前往「🔗 資料整合」載入產品資料</p>';
-        return;
-      }
-      
-      // 建立產品選擇器
-      const productsWithCost = allProducts.filter(p => {
-        const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
-        return cost > 0;
-      });
-      
-      if (productsWithCost.length === 0) {
-        quickSelectDiv.innerHTML = '<p style="color: #4a5568;">產品資料中沒有找到成本資訊</p>';
-        return;
-      }
-      
-      quickSelectDiv.innerHTML = `
-        <div class="input-group" style="margin: 0;">
-          <label style="color: #2d3748; font-weight: 600;">從產品庫選擇：</label>
-          <select id="productSelector" onchange="loadProductData()" 
-                  style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: white;">
-            <option value="">-- 請選擇產品 --</option>
-            ${productsWithCost.map((product, index) => {
-              const name = product['商品名稱'] || product['產品名稱'] || `產品 ${index + 1}`;
-              const code = product['產品編號'] || product['商品編號'] || '';
-              const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
-              const source = product['來源'] || '';
-              
-              return `<option value="${index}">[${source}] ${code} ${name} - ${cost} 元</option>`;
-            }).join('')}
-          </select>
-        </div>
-      `;
-    }
-
-    function loadProductData() {
-      const selector = document.getElementById('productSelector');
-      const selectedIndex = parseInt(selector.value);
-      
-      if (isNaN(selectedIndex)) return;
-      
-      const productsWithCost = allProducts.filter(p => {
-        const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
-        return cost > 0;
-      });
-      
-      const product = productsWithCost[selectedIndex];
-      if (!product) return;
-      
-      // 載入產品成本到計算器
-      const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
-      document.getElementById('cost').value = cost;
-      document.getElementById('quantity').value = 1;
-      
-      // 自動計算
-      calculate();
-      
-      // 顯示提示
-      alert(`✅ 已載入產品：${product['商品名稱'] || product['產品名稱']}\n成本：${cost} 元`);
-    }
-
-    // ==================== 競品監控功能 ====================
-
-    function updateCompetitorPage() {
-      console.log('🎯 更新競品監控頁面');
-      
-      // 更新產品選擇器
-      updateMyProductSelector();
-      
-      // 更新競品表格
-      displayCompetitorTable();
-      
-      // 更新概覽
-      updateCompetitorOverview();
-      
-      // 更新分析圖表
-      updateCompetitiveAnalysis();
-      
-      // 更新價格警示
-      updatePriceAlerts();
-    }
-
-    function updateMyProductSelector() {
-      const selector = document.getElementById('myProductSelect');
-      
-      if (!selector) return;
-      
-      if (allProducts.length === 0) {
-        selector.innerHTML = '<option value="">請先載入產品資料</option>';
-        return;
-      }
-      
-      // 為產品設定建議售價（如果已經計算過）
-      const productsWithPrice = allProducts.map((product, index) => {
-        const name = product['商品名稱'] || product['產品名稱'] || `產品 ${index + 1}`;
-        const code = product['產品編號'] || product['商品編號'] || '';
-        const price = product['建議售價'] || calculateQuickPrice(product);
-        
-        return {
-          index,
-          name,
-          code,
-          price: Math.ceil(price),
-          source: product['來源'] || ''
-        };
-      });
-      
-      selector.innerHTML = '<option value="">-- 請選擇產品 --</option>' +
-        productsWithPrice.map(p => 
-          `<option value="${p.index}" data-price="${p.price}">[${p.source}] ${p.code} ${p.name} - ${p.price} 元</option>`
-        ).join('');
-      
-      // 監聽選擇變化
-      selector.onchange = function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const price = selectedOption.getAttribute('data-price');
-        document.getElementById('myPrice').value = price || '';
-      };
-    }
-
-    function calculateQuickPrice(product) {
-      const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
-      if (cost === 0) return 0;
-      
-      // 使用預設參數快速計算
-      const packaging = 10;
-      const labor = 20;
-      const totalCost = cost + packaging + labor;
-      const targetMargin = 30;
-      const totalFeeRate = 5.5 + 2.0; // 基本手續費 + 金流費
-      
-      return totalCost / (1 - (totalFeeRate + targetMargin) / 100);
-    }
-
-    function addCompetitor() {
-      const myProductIndex = document.getElementById('myProductSelect').value;
-      const myPrice = parseFloat(document.getElementById('myPrice').value);
-      const compName = document.getElementById('compName').value.trim();
-      const compPrice = parseFloat(document.getElementById('compPrice').value);
-      const compUrl = document.getElementById('compUrl').value.trim();
-      
-      if (!myProductIndex) {
-        alert('❌ 請選擇我方產品！');
-        return;
-      }
-      
-      if (!compName) {
-        alert('❌ 請輸入競品名稱！');
-        return;
-      }
-      
-      if (!compPrice || compPrice <= 0) {
-        alert('❌ 請輸入有效的競品價格！');
-        return;
-      }
-      
-      const myProduct = allProducts[parseInt(myProductIndex)];
-      const myProductName = myProduct['商品名稱'] || myProduct['產品名稱'] || '未命名產品';
-      const myProductCode = myProduct['產品編號'] || myProduct['商品編號'] || '';
-      
-      // 計算價差
-      const priceDiff = myPrice - compPrice;
-      const priceDiffPercent = ((priceDiff / compPrice) * 100).toFixed(1);
-      
-      // 添加到競品資料
-      competitorData.push({
-        myProductIndex: parseInt(myProductIndex),
-        myProductName,
-        myProductCode,
-        myPrice,
-        compName,
-        compPrice,
-        compUrl,
-        priceDiff,
-        priceDiffPercent,
-        addedDate: new Date().toISOString()
-      });
-      
-      console.log('✅ 添加競品:', competitorData[competitorData.length - 1]);
-      
-      // 清空輸入
-      document.getElementById('compName').value = '';
-      document.getElementById('compPrice').value = '';
-      document.getElementById('compUrl').value = '';
-      
-      // 更新顯示
-      displayCompetitorTable();
-      updateCompetitorOverview();
-      updateCompetitiveAnalysis();
-      updatePriceAlerts();
-      
-      alert('✅ 競品添加成功！');
-    }
-
-    function displayCompetitorTable() {
-      const tbody = document.getElementById('competitorTableBody');
-      
-      if (!tbody) return;
-      
-      if (competitorData.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="9" style="text-align: center; padding: 30px; color: #6c757d;">
-              尚未添加競品資料
-            </td>
-          </tr>
-        `;
-        return;
-      }
-      
-      // 應用篩選
-      const filter = document.getElementById('filterAdvantage')?.value || '';
-      let filteredData = [...competitorData];
-      
-      if (filter === 'advantage') {
-        filteredData = filteredData.filter(c => c.priceDiff < 0); // 我方更便宜
-      } else if (filter === 'disadvantage') {
-        filteredData = filteredData.filter(c => c.priceDiff > 0); // 競品更便宜
-      } else if (filter === 'warning') {
-        filteredData = filteredData.filter(c => c.priceDiff > c.compPrice * 0.1); // 貴超過 10%
-      }
-      
-      tbody.innerHTML = filteredData.map((comp, index) => {
-        const isAdvantage = comp.priceDiff < 0;
-        const isWarning = comp.priceDiff > comp.compPrice * 0.1;
-        
-        let competitiveStatus = '';
-        let competitiveColor = '';
-        
-        if (isWarning) {
-          competitiveStatus = '⚠️ 需關注';
-          competitiveColor = '#fbbf24';
-        } else if (isAdvantage) {
-          competitiveStatus = '✅ 有優勢';
-          competitiveColor = '#28a745';
-        } else {
-          competitiveStatus = '❌ 較貴';
-          competitiveColor = '#dc3545';
-        }
-        
-        return `
-          <tr style="background: ${isWarning ? '#fef3c7' : 'white'};">
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">
-              ${comp.myProductCode} ${comp.myProductName}
-            </td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: right;">
-              <strong>${comp.myPrice} 元</strong>
-            </td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">
-              ${comp.compName}
-            </td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: right;">
-              <strong>${comp.compPrice} 元</strong>
-            </td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: right; color: ${isAdvantage ? '#28a745' : '#dc3545'};">
-              <strong>${isAdvantage ? '' : '+'}${comp.priceDiff.toFixed(0)} 元</strong>
-            </td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: right; color: ${isAdvantage ? '#28a745' : '#dc3545'};">
-              <strong>${isAdvantage ? '' : '+'}${comp.priceDiffPercent}%</strong>
-            </td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
-              <span style="background: ${competitiveColor}; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85rem;">
-                ${competitiveStatus}
-              </span>
-            </td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
-              ${comp.compUrl ? `<a href="${comp.compUrl}" target="_blank" style="color: #667eea;">🔗 查看</a>` : '-'}
-            </td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
-              <button onclick="deleteCompetitor(${index})" 
-                      style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-                🗑️ 刪除
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function deleteCompetitor(index) {
-      if (confirm('確定要刪除這筆競品資料嗎？')) {
-        competitorData.splice(index, 1);
-        displayCompetitorTable();
-        updateCompetitorOverview();
-        updateCompetitiveAnalysis();
-        updatePriceAlerts();
-      }
-    }
-
-    function filterCompetitorTable() {
-      displayCompetitorTable();
-    }
-
-    function updateCompetitorOverview() {
-      const total = competitorData.length;
-      const advantage = competitorData.filter(c => c.priceDiff < 0).length;
-      const disadvantage = competitorData.filter(c => c.priceDiff > 0).length;
-      
-      const avgDiff = total > 0 
-        ? (competitorData.reduce((sum, c) => sum + parseFloat(c.priceDiffPercent), 0) / total).toFixed(1)
-        : 0;
-      
-      document.getElementById('competitorCount').textContent = total;
-      document.getElementById('advantageCount').textContent = advantage;
-      document.getElementById('disadvantageCount').textContent = disadvantage;
-      document.getElementById('avgDifference').textContent = avgDiff + '%';
-    }
-
-    function updateCompetitiveAnalysis() {
-      const analysisDiv = document.getElementById('competitiveAnalysis');
-      
-      if (!analysisDiv) return;
-      
-      if (competitorData.length === 0) {
-        analysisDiv.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 30px;">添加競品後即可查看分析</p>';
-        return;
-      }
-      
-      // 按產品分組
-      const productGroups = {};
-      competitorData.forEach(comp => {
-        const key = comp.myProductName;
-        if (!productGroups[key]) {
-          productGroups[key] = [];
-        }
-        productGroups[key].push(comp);
-      });
-      
-      let html = '<div style="display: grid; gap: 15px;">';
-      
-      Object.entries(productGroups).forEach(([productName, comps]) => {
-        const avgPrice = comps.reduce((sum, c) => sum + c.compPrice, 0) / comps.length;
-        const myPrice = comps[0].myPrice;
-        const diff = myPrice - avgPrice;
-        const diffPercent = ((diff / avgPrice) * 100).toFixed(1);
-        
-        html += `
-          <div style="background: white; padding: 15px; border-radius: 10px; border: 2px solid ${diff < 0 ? '#28a745' : '#dc3545'};">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <strong style="font-size: 1.1rem;">${productName}</strong><br>
-                <span style="color: #6c757d;">監控 ${comps.length} 個競品</span>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-size: 0.9rem; color: #6c757d;">我方: ${myPrice} 元</div>
-                <div style="font-size: 0.9rem; color: #6c757d;">競品均價: ${avgPrice.toFixed(0)} 元</div>
-                <div style="font-size: 1.2rem; font-weight: bold; color: ${diff < 0 ? '#28a745' : '#dc3545'};">
-                  ${diff < 0 ? '✅' : '❌'} ${diff < 0 ? '' : '+'}${diffPercent}%
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-      
-      html += '</div>';
-      analysisDiv.innerHTML = html;
-    }
-
-    function updatePriceAlerts() {
-      const alertsDiv = document.getElementById('priceAlerts');
-      
-      if (!alertsDiv) return;
-      
-      // 找出需要關注的競品（我方價格高於競品 10% 以上）
-      const warnings = competitorData.filter(c => c.priceDiff > c.compPrice * 0.1);
-      
-      if (warnings.length === 0) {
-        alertsDiv.innerHTML = `
-          <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
-            ✅ 目前沒有需要關注的價格警示
-          </div>
-        `;
-        return;
-      }
-      
-      let html = `
-        <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 15px;">
-          <strong>⚠️ 發現 ${warnings.length} 個需要關注的競品價格</strong>
-        </div>
-      `;
-      
-      warnings.forEach(w => {
-        html += `
-          <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 2px solid #ffc107;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <strong>${w.myProductName}</strong><br>
-                <span style="color: #6c757d;">競品：${w.compName}</span>
-              </div>
-              <div style="text-align: right;">
-                <div style="color: #6c757d;">我方: ${w.myPrice} 元</div>
-                <div style="color: #6c757d;">競品: ${w.compPrice} 元</div>
-                <div style="font-weight: bold; color: #dc3545;">
-                  貴了 ${w.priceDiff.toFixed(0)} 元 (+${w.priceDiffPercent}%)
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-      
-      alertsDiv.innerHTML = html;
-    }
-
-    function loadCompetitorSheet() {
-      const sheetsId = localStorage.getItem('sheetsId');
-      
-      if (!sheetsId) {
-        alert('⚠️ 請先在「資料整合」頁面設定 Google Sheets！');
-        return;
-      }
-      
-      // 提示用戶
-      const sheetName = prompt('請輸入競品工作表名稱：\n（例如：蝦皮競品價格）', '蝦皮競品價格');
-      
-      if (!sheetName) return;
-      
-      // 讀取工作表
-      fetchSheetData(sheetsId, sheetName).then(data => {
-        if (data.length === 0) {
-          alert('❌ 未找到競品資料，請確認工作表名稱是否正確！');
-          return;
-        }
-        
-        console.log('📥 載入競品資料:', data);
-        
-        // 解析競品資料並添加到系統
-        // 假設格式：我方產品名稱/編號 | 競品名稱 | 競品價格 | 競品網址
-        let successCount = 0;
-        
-        data.forEach(row => {
-          // 嘗試匹配我方產品
-          const myProductKey = row['我方產品'] || row['產品名稱'] || row['產品編號'] || '';
-          const matchedIndex = allProducts.findIndex(p => 
-            (p['商品名稱'] || '').includes(myProductKey) || 
-            (p['產品編號'] || '').includes(myProductKey)
-          );
-          
-          if (matchedIndex === -1) {
-            console.warn('⚠️ 找不到匹配的產品:', myProductKey);
-            return;
-          }
-          
-          const myProduct = allProducts[matchedIndex];
-          const myPrice = myProduct['建議售價'] || calculateQuickPrice(myProduct);
-          const compName = row['競品名稱'] || row['競品'] || '';
-          const compPrice = parseFloat(row['競品價格'] || row['價格'] || 0);
-          const compUrl = row['競品網址'] || row['網址'] || '';
-          
-          if (!compName || compPrice <= 0) {
-            console.warn('⚠️ 競品資料不完整:', row);
-            return;
-          }
-          
-          // 添加競品
-          const priceDiff = myPrice - compPrice;
-          const priceDiffPercent = ((priceDiff / compPrice) * 100).toFixed(1);
-          
-          competitorData.push({
-            myProductIndex: matchedIndex,
-            myProductName: myProduct['商品名稱'] || myProduct['產品名稱'] || '',
-            myProductCode: myProduct['產品編號'] || myProduct['商品編號'] || '',
-            myPrice: Math.ceil(myPrice),
-            compName,
-            compPrice,
-            compUrl,
-            priceDiff,
-            priceDiffPercent,
-            addedDate: new Date().toISOString()
-          });
-          
-          successCount++;
-        });
-        
-        if (successCount > 0) {
-          alert(`✅ 成功載入 ${successCount} 筆競品資料！`);
-          displayCompetitorTable();
-          updateCompetitorOverview();
-          updateCompetitiveAnalysis();
-          updatePriceAlerts();
-        } else {
-          alert('❌ 沒有成功載入任何競品資料，請檢查資料格式！');
-        }
-      }).catch(error => {
-        console.error('❌ 載入競品工作表失敗:', error);
-        alert('❌ 載入失敗，請確認工作表名稱和格式是否正確！');
-      });
-    }
-
-    function exportCompetitorData() {
-      if (competitorData.length === 0) {
-        alert('沒有競品資料可以匯出！');
-        return;
-      }
-      
-      // 建立 CSV
-      const headers = ['我方產品編號', '我方產品名稱', '我方價格', '競品名稱', '競品價格', '價差', '價差%', '競爭力', '競品網址'];
-      let csv = headers.join(',') + '\n';
-      
-      competitorData.forEach(comp => {
-        const competitive = comp.priceDiff < 0 ? '有優勢' : 
-                          comp.priceDiff > comp.compPrice * 0.1 ? '需關注' : '較貴';
-        
-        const row = [
-          comp.myProductCode,
-          comp.myProductName,
-          comp.myPrice,
-          comp.compName,
-          comp.compPrice,
-          comp.priceDiff.toFixed(0),
-          comp.priceDiffPercent + '%',
-          competitive,
-          comp.compUrl || ''
-        ].map(val => `"${val}"`);
-        
-        csv += row.join(',') + '\n';
-      });
-      
-      // 下載
-      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `競品比價_${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
-    }
-  </script>
+    </script>
+  </div>
 </body>
 </html>
