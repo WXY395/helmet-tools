@@ -232,6 +232,17 @@
     <div id="calculator" class="tab-content active">
       <h2>💰 訂價計算器</h2>
       
+      <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid #e17055;">
+        <div style="color: #2d3436; font-weight: 600; margin-bottom: 8px;">
+          ⚡ 2025 年最新費率已更新
+        </div>
+        <div style="color: #2d3436; font-size: 0.9rem; line-height: 1.6;">
+          • 一般成交手續費：5.5% | 促銷檔期：7.5%<br>
+          • 免運補貼：7% | 較長備貨（預購）：3% | 蝦幣回饋：3%<br>
+          • 金流服務費 2% 已自動包含
+        </div>
+      </div>
+      
       <div class="cost-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border: none;">
         <h3 style="color: #2d3748;">🎯 快速選擇產品</h3>
         <div id="quickSelectProduct">
@@ -260,37 +271,66 @@
       </div>
 
       <div class="cost-card">
-        <h3>蝦皮費率設定</h3>
-        <div class="input-group">
-          <label>
-            <input type="checkbox" id="isActivity" onchange="updateFeeRateDisplay(); calculate()">
-            活動期間（手續費 7.5%）
-          </label>
-        </div>
-        <div class="input-group">
-          <label>
-            <input type="checkbox" id="hasFreeShipping" onchange="calculate()">
-            免運補貼 7%
-          </label>
-        </div>
-        <div class="input-group">
-          <label>
-            <input type="checkbox" id="isPreorder" onchange="calculate()">
-            預購費用 3%
-          </label>
-        </div>
-        <div class="input-group">
-          <label>
-            <input type="checkbox" id="hasCoins" onchange="calculate()">
-            蝦幣回饋 3%
-          </label>
-        </div>
-        <div class="input-group">
-          <label>稅費比例（%）</label>
-          <input type="number" id="taxRate" value="1" step="0.1" oninput="calculate()">
+        <h3>蝦皮費率設定（2025 最新）</h3>
+        
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2196f3;">
+          <p style="margin: 0; color: #1565c0; font-weight: 600;">💡 金流服務費 2% 已自動包含在所有計算中</p>
         </div>
         
-        <div id="feeRateSummary" style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px;"></div>
+        <div class="input-group">
+          <label style="font-weight: 600; color: #2d3748; margin-bottom: 10px;">成交手續費</label>
+          <div style="display: flex; gap: 20px; margin-left: 10px;">
+            <label style="cursor: pointer;">
+              <input type="radio" name="feeType" id="normalFee" value="5.5" checked onchange="updateFeeRateDisplay(); calculate()">
+              <span style="margin-left: 5px;">一般期間 5.5%</span>
+            </label>
+            <label style="cursor: pointer;">
+              <input type="radio" name="feeType" id="eventFee" value="7.5" onchange="updateFeeRateDisplay(); calculate()">
+              <span style="margin-left: 5px;">促銷檔期 7.5%</span>
+            </label>
+          </div>
+        </div>
+        
+        <div style="border-top: 1px solid #e5e7eb; margin: 15px 0;"></div>
+        
+        <div class="input-group">
+          <label style="font-weight: 600; color: #2d3748; margin-bottom: 10px;">活動費用（可選）</label>
+          <div style="margin-left: 10px;">
+            <div style="margin-bottom: 10px;">
+              <label style="cursor: pointer;">
+                <input type="checkbox" id="hasFreeShipping" onchange="updateFeeRateDisplay(); calculate()">
+                <span style="margin-left: 5px;">免運補貼 7%</span>
+                <span style="color: #6c757d; font-size: 0.85rem; margin-left: 10px;">（參加免運活動）</span>
+              </label>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <label style="cursor: pointer;">
+                <input type="checkbox" id="isPreorder" onchange="updateFeeRateDisplay(); calculate()">
+                <span style="margin-left: 5px;">較長備貨（預購）3%</span>
+                <span style="color: #6c757d; font-size: 0.85rem; margin-left: 10px;">（備貨天數 > 1 天）</span>
+              </label>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <label style="cursor: pointer;">
+                <input type="checkbox" id="hasCoins" onchange="updateFeeRateDisplay(); calculate()">
+                <span style="margin-left: 5px;">蝦幣回饋 3%</span>
+                <span style="color: #6c757d; font-size: 0.85rem; margin-left: 10px;">（參加蝦幣活動）</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div style="border-top: 1px solid #e5e7eb; margin: 15px 0;"></div>
+        
+        <div class="input-group">
+          <label style="cursor: pointer;">
+            <input type="checkbox" id="hasTax" onchange="updateFeeRateDisplay(); calculate()">
+            <span style="margin-left: 5px; font-weight: 600;">營業稅 5%</span>
+            <span style="color: #6c757d; font-size: 0.85rem; margin-left: 10px;">（營業登記者需開發票）</span>
+          </label>
+        </div>
+        
+        <div id="feeRateSummary" style="margin-top: 15px; padding: 15px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #667eea;"></div>
       </div>
 
       <div class="cost-card">
@@ -333,7 +373,8 @@
       <div id="sheetsList"></div>
       <div id="connectionResult"></div>
     </div>
-<div id="analysis" class="tab-content">
+
+    <div id="analysis" class="tab-content">
       <h2>📊 產品資料分析</h2>
       
       <div id="productDataSection">
@@ -386,13 +427,26 @@
                        style="width: 100%; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
               </div>
             </div>
+            
             <div style="margin-top: 15px;">
-              <label style="display: block; margin-bottom: 10px; font-weight: 600;">費率設定：</label>
-              <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <label><input type="checkbox" id="batchActivity"> 活動期間 (7.5%)</label>
+              <label style="display: block; margin-bottom: 10px; font-weight: 600;">成交手續費：</label>
+              <div style="display: flex; gap: 15px; margin-left: 10px; margin-bottom: 15px;">
+                <label>
+                  <input type="radio" name="batchFeeType" id="batchNormalFee" value="5.5" checked>
+                  一般期間 5.5%
+                </label>
+                <label>
+                  <input type="radio" name="batchFeeType" id="batchEventFee" value="7.5">
+                  促銷檔期 7.5%
+                </label>
+              </div>
+              
+              <label style="display: block; margin-bottom: 10px; font-weight: 600;">活動費用：</label>
+              <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-left: 10px;">
                 <label><input type="checkbox" id="batchFreeShip"> 免運補貼 (7%)</label>
-                <label><input type="checkbox" id="batchPreorder"> 預購費用 (3%)</label>
+                <label><input type="checkbox" id="batchPreorder"> 較長備貨 (3%)</label>
                 <label><input type="checkbox" id="batchCoins"> 蝦幣回饋 (3%)</label>
+                <label><input type="checkbox" id="batchTax"> 營業稅 (5%)</label>
               </div>
             </div>
             <button class="btn" onclick="calculateBatchPricing()" style="margin-top: 15px; width: 100%;">
@@ -433,7 +487,8 @@
         </div>
       </div>
     </div>
-<div id="competitor" class="tab-content">
+
+    <div id="competitor" class="tab-content">
       <h2>🎯 競品監控</h2>
       
       <!-- 競品數據概覽 -->
@@ -568,9 +623,9 @@
         <div id="priceAlerts"></div>
       </div>
     </div>
-
   </div>
-<script>
+
+  <script>
     let availableSheets = [];
     let selectedSheets = [];
     let sheetInputCount = 2;
@@ -604,6 +659,7 @@
         if (allProducts.length > 0) {
           displayAnalysisPage();
         } else {
+          // 確保顯示提示訊息
           document.getElementById('productDataSection').style.display = 'block';
           document.getElementById('analysisContent').style.display = 'none';
         }
@@ -621,17 +677,64 @@
     }
 
     function updateFeeRateDisplay() {
-      const isActivity = document.getElementById('isActivity').checked;
-      const baseRate = isActivity ? 7.5 : 5.5;
+      // 取得成交手續費（單選）
+      const normalFee = document.getElementById('normalFee');
+      const eventFee = document.getElementById('eventFee');
+      const platformFee = normalFee.checked ? 5.5 : 7.5;
+      
+      // 固定金流費
       const paymentRate = 2.0;
       
-      const display = document.getElementById('feeRateSummary');
-      display.innerHTML = `
-        <strong>目前費率總計：</strong><br>
-        • 平台手續費：${baseRate}%<br>
-        • 金流費：${paymentRate}%<br>
-        <strong style="color: #1976d2;">總計：${baseRate + paymentRate}%</strong>
+      // 活動費用（可選）
+      const hasFreeShipping = document.getElementById('hasFreeShipping').checked;
+      const isPreorder = document.getElementById('isPreorder').checked;
+      const hasCoins = document.getElementById('hasCoins').checked;
+      const hasTax = document.getElementById('hasTax').checked;
+      
+      let totalRate = platformFee + paymentRate;
+      
+      let breakdown = `
+        <div style="font-size: 0.95rem;">
+          <strong style="color: #2d3748;">📊 費率明細：</strong><br>
+          <div style="margin: 10px 0; padding-left: 10px; border-left: 3px solid #667eea;">
+            • 成交手續費：<strong>${platformFee}%</strong> ${eventFee.checked ? '（促銷檔期）' : '（一般期間）'}<br>
+            • 金流服務費：<strong>${paymentRate}%</strong> <span style="color: #6c757d;">（固定）</span><br>
       `;
+      
+      if (hasFreeShipping) {
+        breakdown += `    • 免運補貼：<strong>7%</strong><br>`;
+        totalRate += 7;
+      }
+      
+      if (isPreorder) {
+        breakdown += `    • 較長備貨（預購）：<strong>3%</strong><br>`;
+        totalRate += 3;
+      }
+      
+      if (hasCoins) {
+        breakdown += `    • 蝦幣回饋：<strong>3%</strong><br>`;
+        totalRate += 3;
+      }
+      
+      if (hasTax) {
+        breakdown += `    • 營業稅：<strong>5%</strong><br>`;
+        totalRate += 5;
+      }
+      
+      breakdown += `
+          </div>
+          <div style="margin-top: 15px; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; text-align: center;">
+            <span style="color: white; font-size: 1.1rem;">
+              💰 <strong>總費率：${totalRate.toFixed(1)}%</strong>
+            </span>
+          </div>
+        </div>
+      `;
+      
+      const display = document.getElementById('feeRateSummary');
+      if (display) {
+        display.innerHTML = breakdown;
+      }
     }
 
     function calculate() {
@@ -640,22 +743,25 @@
       const packaging = parseFloat(document.getElementById('packaging').value) || 0;
       const labor = parseFloat(document.getElementById('labor').value) || 0;
       
-      const isActivity = document.getElementById('isActivity').checked;
+      // 取得成交手續費
+      const normalFee = document.getElementById('normalFee');
+      const platformFee = normalFee.checked ? 5.5 : 7.5;
+      
+      // 活動費用
       const hasFreeShipping = document.getElementById('hasFreeShipping').checked;
       const isPreorder = document.getElementById('isPreorder').checked;
       const hasCoins = document.getElementById('hasCoins').checked;
-      const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+      const hasTax = document.getElementById('hasTax').checked;
       const targetMargin = parseFloat(document.getElementById('targetMargin').value) || 0;
       
       const totalCost = cost * quantity + packaging + labor;
       
-      const platformFee = isActivity ? 7.5 : 5.5;
-      let totalFeeRate = platformFee + 2.0;
+      let totalFeeRate = platformFee + 2.0; // 平台手續費 + 金流費
       
       if (hasFreeShipping) totalFeeRate += 7;
       if (isPreorder) totalFeeRate += 3;
       if (hasCoins) totalFeeRate += 3;
-      totalFeeRate += taxRate;
+      if (hasTax) totalFeeRate += 5;
       
       const suggestedPrice = totalCost / (1 - (totalFeeRate + targetMargin) / 100);
       const netIncome = suggestedPrice * (1 - totalFeeRate / 100);
@@ -774,7 +880,8 @@
       `;
       container.appendChild(newInput);
     }
-async function saveAndLoadSheets() {
+
+    async function saveAndLoadSheets() {
       const sheetsId = localStorage.getItem('sheetsId');
       const sheetNames = [];
       
@@ -834,6 +941,7 @@ async function saveAndLoadSheets() {
       console.log(`📥 嘗試讀取工作表: ${sheetName}`);
       
       try {
+        // 使用 Google Sheets 的公開 API（不需要認證）
         const encodedSheetName = encodeURIComponent(sheetName);
         const url = `https://docs.google.com/spreadsheets/d/${sheetsId}/gviz/tq?tqx=out:json&sheet=${encodedSheetName}`;
         
@@ -847,6 +955,7 @@ async function saveAndLoadSheets() {
         
         const text = await response.text();
         
+        // Google 返回的是 JSONP 格式，需要提取 JSON 部分
         const jsonString = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);?/)[1];
         const data = JSON.parse(jsonString);
         
@@ -859,11 +968,13 @@ async function saveAndLoadSheets() {
           return [];
         }
         
+        // 解析表格數據
         const cols = data.table.cols;
         const rows = data.table.rows;
         
         console.log(`📋 表頭資訊:`, cols.map(c => c.label));
         
+        // 轉換成易用的物件陣列（包含所有列，不跳過空值）
         const parsedData = [];
         
         for (let i = 0; i < rows.length; i++) {
@@ -875,6 +986,7 @@ async function saveAndLoadSheets() {
             const cell = row.c[index];
             const colLabel = col.label || `欄位${index + 1}`;
             
+            // 取得儲存格的值
             let value = '';
             if (cell) {
               if (cell.v !== null && cell.v !== undefined) {
@@ -889,12 +1001,14 @@ async function saveAndLoadSheets() {
             obj[colLabel] = value;
           });
           
+          // 即使某列全是空值，也包含進來（除非完全沒有資料）
           parsedData.push(obj);
         }
         
         console.log(`✅ ${sheetName} 解析完成: ${parsedData.length} 筆資料`);
         console.log(`📊 前 3 筆範例資料:`, parsedData.slice(0, 3));
         
+        // 過濾掉完全空白的列
         const filteredData = parsedData.filter(row => {
           return Object.values(row).some(val => val !== '' && val !== null && val !== undefined);
         });
@@ -907,12 +1021,14 @@ async function saveAndLoadSheets() {
         console.error(`❌ 讀取 ${sheetName} 失敗:`, error);
         console.error(`❌ 完整錯誤:`, error.stack);
         
+        // 如果失敗，提供詳細的錯誤訊息
         if (error.message.includes('HTTP error')) {
           console.error('可能原因：工作表名稱不正確，或 Google Sheets 未設為公開');
         } else if (error.message.includes('match')) {
           console.error('可能原因：無法解析 Google 返回的數據格式');
         }
         
+        // 返回空陣列而不是拋出錯誤，讓程式繼續運行
         return [];
       }
     }
@@ -978,6 +1094,7 @@ async function saveAndLoadSheets() {
       
       const totalCount = selectedSheets.reduce((sum, s) => sum + s.count, 0);
       
+      // 合併所有選中工作表的產品數據
       allProducts = [];
       selectedSheets.forEach(sheet => {
         if (sheet.data && sheet.data.length > 0) {
@@ -994,6 +1111,7 @@ async function saveAndLoadSheets() {
       
       console.log('✅ 已載入產品數據:', allProducts.length, '筆');
       
+      // 更新快速選擇器
       updateQuickSelect();
       
       document.getElementById('connectionResult').innerHTML = `
@@ -1095,7 +1213,9 @@ async function saveAndLoadSheets() {
 
     function navigateToCalculator() {
       showTab('calculator');
-    }function displayAnalysisPage() {
+    }
+
+    function displayAnalysisPage() {
       if (allProducts.length === 0) {
         return;
       }
@@ -1103,15 +1223,20 @@ async function saveAndLoadSheets() {
       document.getElementById('productDataSection').style.display = 'none';
       document.getElementById('analysisContent').style.display = 'block';
       
+      // 顯示數據概覽
       displayDataOverview();
       
+      // 設置來源篩選器
       const sources = [...new Set(allProducts.map(p => p.來源))];
       const sourceFilter = document.getElementById('sourceFilter');
       sourceFilter.innerHTML = '<option value="">全部來源</option>' + 
         sources.map(s => `<option value="${s}">${s}</option>`).join('');
       
+      // 顯示產品表格
       filteredProducts = [...allProducts];
       displayProductTable();
+      
+      // 顯示價格分析
       displayPriceAnalysis();
     }
 
@@ -1120,6 +1245,7 @@ async function saveAndLoadSheets() {
       const totalProducts = allProducts.length;
       const sources = [...new Set(allProducts.map(p => p.來源))];
       
+      // 計算平均成本（假設欄位名稱可能是「單價」或「進貨單價」）
       const costs = allProducts.map(p => {
         const price = p['單價'] || p['進貨單價'] || p['成本'] || 0;
         return typeof price === 'number' ? price : parseFloat(price) || 0;
@@ -1159,6 +1285,7 @@ async function saveAndLoadSheets() {
         return;
       }
       
+      // 取得所有欄位
       const allKeys = new Set();
       filteredProducts.forEach(product => {
         Object.keys(product).forEach(key => allKeys.add(key));
@@ -1166,6 +1293,7 @@ async function saveAndLoadSheets() {
       
       const keys = Array.from(allKeys);
       
+      // 建立表頭
       thead.innerHTML = `
         <th style="padding: 12px; border: 1px solid #e5e7eb; background: #f8f9fa;">
           <input type="checkbox" onchange="toggleAllProducts(this)" style="width: 18px; height: 18px;">
@@ -1178,10 +1306,12 @@ async function saveAndLoadSheets() {
         `).join('')}
       `;
       
+      // 分頁
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const pageProducts = filteredProducts.slice(startIndex, endIndex);
       
+      // 建立表格內容
       tbody.innerHTML = pageProducts.map((product, index) => {
         const globalIndex = startIndex + index;
         const isSelected = selectedProducts.has(globalIndex);
@@ -1196,8 +1326,10 @@ async function saveAndLoadSheets() {
             ${keys.map(key => {
               let value = product[key] || '';
               
+              // 如果是數字類型的欄位，右對齊
               const isNumber = typeof value === 'number' || !isNaN(parseFloat(value));
               
+              // 特殊顯示：建議售價和預估利潤
               if (key === '建議售價' && value) {
                 value = `<strong style="color: #667eea;">${Math.ceil(value)} 元</strong>`;
               } else if (key === '預估利潤' && value) {
@@ -1215,6 +1347,7 @@ async function saveAndLoadSheets() {
         `;
       }).join('');
       
+      // 分頁控制
       displayPagination();
     }
 
@@ -1252,10 +1385,12 @@ async function saveAndLoadSheets() {
       const sourceFilter = document.getElementById('sourceFilter').value;
       
       filteredProducts = allProducts.filter(product => {
+        // 搜尋條件
         const matchSearch = !searchTerm || Object.values(product).some(val => 
           String(val).toLowerCase().includes(searchTerm)
         );
         
+        // 來源條件
         const matchSource = !sourceFilter || product.來源 === sourceFilter;
         
         return matchSearch && matchSource;
@@ -1317,7 +1452,7 @@ async function saveAndLoadSheets() {
       const hasCoins = document.getElementById('batchCoins').checked;
       
       let totalFeeRate = isActivity ? 7.5 : 5.5;
-      totalFeeRate += 2.0;
+      totalFeeRate += 2.0; // 金流費
       if (hasFreeShipping) totalFeeRate += 7;
       if (isPreorder) totalFeeRate += 3;
       if (hasCoins) totalFeeRate += 3;
@@ -1325,6 +1460,7 @@ async function saveAndLoadSheets() {
       let calculated = 0;
       
       filteredProducts.forEach((product, index) => {
+        // 取得成本（嘗試不同的欄位名稱）
         const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
         
         if (cost > 0) {
@@ -1347,6 +1483,7 @@ async function saveAndLoadSheets() {
     function displayPriceAnalysis() {
       const analysisDiv = document.getElementById('priceAnalysis');
       
+      // 取得有成本的產品
       const productsWithCost = filteredProducts.filter(p => {
         const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
         return cost > 0;
@@ -1357,6 +1494,7 @@ async function saveAndLoadSheets() {
         return;
       }
       
+      // 價格分佈統計
       const priceRanges = {
         '0-100': 0,
         '101-200': 0,
@@ -1406,6 +1544,7 @@ async function saveAndLoadSheets() {
         let valA = a[key] || '';
         let valB = b[key] || '';
         
+        // 嘗試轉換為數字
         const numA = parseFloat(valA);
         const numB = parseFloat(valB);
         
@@ -1413,6 +1552,7 @@ async function saveAndLoadSheets() {
           return isAscending ? numB - numA : numA - numB;
         }
         
+        // 字串比較
         valA = String(valA).toLowerCase();
         valB = String(valB).toLowerCase();
         
@@ -1423,6 +1563,7 @@ async function saveAndLoadSheets() {
         }
       });
       
+      // 記錄排序狀態
       filteredProducts.forEach(p => {
         p._sortKey = key;
         p._sortAsc = !isAscending;
@@ -1437,13 +1578,16 @@ async function saveAndLoadSheets() {
         return;
       }
       
+      // 取得所有欄位
       const keys = Object.keys(filteredProducts[0]);
       
+      // 建立 CSV 內容
       let csv = keys.join(',') + '\n';
       
       filteredProducts.forEach(product => {
         const row = keys.map(key => {
           let value = product[key] || '';
+          // 如果包含逗號，用引號包起來
           if (String(value).includes(',')) {
             value = `"${value}"`;
           }
@@ -1452,13 +1596,29 @@ async function saveAndLoadSheets() {
         csv += row.join(',') + '\n';
       });
       
+      // 下載檔案
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `產品資料_${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
     }
-function updateQuickSelect() {
+
+    window.onload = function() {
+      console.log('✅ 頁面載入完成');
+      console.log('✅ 所有函數已定義');
+      
+      updateFeeRateDisplay();
+      checkSavedSheets();
+      updateQuickSelect();
+      
+      const cost = document.getElementById('cost').value;
+      if (cost) {
+        calculate();
+      }
+    };
+
+    function updateQuickSelect() {
       const quickSelectDiv = document.getElementById('quickSelectProduct');
       
       if (allProducts.length === 0) {
@@ -1466,6 +1626,7 @@ function updateQuickSelect() {
         return;
       }
       
+      // 建立產品選擇器
       const productsWithCost = allProducts.filter(p => {
         const cost = parseFloat(p['單價'] || p['進貨單價'] || p['成本'] || 0);
         return cost > 0;
@@ -1509,22 +1670,36 @@ function updateQuickSelect() {
       const product = productsWithCost[selectedIndex];
       if (!product) return;
       
+      // 載入產品成本到計算器
       const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
       document.getElementById('cost').value = cost;
       document.getElementById('quantity').value = 1;
       
+      // 自動計算
       calculate();
       
+      // 顯示提示
       alert(`✅ 已載入產品：${product['商品名稱'] || product['產品名稱']}\n成本：${cost} 元`);
     }
+
+    // ==================== 競品監控功能 ====================
 
     function updateCompetitorPage() {
       console.log('🎯 更新競品監控頁面');
       
+      // 更新產品選擇器
       updateMyProductSelector();
+      
+      // 更新競品表格
       displayCompetitorTable();
+      
+      // 更新概覽
       updateCompetitorOverview();
+      
+      // 更新分析圖表
       updateCompetitiveAnalysis();
+      
+      // 更新價格警示
       updatePriceAlerts();
     }
 
@@ -1538,6 +1713,7 @@ function updateQuickSelect() {
         return;
       }
       
+      // 為產品設定建議售價（如果已經計算過）
       const productsWithPrice = allProducts.map((product, index) => {
         const name = product['商品名稱'] || product['產品名稱'] || `產品 ${index + 1}`;
         const code = product['產品編號'] || product['商品編號'] || '';
@@ -1557,6 +1733,7 @@ function updateQuickSelect() {
           `<option value="${p.index}" data-price="${p.price}">[${p.source}] ${p.code} ${p.name} - ${p.price} 元</option>`
         ).join('');
       
+      // 監聽選擇變化
       selector.onchange = function() {
         const selectedOption = this.options[this.selectedIndex];
         const price = selectedOption.getAttribute('data-price');
@@ -1568,11 +1745,12 @@ function updateQuickSelect() {
       const cost = parseFloat(product['單價'] || product['進貨單價'] || product['成本'] || 0);
       if (cost === 0) return 0;
       
+      // 使用預設參數快速計算
       const packaging = 10;
       const labor = 20;
       const totalCost = cost + packaging + labor;
       const targetMargin = 30;
-      const totalFeeRate = 5.5 + 2.0;
+      const totalFeeRate = 5.5 + 2.0; // 基本手續費 + 金流費
       
       return totalCost / (1 - (totalFeeRate + targetMargin) / 100);
     }
@@ -1603,9 +1781,11 @@ function updateQuickSelect() {
       const myProductName = myProduct['商品名稱'] || myProduct['產品名稱'] || '未命名產品';
       const myProductCode = myProduct['產品編號'] || myProduct['商品編號'] || '';
       
+      // 計算價差
       const priceDiff = myPrice - compPrice;
       const priceDiffPercent = ((priceDiff / compPrice) * 100).toFixed(1);
       
+      // 添加到競品資料
       competitorData.push({
         myProductIndex: parseInt(myProductIndex),
         myProductName,
@@ -1621,10 +1801,12 @@ function updateQuickSelect() {
       
       console.log('✅ 添加競品:', competitorData[competitorData.length - 1]);
       
+      // 清空輸入
       document.getElementById('compName').value = '';
       document.getElementById('compPrice').value = '';
       document.getElementById('compUrl').value = '';
       
+      // 更新顯示
       displayCompetitorTable();
       updateCompetitorOverview();
       updateCompetitiveAnalysis();
@@ -1649,15 +1831,16 @@ function updateQuickSelect() {
         return;
       }
       
+      // 應用篩選
       const filter = document.getElementById('filterAdvantage')?.value || '';
       let filteredData = [...competitorData];
       
       if (filter === 'advantage') {
-        filteredData = filteredData.filter(c => c.priceDiff < 0);
+        filteredData = filteredData.filter(c => c.priceDiff < 0); // 我方更便宜
       } else if (filter === 'disadvantage') {
-        filteredData = filteredData.filter(c => c.priceDiff > 0);
+        filteredData = filteredData.filter(c => c.priceDiff > 0); // 競品更便宜
       } else if (filter === 'warning') {
-        filteredData = filteredData.filter(c => c.priceDiff > c.compPrice * 0.1);
+        filteredData = filteredData.filter(c => c.priceDiff > c.compPrice * 0.1); // 貴超過 10%
       }
       
       tbody.innerHTML = filteredData.map((comp, index) => {
@@ -1707,7 +1890,7 @@ function updateQuickSelect() {
               ${comp.compUrl ? `<a href="${comp.compUrl}" target="_blank" style="color: #667eea;">🔗 查看</a>` : '-'}
             </td>
             <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">
-              <button onclick="deleteCompetitor(${competitorData.indexOf(comp)})" 
+              <button onclick="deleteCompetitor(${index})" 
                       style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
                 🗑️ 刪除
               </button>
@@ -1745,7 +1928,8 @@ function updateQuickSelect() {
       document.getElementById('disadvantageCount').textContent = disadvantage;
       document.getElementById('avgDifference').textContent = avgDiff + '%';
     }
-function updateCompetitiveAnalysis() {
+
+    function updateCompetitiveAnalysis() {
       const analysisDiv = document.getElementById('competitiveAnalysis');
       
       if (!analysisDiv) return;
@@ -1755,6 +1939,7 @@ function updateCompetitiveAnalysis() {
         return;
       }
       
+      // 按產品分組
       const productGroups = {};
       competitorData.forEach(comp => {
         const key = comp.myProductName;
@@ -1800,6 +1985,7 @@ function updateCompetitiveAnalysis() {
       
       if (!alertsDiv) return;
       
+      // 找出需要關注的競品（我方價格高於競品 10% 以上）
       const warnings = competitorData.filter(c => c.priceDiff > c.compPrice * 0.1);
       
       if (warnings.length === 0) {
@@ -1848,10 +2034,12 @@ function updateCompetitiveAnalysis() {
         return;
       }
       
+      // 提示用戶
       const sheetName = prompt('請輸入競品工作表名稱：\n（例如：蝦皮競品價格）', '蝦皮競品價格');
       
       if (!sheetName) return;
       
+      // 讀取工作表
       fetchSheetData(sheetsId, sheetName).then(data => {
         if (data.length === 0) {
           alert('❌ 未找到競品資料，請確認工作表名稱是否正確！');
@@ -1860,9 +2048,12 @@ function updateCompetitiveAnalysis() {
         
         console.log('📥 載入競品資料:', data);
         
+        // 解析競品資料並添加到系統
+        // 假設格式：我方產品名稱/編號 | 競品名稱 | 競品價格 | 競品網址
         let successCount = 0;
         
         data.forEach(row => {
+          // 嘗試匹配我方產品
           const myProductKey = row['我方產品'] || row['產品名稱'] || row['產品編號'] || '';
           const matchedIndex = allProducts.findIndex(p => 
             (p['商品名稱'] || '').includes(myProductKey) || 
@@ -1885,6 +2076,7 @@ function updateCompetitiveAnalysis() {
             return;
           }
           
+          // 添加競品
           const priceDiff = myPrice - compPrice;
           const priceDiffPercent = ((priceDiff / compPrice) * 100).toFixed(1);
           
@@ -1925,6 +2117,7 @@ function updateCompetitiveAnalysis() {
         return;
       }
       
+      // 建立 CSV
       const headers = ['我方產品編號', '我方產品名稱', '我方價格', '競品名稱', '競品價格', '價差', '價差%', '競爭力', '競品網址'];
       let csv = headers.join(',') + '\n';
       
@@ -1947,26 +2140,13 @@ function updateCompetitiveAnalysis() {
         csv += row.join(',') + '\n';
       });
       
+      // 下載
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `競品比價_${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
     }
-
-    window.onload = function() {
-      console.log('✅ 頁面載入完成');
-      console.log('✅ 所有函數已定義');
-      
-      updateFeeRateDisplay();
-      checkSavedSheets();
-      updateQuickSelect();
-      
-      const cost = document.getElementById('cost').value;
-      if (cost) {
-        calculate();
-      }
-    };
   </script>
 </body>
 </html>
