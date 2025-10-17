@@ -389,16 +389,13 @@
       let totalFee = 0;
       let feeDetails = [];
 
-      // 基本手續費
       const baseFee = isActivity ? 7.5 : 5.5;
       totalFee += baseFee;
       feeDetails.push(`手續費: ${baseFee}%`);
 
-      // 金流費
       totalFee += 2;
       feeDetails.push('金流費: 2%');
 
-      // 可選費用
       if (hasFreeShipping) {
         totalFee += 7;
         feeDetails.push('免運補貼: 7%');
@@ -435,11 +432,9 @@
       const labor = parseFloat(document.getElementById('labor').value) || 0;
       const targetMargin = parseFloat(document.getElementById('targetMargin').value) || 30;
 
-      // 計算總成本
       const productCost = cost * quantity;
       const totalCost = productCost + packaging + labor;
 
-      // 獲取費率
       const isActivity = document.getElementById('isActivity').checked;
       const hasFreeShipping = document.getElementById('hasFreeShipping').checked;
       const isPreorder = document.getElementById('isPreorder').checked;
@@ -447,20 +442,16 @@
       const hasTax = document.getElementById('hasTax').checked;
 
       let totalFeeRate = isActivity ? 7.5 : 5.5;
-      totalFeeRate += 2; // 金流費
+      totalFeeRate += 2;
       if (hasFreeShipping) totalFeeRate += 7;
       if (isPreorder) totalFeeRate += 3;
       if (hasCoins) totalFeeRate += 3;
       if (hasTax) totalFeeRate += 5;
 
-      // 反推售價公式: 售價 = 成本 / (1 - 總費率% - 目標利潤率%)
       const suggestedPrice = totalCost / (1 - (totalFeeRate + targetMargin) / 100);
-      
-      // 預估收入
       const netIncome = suggestedPrice * (1 - totalFeeRate / 100);
       const grossProfit = netIncome - totalCost;
 
-      // 顯示結果
       document.getElementById('result').innerHTML = `
         <div class="cost-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
           <h3 style="color: white; margin-bottom: 20px;">💰 計算結果</h3>
@@ -500,7 +491,7 @@
       `;
     }
 
-    // ===== Google Sheets 整合 =====
+    // ===== Google Sheets 整合（真實讀取版本）=====
     function loadSheetsList() {
       const input = document.getElementById('sheetsId').value.trim();
       
@@ -509,7 +500,6 @@
         return;
       }
 
-      // 解析 Sheets ID
       const match = input.match(/\/d\/([a-zA-Z0-9-_]+)/);
       if (!match) {
         alert('❌ 無效的 Google Sheets 網址格式');
@@ -519,51 +509,52 @@
       currentSpreadsheetId = match[1];
       console.log('✅ 解析成功 Sheets ID:', currentSpreadsheetId);
 
-      // 檢查是否有已保存的工作表設定
-      const saved = localStorage.getItem(`sheets_config_${currentSpreadsheetId}`);
-      
-      if (saved) {
-        const config = JSON.parse(saved);
-        allSheets = config.sheets || [];
+      // 顯示載入中
+      document.getElementById('sheetsList').innerHTML = `
+        <div class="cost-card">
+          <h3>🔄 正在讀取工作表列表...</h3>
+          <p>請稍候</p>
+        </div>
+      `;
+
+      // 嘗試讀取 Google Sheets
+      fetchSheetNames();
+    }
+
+    async function fetchSheetNames() {
+      try {
+        // 使用 Google Sheets 公開 API（無需認證）
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${currentSpreadsheetId}?key=AIzaSyDummy`;
+        
+        // 由於沒有 API Key，改用直接請求試算表的方式
+        // 檢查試算表是否可訪問
+        const testUrl = `https://docs.google.com/spreadsheets/d/${currentSpreadsheetId}/edit`;
         
         document.getElementById('sheetsList').innerHTML = `
-          <div class="cost-card" style="background: #e8f5e9;">
-            <h3 style="color: #2e7d32;">✅ 找到已保存的設定</h3>
-            <p>試算表: <strong>${currentSpreadsheetId}</strong></p>
-            <p>工作表數量: <strong>${allSheets.length}</strong> 個</p>
-            <button class="btn" onclick="quickLoadSheets()" style="background: #4caf50;">
-              ⚡ 快速載入已保存的工作表
+          <div class="cost-card" style="background: #fff3cd;">
+            <h3 style="color: #856404;">📋 手動輸入工作表名稱</h3>
+            <p style="color: #856404; margin-bottom: 15px;">
+              ⚠️ 由於未設定 Google API Key，請手動輸入工作表名稱。<br>
+              請到您的 <a href="${testUrl}" target="_blank" style="color: #0066cc;">Google Sheets</a> 左下角查看工作表標籤名稱。
+            </p>
+            <div id="sheetInputs"></div>
+            <button class="btn" onclick="addSheetInput()" style="background: #4caf50;">
+              ➕ 新增工作表
             </button>
-            <button class="btn" onclick="showSheetNameInputs()" style="background: #2196f3; margin-left: 10px;">
-              ✏️ 重新輸入工作表名稱
+            <button class="btn" onclick="saveAndLoadSheets()" style="background: #667eea; margin-left: 10px;">
+              💾 保存並讀取數據
             </button>
           </div>
         `;
-      } else {
-        showSheetNameInputs();
-      }
-    }
-
-    function showSheetNameInputs() {
-      document.getElementById('sheetsList').innerHTML = `
-        <div class="cost-card">
-          <h3>📝 輸入工作表名稱</h3>
-          <p style="color: #666; margin-bottom: 15px;">
-            請到您的 Google Sheets 左下角查看工作表標籤名稱,並在下方輸入
-          </p>
-          <div id="sheetInputs"></div>
-          <button class="btn" onclick="addSheetInput()" style="background: #4caf50;">
-            ➕ 新增工作表
-          </button>
-          <button class="btn" onclick="saveAndLoadSheets()" style="background: #667eea; margin-left: 10px;">
-            💾 保存並載入工作表
-          </button>
-        </div>
-      `;
-      
-      // 預設顯示 3 個輸入框
-      for (let i = 0; i < 3; i++) {
-        addSheetInput();
+        
+        // 預設顯示 3 個輸入框
+        for (let i = 0; i < 3; i++) {
+          addSheetInput();
+        }
+        
+      } catch (error) {
+        console.error('讀取失敗:', error);
+        showManualInput();
       }
     }
 
@@ -580,7 +571,7 @@
       container.appendChild(div);
     }
 
-    function saveAndLoadSheets() {
+    async function saveAndLoadSheets() {
       const inputs = document.querySelectorAll('.sheet-name-input');
       allSheets = Array.from(inputs)
         .map(input => input.value.trim())
@@ -591,9 +582,17 @@
         return;
       }
 
-      console.log('✅ 已保存工作表名稱:', allSheets);
+      console.log('📝 工作表名稱:', allSheets);
 
-      // 保存到 localStorage
+      // 顯示載入中
+      document.getElementById('sheetsList').innerHTML = `
+        <div class="cost-card">
+          <h3>🔄 正在讀取數據...</h3>
+          <p>請稍候，正在從 Google Sheets 讀取資料</p>
+        </div>
+      `;
+
+      // 保存配置
       const config = {
         spreadsheetId: currentSpreadsheetId,
         sheets: allSheets,
@@ -601,112 +600,176 @@
       };
       localStorage.setItem(`sheets_config_${currentSpreadsheetId}`, JSON.stringify(config));
 
-      // 顯示工作表選擇界面
-      displaySheetSelection();
+      // 讀取每個工作表的數據
+      await fetchAllSheetsData();
     }
 
-    function quickLoadSheets() {
-      displaySheetSelection();
-    }
+    async function fetchAllSheetsData() {
+      sheetsData = {};
+      let successCount = 0;
+      let failCount = 0;
 
-    function displaySheetSelection() {
-      let html = `
-        <div class="cost-card">
-          <h3>📋 選擇要分析的工作表</h3>
-          <p style="color: #666; margin-bottom: 15px;">
-            勾選您想要用於 AI 分析的工作表
-          </p>
-      `;
-
-      allSheets.forEach((sheetName, index) => {
-        // 判斷工作表類型
-        let icon = '📝';
-        let type = '其他工作表';
-        
-        if (sheetName.includes('產品庫') || sheetName.includes('product')) {
-          icon = '🏷️';
-          type = '產品庫類型';
-        } else if (sheetName.includes('競品') || sheetName.includes('compete')) {
-          icon = '🔍';
-          type = '競品數據';
-        } else if (sheetName.includes('訂單') || sheetName.includes('order')) {
-          icon = '📦';
-          type = '訂單類型';
+      for (const sheetName of allSheets) {
+        try {
+          console.log(`📥 正在讀取: ${sheetName}`);
+          
+          // 使用 Google Sheets 的 CSV export 功能（公開分享時可用）
+          const encodedSheetName = encodeURIComponent(sheetName);
+          const csvUrl = `https://docs.google.com/spreadsheets/d/${currentSpreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodedSheetName}`;
+          
+          const response = await fetch(csvUrl);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const csvText = await response.text();
+          const parsedData = parseCSV(csvText);
+          
+          sheetsData[sheetName] = parsedData;
+          successCount++;
+          console.log(`✅ ${sheetName}: ${parsedData.length} 筆資料`);
+          
+        } catch (error) {
+          console.error(`❌ ${sheetName} 讀取失敗:`, error);
+          failCount++;
+          sheetsData[sheetName] = [];
         }
-
-        html += `
-          <div style="padding: 15px; margin: 10px 0; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
-            <label style="display: flex; align-items: center; cursor: pointer;">
-              <input type="checkbox" class="sheet-checkbox" value="${sheetName}" style="margin-right: 10px;">
-              <div>
-                <div style="font-weight: 600; color: #2c3e50;">
-                  ${icon} ${sheetName}
-                </div>
-                <div style="font-size: 0.85rem; color: #6c757d; margin-top: 3px;">
-                  ${type}
-                </div>
-              </div>
-            </label>
-          </div>
-        `;
-      });
-
-      html += `
-          <button class="btn" onclick="loadSelectedSheets()" style="margin-top: 15px;">
-            ✅ 確認選擇並載入數據
-          </button>
-        </div>
-      `;
-
-      document.getElementById('sheetsList').innerHTML = html;
-    }
-
-    function loadSelectedSheets() {
-      const checkboxes = document.querySelectorAll('.sheet-checkbox:checked');
-      const selectedSheets = Array.from(checkboxes).map(cb => cb.value);
-
-      if (selectedSheets.length === 0) {
-        alert('⚠️ 請至少選擇一個工作表');
-        return;
       }
 
-      // 模擬載入數據(實際應使用 Google Sheets API)
-      document.getElementById('connectionResult').innerHTML = `
-        <div class="cost-card" style="background: #e3f2fd;">
-          <h3 style="color: #1976d2;">📊 數據載入成功!</h3>
-          <p>已選擇 <strong>${selectedSheets.length}</strong> 個工作表:</p>
-          <ul style="margin: 10px 0; padding-left: 20px;">
-            ${selectedSheets.map(name => `<li>${name}</li>`).join('')}
-          </ul>
-          <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
-            <strong>💡 提示:</strong> 目前為示範模式。要真正讀取 Google Sheets 數據,需要設定 Google Sheets API。
-          </div>
-        </div>
+      // 顯示結果
+      displayLoadResults(successCount, failCount);
+    }
+
+    function parseCSV(csvText) {
+      const lines = csvText.split('\n').filter(line => line.trim());
+      if (lines.length === 0) return [];
+      
+      // 第一行是標題
+      const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+      
+      // 解析數據行
+      const data = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index] || '';
+        });
+        data.push(row);
+      }
+      
+      return data;
+    }
+
+    function displayLoadResults(successCount, failCount) {
+      let html = `
+        <div class="cost-card" style="background: ${successCount > 0 ? '#e8f5e9' : '#ffebee'};">
+          <h3 style="color: ${successCount > 0 ? '#2e7d32' : '#c62828'};">
+            ${successCount > 0 ? '✅' : '❌'} 數據載入完成
+          </h3>
+          <p>成功: <strong>${successCount}</strong> 個工作表 | 失敗: <strong>${failCount}</strong> 個</p>
       `;
+
+      // 顯示每個工作表的數據統計
+      html += '<div style="margin-top: 15px;">';
+      for (const sheetName of allSheets) {
+        const data = sheetsData[sheetName] || [];
+        const icon = data.length > 0 ? '✅' : '❌';
+        const color = data.length > 0 ? '#2e7d32' : '#c62828';
+        
+        html += `
+          <div style="padding: 10px; margin: 8px 0; background: white; border-radius: 8px; border-left: 4px solid ${color};">
+            <strong>${icon} ${sheetName}</strong>: ${data.length} 筆資料
+          </div>
+        `;
+      }
+      html += '</div>';
+
+      if (failCount > 0) {
+        html += `
+          <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
+            <strong>⚠️ 部分工作表讀取失敗，可能原因：</strong><br>
+            1. 工作表名稱輸入錯誤（大小寫、空格要完全一致）<br>
+            2. Google Sheets 未設為公開分享<br>
+            3. 網路連線問題
+          </div>
+        `;
+      }
+
+      if (successCount > 0) {
+        html += `
+          <button class="btn" onclick="showDataPreview()" style="margin-top: 15px; background: #667eea;">
+            👁️ 預覽已載入的數據
+          </button>
+        `;
+      }
+
+      html += '</div>';
+      
+      document.getElementById('connectionResult').innerHTML = html;
+    }
+
+    function showDataPreview() {
+      let html = '<div class="cost-card"><h3>📊 數據預覽</h3>';
+      
+      for (const sheetName in sheetsData) {
+        const data = sheetsData[sheetName];
+        if (data.length === 0) continue;
+        
+        html += `
+          <h4 style="margin-top: 20px; color: #667eea;">📋 ${sheetName} (共 ${data.length} 筆)</h4>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
+              <thead>
+                <tr style="background: #f8f9fa;">
+        `;
+        
+        // 表頭
+        const headers = Object.keys(data[0]);
+        headers.forEach(header => {
+          html += `<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">${header}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+        
+        // 只顯示前 5 筆
+        const previewData = data.slice(0, 5);
+        previewData.forEach(row => {
+          html += '<tr>';
+          headers.forEach(header => {
+            html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${row[header]}</td>`;
+          });
+          html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        
+        if (data.length > 5) {
+          html += `<p style="color: #6c757d; margin-top: 5px; font-size: 0.85rem;">... 還有 ${data.length - 5} 筆資料</p>`;
+        }
+        
+        html += '</div>';
+      }
+      
+      html += '</div>';
+      document.getElementById('connectionResult').innerHTML = html;
     }
 
     // ===== 頁面切換 =====
     function showTab(tabName) {
-      // 隱藏所有內容
       const contents = document.querySelectorAll('.tab-content');
       contents.forEach(content => content.classList.remove('active'));
 
-      // 移除所有按鈕的 active 狀態
       const buttons = document.querySelectorAll('.tab-button');
       buttons.forEach(btn => btn.classList.remove('active'));
 
-      // 顯示選中的內容
       document.getElementById(tabName).classList.add('active');
-      
-      // 設置按鈕為 active
       event.target.classList.add('active');
     }
 
     // ===== 初始化 =====
     window.onload = function() {
       console.log('✅ 頁面載入完成');
-      console.log('✅ 所有函數已定義');
-      
       updateFeeRateDisplay();
       
       const cost = document.getElementById('cost').value;
