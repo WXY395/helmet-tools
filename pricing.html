@@ -719,12 +719,16 @@
     }
 
     function displayLoadResults(successCount, failCount) {
-      try {
-        let html = `
-          <div class="cost-card" style="background: ${successCount > 0 ? '#e8f5e9' : '#ffebee'};">
-            <h3 style="color: ${successCount > 0 ? '#2e7d32' : '#c62828'};">
-              ${successCount > 0 ? '✅' : '❌'} 數據載入完成
-            </h3>
+  try {
+    // ✨ 加入這三行
+    const sheetsListElement = safeGetElement('sheetsList');
+    const resultElement = safeGetElement('connectionResult');
+    
+    let html = `
+      <div class="cost-card" style="background: ${successCount > 0 ? '#e8f5e9' : '#ffebee'};">
+        <h3 style="color: ${successCount > 0 ? '#2e7d32' : '#c62828'};">
+          ${successCount > 0 ? '✅' : '❌'} 數據載入完成
+        </h3>
             <p>成功: <strong>${successCount}</strong> 個工作表 | 失敗: <strong>${failCount}</strong> 個</p>
         `;
 
@@ -763,10 +767,13 @@
 
         html += '</div>';
         
-        const resultElement = safeGetElement('connectionResult');
-        if (resultElement) {
-          resultElement.innerHTML = html;
-        }
+        // 新的 - 統一顯示在 sheetsList
+if (sheetsListElement) {
+  sheetsListElement.innerHTML = html;
+}
+if (resultElement) {
+  resultElement.innerHTML = ''; // 清空
+}
       } catch (error) {
         console.error('❌ 顯示載入結果時發生錯誤:', error);
       }
@@ -875,4 +882,5 @@
   </div>
 </body>
 </html>
+
 
